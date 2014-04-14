@@ -7,6 +7,13 @@ end
 
 cookbook 'redis', github: 'coderanger/chef-redis', tag: '1.0.4'
 cookbook 'glusterfs', github: 'alecpm/glusterfs-cookbook', tag: '0.1.1'
+
+# We include these to get their dependencies resolved
+cookbook 'opsworks_deploy_python', path: './opsworks_deploy_python'
+cookbook 'plone_buildout', path: './plone_buildout'
+
+# Here are the dependencies if we want to be explicit
+
 # cookbook 'varnish', '0.9.10'
 # cookbook 'gunicorn', '1.1.2'
 # cookbook 'supervisor', '0.4.10'
@@ -21,10 +28,8 @@ cookbook 'glusterfs', github: 'alecpm/glusterfs-cookbook', tag: '0.1.1'
 # cookbook 'line', '0.5.1'
 # cookbook 'python', '1.4.6'
 # cookbook 'runit', '1.5.10'
-cookbook 'opsworks_deploy_python', path: './opsworks_deploy_python'
-cookbook 'plone_buildout', path: './plone_buildout'
 
-# Testing only
+# For vagrant testing only
 # group :testing do
 #   opsworks_cookbook 'dependencies'
 #   opsworks_cookbook 'gem_support'
