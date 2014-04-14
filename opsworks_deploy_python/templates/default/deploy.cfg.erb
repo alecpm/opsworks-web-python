@@ -1,0 +1,18 @@
+[buildout]
+extends-cache = extends
+unzip = true
+extends =
+<% for @extend in @extends %>    <%= @extend %>
+<% end %>
+
+
+<% if @parts_to_include.length != 0 %>
+  <%if @inherit_parts %>
+parts +=<% else %>
+parts =<% end %>
+<% for @part in @parts_to_include %>    <%= @part %>
+<% end %>
+<% end %>
+
+# Enable any additional custom configuration here
+<%= @additional_config %>

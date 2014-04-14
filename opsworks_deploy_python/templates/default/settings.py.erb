@@ -1,0 +1,29 @@
+DEBUG = <%= @debug ? "True" : "False" %>
+
+DATABASES = {
+    'default': {
+        'NAME': '<%= @django_database["name"] %>',
+        'ENGINE': 'django.db.backends.<%= @django_database["adapter"] %>',
+        'USER': '<%= @django_database["username"] %>',
+        'PASSWORD': '<%= @django_database["password"] %>',
+        'HOST': '<%= @django_database["host"] %>',
+        'PORT': '<%= @django_database["port"] %>',
+    },
+}
+<% if @django_legacy_db %>
+DATABASE_ENGINE = DATABASES['default']['ENGINE']
+DATABASE_NAME = DATABASES['default']['NAME']
+DATABASE_USER = DATABASES['default']['USER']
+DATABASE_PASSWORD = DATABASES['default']['PASSWORD']
+DATABASE_HOST = DATABASES['default']['HOST']
+DATABASE_PORT = DATABASES['default']['PORT']
+<% end %>
+
+<% if @django_gunicorn && @django_gunicorn["enabled"] %>
+if 'gunicorn' not in INSTALLED_APPS:
+    INSTALLED_APPS += ('gunicorn',)
+<% end %>
+<% if @django_celery && @django_celery["enabled"] && @django_celery["config_file"] %>
+# Override any celery settings
+from <%= ::File.basename(@django_celery["config_file"], ".py") %> import *
+<% end %>

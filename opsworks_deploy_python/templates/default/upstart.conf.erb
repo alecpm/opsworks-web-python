@@ -1,0 +1,15 @@
+description "Manage deployed app service <%= @name %>"
+start on runlevel [2345]
+stop on runlevel [!2345]
+start on filesystem and started networking
+respawn
+chdir <%= "#{@deploy_to}/current" %>
+setuid <%= @user %>
+setgid <%= @group %>
+<% if @environment %>
+<% (@environment.sort_by { |key,val| key.to_s }).each do |item| %>
+env <%= item[0] %>=<%= item[1] %>
+<% end %>
+<% end %>
+
+exec <%= @script %> <%= @args %>

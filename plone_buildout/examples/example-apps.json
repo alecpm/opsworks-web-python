@@ -1,0 +1,43 @@
+{
+    "Apps": [
+        {
+            "AppSource": {
+                "Url": "***** GITHUB BUILDOUT URL *****",
+                "Type": "git",
+                "SshKey": "*****FILTERED*****",
+                "Revision": "master"
+            },
+            "Name": "My Plone Site",
+            "EnableSsl": false,
+            "SslConfiguration": {},
+            "Shortname": "***** YOUR APP NAME *****",
+            "Type": "other",
+        },
+        {
+            "AppSource": {
+                "Url": "***** GITHUB BUILDOUT URL *****",
+                "Type": "git",
+                "SshKey": "*****FILTERED*****",
+                "Revision": "master"
+            },
+            "Name": "Solr",
+            "EnableSsl": false,
+            "SslConfiguration": {},
+            "Shortname": "solr",
+            "Type": "other",
+        },
+        {
+            "AppSource": {
+                "Url": "***** GITHUB BUILDOUT URL *****",
+                "Type": "git",
+                "SshKey": "*****FILTERED*****",
+                "Revision": "master"
+            },
+            "Name": "Zeoserver",
+            "EnableSsl": false,
+            "SslConfiguration": {},
+            "Shortname": "zeoserver",
+            "Type": "other",
+        }
+    ]
+}

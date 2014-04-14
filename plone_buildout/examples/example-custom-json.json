@@ -1,0 +1,28 @@
+{"opsworks" : { "ruby_stack" : "ruby", "ruby_version" : "1.9.3" },
+"plone_instances" : {
+  "app_name" : "***** YOUR APP NAME *****", "celery_enabled" : false, "broker_layer" : "redis",
+  "nfs_blobs" : true, "gluster_blobs" : false, "solr_enabled" : false, celery_enabled: false,
+  "enable_relstorage" : false, "relstorage" : {
+    "db" : {"name" : null, "host" : null,  "user" : null, "password" : null},
+    "enable_cache" : true}
+  },
+"deploy" : {
+  "***** YOUR APP NAME *****" : {
+    "buildout_extends": ["cfg/sources.cfg"],
+    "environment": {"DEPLOYMENT" : "STAGING"},
+    "buildout_cache_archives" : []
+    },
+  "zeoserver" : {
+    "buildout_extends": ["cfg/sources.cfg"],
+    "environment": {"DEPLOYMENT" : "STAGING"},
+    "buildout_cache_archives" : []
+    },
+  "solr" : {
+    "environment": {"DEPLOYMENT" : "STAGING"},
+    "buildout_extends" : []
+    }
+  },
+"ebs_snapshots" : {
+  "aws_key" : "***** AWS KEY FOR SNAPSHOTTING (IAM USER) *****",
+  "aws_secret" : "***** AWS SECRET FOR SNAPSHOTTING (IAM USER) *****"}
+}

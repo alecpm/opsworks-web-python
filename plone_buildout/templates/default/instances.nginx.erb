@@ -1,0 +1,38 @@
+upstream cache {
+    server 127.0.0.1:6081;
+}
+
+upstream balancer {
+    server 127.0.0.1:8080;
+}
+
+client_header_buffer_size 4k;
+client_body_buffer_size 32k;
+
+server {
+    listen *:80;
+    
+    # Show status information on /_main-status
+    location = /_main_status_ {
+        stub_status on;
+        allow 127.0.0.1;
+        deny all;
+    }
+    
+    location = <%= node[:haproxy][:stats_url] %> {
+        proxy_pass http://balancer;
+    }
+    
+    # Rewrite Plone URLs and proxy everything to Varnish
+    location / {
+        rewrite ^/(.*)$ /VirtualHostBase/$scheme/$http_host:$server_port/<%= node["plone_instances"]["site_id"]%>/VirtualHostRoot/$1 break;
+        proxy_pass http://cache;
+        proxy_connect_timeout 75;
+        proxy_send_timeout 900;
+        proxy_read_timeout 185;
+        proxy_buffer_size  256k;
+        proxy_buffers      16   256k;
+        proxy_set_header Host $http_host;
+        proxy_set_header Accept-Encoding '';
+    }
+}

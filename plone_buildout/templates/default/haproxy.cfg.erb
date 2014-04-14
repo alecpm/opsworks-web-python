@@ -1,0 +1,66 @@
+global
+  log 127.0.0.1   local0
+  log 127.0.0.1   local1 notice
+  #log loghost    local0 info
+  maxconn <%= node[:haproxy][:global_max_connections] %>
+  #debug
+  #quiet
+  user haproxy
+  group haproxy
+  <% if node[:haproxy][:stats_socket_level] %>
+  stats socket <%= node[:haproxy][:stats_socket_path] %> level <%= node[:haproxy][:stats_socket_level] %>
+  <% else %>
+  stats socket <%= node[:haproxy][:stats_socket_path] %>
+  <% end %>
+
+defaults
+  log             global
+  mode            http
+  option          httplog
+  option          dontlognull
+  retries         <%= node[:haproxy][:retries] %>
+  option          redispatch
+  maxconn        <%= node[:haproxy][:default_max_connections] %>
+  timeout client <%= node[:haproxy][:client_timeout] %>             # Client and server timeout must match the longest
+  timeout server <%= node[:haproxy][:server_timeout] %>             # time we may wait for a response from the server.
+  timeout queue  <%= node[:haproxy][:queue_timeout] %>              # Don't queue requests too long if saturated.
+  timeout connect <%= node[:haproxy][:connect_timeout] %>           # There's no reason to change this one.
+  timeout http-request <%= node[:haproxy][:http_request_timeout] %>	# A complete request may never take that long.
+  <% if node[:haproxy][:httpclose] %>
+  option          httpclose                                         # disable keepalive (HAProxy does not yet support the HTTP keep-alive mode)
+  <% end %>
+  <% if node[:haproxy][:http_server_close] %>
+  option          http-server-close                                 # enable HTTP connection closing on the server side
+  <% end %>
+  option          abortonclose                                      # enable early dropping of aborted  option          httpchk                                           # enable HTTP protocol to check on servers health
+  <% if node[:haproxy][:enable_stats] -%>
+  stats auth <%= node[:haproxy][:stats_user] %>:<%= node[:haproxy][:stats_password] %>
+  stats uri <%= node[:haproxy][:stats_url] %>
+  stats refresh 30s
+  <% end -%>
+        
+# Set up application listeners here.
+<% if node[:opsworks] && node[:opsworks][:layers]['plone_instances'] && !node[:opsworks][:layers]['plone_instances'][:instances].empty? -%>
+backend plone_instances
+  balance <%= node[:haproxy][:balance] %>
+<% if node["plone_instances"]["sticky_sessions"] -%>
+  appsession __ac len 32 timeout 1d
+  cookie sid insert nocache indirect
+<%end -%>
+  option redispatch
+  option forwardfor
+  option forceclose
+  option httpchk <%= node[:haproxy][:health_check_method] %> <%= node[:haproxy][:health_check_url] %>
+  <% node[:opsworks][:layers]["plone_instances"][:instances].each do |name, backend| -%>
+    <% 1.upto((backend[:backends].to_i*node["plone_instances"]["per_cpu"].to_i/8.0).round) do |n| %>
+    server <%= "#{name}-#{n}"%> <%= backend['private_dns_name'] %>:808<%=n%> <% if node["plone_instances"]["sticky_sessions"]%>cookie p<%=n%><%end%> check inter <%= node[:haproxy][:check_interval] %> fastinter <%= node[:haproxy][:check_interval]/10 %> downinter <%= node[:haproxy][:check_interval]/2 %> maxconn <%=node["plone_instances"]["zserver_threads"] || 2 %> rise 1 fall 5
+    <% end %>
+  <% end -%>
+<% end -%>
+
+frontend http-in
+  bind :8080  
+
+  <% if !node[:opsworks][:layers]['plone_instances'][:instances].empty? -%>
+  default_backend plone_instances
+  <% end -%>
