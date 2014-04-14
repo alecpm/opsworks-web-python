@@ -8,29 +8,28 @@ end
 cookbook 'redis', github: 'coderanger/chef-redis', tag: '1.0.4'
 cookbook 'glusterfs', github: 'alecpm/glusterfs-cookbook', tag: '0.1.1'
 
-# We include these to get their dependencies resolved
-cookbook 'opsworks_deploy_python', path: './opsworks_deploy_python'
-cookbook 'plone_buildout', path: './plone_buildout'
-
-# Here are the dependencies if we want to be explicit
-
-# cookbook 'varnish', '0.9.10'
-# cookbook 'gunicorn', '1.1.2'
-# cookbook 'supervisor', '0.4.10'
-# cookbook 'build-essential', '1.4.2'
-# cookbook 'apt', '2.3.8'
-# cookbook 'yum', '3.1.2'
-# cookbook 'yum-epel', '0.3.4'
-# cookbook 'git', '3.1.0'
-# cookbook 'sqlite', '1.0.0'
-# cookbook 'ulimit', '0.3.2'
-# cookbook 'nfs', '1.0.0'
-# cookbook 'line', '0.5.1'
-# cookbook 'python', '1.4.6'
-# cookbook 'runit', '1.5.10'
+# We want to be explicit, since we don't explicitly include our
+# packages, except when testing
+cookbook 'varnish', '0.9.10'
+cookbook 'gunicorn', '1.1.2'
+cookbook 'supervisor', '0.4.10'
+cookbook 'build-essential', '1.4.2'
+cookbook 'apt', '2.3.8'
+cookbook 'yum', '3.1.2'
+cookbook 'yum-epel', '0.3.4'
+cookbook 'git', '3.1.0'
+cookbook 'sqlite', '1.0.0'
+cookbook 'ulimit', '0.3.2'
+cookbook 'nfs', '1.0.0'
+cookbook 'line', '0.5.1'
+cookbook 'python', '1.4.6'
+cookbook 'runit', '1.5.10'
 
 # For vagrant testing only
 # group :testing do
+# We include these to get their dependencies resolved
+#   cookbook 'opsworks_deploy_python', path: './opsworks_deploy_python'
+#   cookbook 'plone_buildout', path: './plone_buildout'
 #   opsworks_cookbook 'dependencies'
 #   opsworks_cookbook 'gem_support'
 #   opsworks_cookbook 'scm_helper'
