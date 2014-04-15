@@ -17,11 +17,11 @@ instances = 1 if instances < 1 || !instances
 Chef::Log.info("Calculated instance count #{instances}.  Based on Backends: #{node[:opsworks][:instance][:backends]} CPUs: #{node[:cpu][:total]} and per_cpu config: #{instance_data["per_cpu"]}")
 extra_parts = Array.new
 additional_config = ""
-extends = ["cfg/base.cfg"]
+extends = [instance_data["base_config"]]
 
 if instance_data["enable_relstorage"]
-  extends.push("cfg/relstorage.cfg")
   storage = instance_data["relstorage"]
+  extends.push(storage['config'])
   db = storage["db"]
   storage_config = "\n[relstorage]"
   if db["dsn"]
@@ -180,6 +180,22 @@ if instance_data["nfs_blobs"] || instance_data["gluster_blobs"]
   blob_mounts do
     deploy_data deploy
     use_gluster instance_data["gluster_blobs"]
+  end
+elsif instance_data["shared_blobs"] && node["plone_blobs"]["blob_dir"]
+  blob_location = ::File.join(deploy[:deploy_to], 'shared', 'var', 'blobstorage')
+  if node["plone_blobs"]["blob_dir"] != blob_location
+    link blob_location do
+      action :delete
+      only_if "test -l #{blob_location}"
+    end
+    directory blob_location do
+      action :delete
+      recursive true
+      only_if "test -d #{blob_location}"
+    end
+    link blob_location do
+      to node["plone_blobs"]["blob_dir"]
+    end
   end
 end
 

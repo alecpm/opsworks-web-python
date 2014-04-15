@@ -20,7 +20,9 @@ default["plone_blobs"]["gluster_mount_options"] = "auto,rw,direct-io-mode=disabl
 # bricks/volumes/exports/mounts between stop/start or server
 # recreation
 default["plone_blobs"]["gluster_store_config_in_exports"] = true
+default["plone_blobs"]["blob_dir"] = nil # Use if using shared blobs, but not NFS/Gluster, will symlink into zeoserver and instances
 
+default["plone_instances"]["base_config"] = "cfg/base.cfg"  # This must be set
 default["plone_instances"]["app_name"] = "plone_instances"  # This must be set
 default["plone_instances"]["site_id"] = "Plone"  # This must be set for VHosting
 default["plone_instances"]["per_cpu"] = 2 # Instances per server CPU
@@ -39,6 +41,7 @@ default["plone_instances"]["relstorage"] = {}
 default["plone_instances"]["relstorage"]["db"] = {"type" => "postgres", "dsn" => nil,"name" => nil, "host" => nil, 
   "user" => nil, "password" => nil}
 default["plone_instances"]["relstorage"]["enable_cache"] = false
+default["plone_instances"]["relstorage"]["config"] = 'cfg/relstorage.cfg'
 default["plone_instances"]["relstorage"]["cache_servers"] = nil # host:port strings will be automatically set
 default["plone_instances"]["relstorage"]["enable_pack"] = false # set to true on one instance deployment
 default["plone_instances"]["relstorage"]["pack_days"] = 7

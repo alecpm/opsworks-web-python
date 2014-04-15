@@ -20,10 +20,10 @@ if node["plone_zeoserver"]["blob_dir"]
   node.normal[:deploy][app_name]["buildout_additional_config"] = "\n[zeoserver]\nblob-storage = #{blob_dir}"
 else
   # Set the value to the buildout default for use in optional NFS mounting below
-  blob_dir = ::File.join(deploy[:deploy_to], "shared", "var", "blobstorage")
+  blob_dir = ::File.join(node[:deploy][:deploy_to], "shared", "var", "blobstorage")
 end
 
-environment = {"PYTHON_EGG_CACHE" => ::File.join(deploy[:deploy_to], "shared", "eggs")}
+environment = {"PYTHON_EGG_CACHE" => ::File.join(node[:deploy][:deploy_to], "shared", "eggs")}
 
 node.normal[:deploy][app_name]["buildout_init_type"] = :upstart if !deploy["buildout_init_type"]
 # Setup upstart job
@@ -34,6 +34,22 @@ if node["plone_zeoserver"]["nfs_blobs"] || node["plone_zeoserver"]["gluster_blob
   blob_mounts do
     deploy_data deploy
     use_gluster node["plone_zeoserver"]["gluster_blobs"]
+  end
+elsif node["plone_blobs"]["blob_dir"]
+  blob_location = ::File.join(deploy[:deploy_to], 'shared', 'var', 'blobstorage')
+  if node["plone_blobs"]["blob_dir"] != blob_location
+    link blob_location do
+      action :delete
+      only_if "test -l #{blob_location}"
+    end
+    directory blob_location do
+      action :delete
+      recursive true
+      only_if "test -d #{blob_location}"
+    end
+    link blob_location do
+      to node["plone_blobs"]["blob_dir"]
+    end
   end
 end
 

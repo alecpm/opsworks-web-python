@@ -25,7 +25,7 @@ if instance_data["enable_relstorage"]
 end
 
 node.normal[:deploy][app_name]["os_packages"] = os_packages.concat(deploy["os_packages"] || [])
-Chef::Log.debug("Merged os_packages: #{deploy["os_packages"]}")
+Chef::Log.debug("Merged os_packages for plone instances: #{deploy["os_packages"]}")
 
 buildout_setup do
   deploy_data deploy
