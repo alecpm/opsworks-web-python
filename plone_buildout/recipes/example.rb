@@ -16,16 +16,16 @@ node.normal[:haproxy][:health_check_url] = "/misc_/CMFPlone/plone_icon"
 def _opsworks_buildout_defaults
   {
     "application_type" => "other",
-    "chef_provider" => "Timestamped",
-    "environment" => {},
+    :chef_provider => "Timestamped",
+    :environment => {},
     "packages" => [],
-    "group" => "www-data",
-    "user" => "deploy",
-    "home" => "/home/deploy",
+    :group => "www-data",
+    :user => "deploy",
+    :home => "/home/deploy",
     "buildout_cache_archives" => [],
     :scm => {
       :scm_type => 'git',
-      :repository => 'git@github.com:alecpm/opsworks_example_buildouts',
+      :repository => 'https://github.com/alecpm/opsworks_example_buildouts.git',
       :revision => 'master',
       :ssh_key => nil
     },
@@ -49,22 +49,20 @@ node.default[:opsworks][:layers] = {
     :instances => {'instance1' => {:private_dns_name => 'localhost.localdomain', :status => "online"}}
   },
   "plone_instances" => {
-    :instances => {'instance1' => {:private_dns_name => 'localhost.localdomain', :status => "online", :backends => 2, :hostname => "instance", :private_ip => '127.0.0.1', :public_ip => '127.0.0.2'}}
+    :instances => {'instance1' => {:private_dns_name => 'localhost.localdomain', :status => "online", :backends => 8, :hostname => "instance", :private_ip => '127.0.0.1', :public_ip => '127.0.0.2'}}
   }
 }
 
 # This does not actually use CPU count on AWS, but the opsworks estimate of instance cpu capacity (`backends`)
 node.default["plone_instances"]["per_cpu"] = 1
-node.default["plone_blobs"]["blob_dir"] = "/srv/instances/shared/var/blobstorage"
+node.default["plone_blobs"]["blob_dir"] = "/srv/zeoserver/shared/var/blobstorage"
 
-# Set application dirs and include sources.cfg for development/staging
+# Set application dirs
 instance_defaults[:deploy_to] = "/srv/instances"
-instance_defaults['buildout_extends'] = ["cfg/sources.cfg"]
 zeo_defaults[:deploy_to] = "/srv/zeoserver"
-zeo_defaults['buildout_extends'] = ["cfg/sources.cfg"]
 
 node.default[:deploy] = {
-  "instances" => instance_defaults,
+  "plone_instances" => instance_defaults,
   "zeoserver" => zeo_defaults
 }
 

@@ -7,8 +7,10 @@ end
 Vagrant.configure("2") do |config|
   config.vm.box = "precise64"
   config.berkshelf.enabled = true
+  # Allow installation of newer Rubies (AWS uses 2.0.0 now)
+  config.vm.provision :shell, :inline =>  'apt-get update;  apt-get install python-software-properties --no-upgrade --yes; add-apt-repository ppa:brightbox/ruby-ng-experimental; apt-get update'
   # Update Chef if needed
-  config.vm.provision :shell, :inline => 'if [[ `chef-solo --version` != *11.10* ]]; then apt-get install python-software-properties --no-upgrade --yes; add-apt-repository ppa:brightbox/ruby-ng-experimental; apt-get update; apt-get install build-essential bash-completion ruby2.0 ruby2.0-dev --no-upgrade --yes; gem2.0 install chef --version 11.10.0 --no-rdoc --no-ri --conservative; fi'
+  config.vm.provision :shell, :inline => 'if [[ `chef-solo --version` != *11.10* ]]; then apt-get install build-essential bash-completion ruby2.0 ruby2.0-dev --no-upgrade --yes; gem2.0 install chef --version 11.10.0 --no-rdoc --no-ri --conservative; fi'
   config.vm.provision :chef_solo do |chef|
     chef.cookbooks_path = "."
     chef.add_recipe("plone_buildout::example")

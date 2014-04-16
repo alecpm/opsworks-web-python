@@ -38,14 +38,12 @@ if node["plone_zeoserver"]["nfs_blobs"] || node["plone_zeoserver"]["gluster_blob
 elsif node["plone_blobs"]["blob_dir"]
   blob_location = ::File.join(deploy[:deploy_to], 'shared', 'var', 'blobstorage')
   if node["plone_blobs"]["blob_dir"] != blob_location
-    link blob_location do
-      action :delete
-      only_if "test -l #{blob_location}"
-    end
-    directory blob_location do
-      action :delete
+    directory ::File.join(deploy[:deploy_to], 'shared', 'var') do
+      owner deploy[:user]
+      group deploy[:group]
+      mode 0755
       recursive true
-      only_if "test -d #{blob_location}"
+      action :create
     end
     link blob_location do
       to node["plone_blobs"]["blob_dir"]

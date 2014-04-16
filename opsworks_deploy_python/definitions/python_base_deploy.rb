@@ -81,8 +81,8 @@ define :python_base_setup do
   end
 
   # Set deployment user home dir, OpsWorks normally does this
-  if !deploy["home"]
-    node.default[:deploy][application]["home"] = ::File.join('/home/', deploy[:user])
+  if !deploy[:home]
+    node.default[:deploy][application][:home] = ::File.join('/home/', deploy[:user])
   end
 
   opsworks_deploy_user do

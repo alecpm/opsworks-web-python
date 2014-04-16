@@ -82,7 +82,7 @@ define :buildout_configure do
       init_type = Helpers.buildout_setting(deploy, 'init_type', node)
       init_commands.each_with_index do |command, index|
         if command["name"] == application
-          service_name = "#{application}"
+          service_name = application
         elsif command["name"]
           service_name = "#{application}-#{command["name"]}"
         else
@@ -126,7 +126,7 @@ define :buildout_configure do
     
     env["PYTHON_EGG_CACHE"] = ::File.join(deploy[:deploy_to], 'shared', 'eggs')
     if !run_actions
-      template "#{::File.join(release_path, config_file)}" do
+      template ::File.join(release_path, config_file) do
         source Helpers.buildout_setting(deploy,'config_template', node)
         cookbook deploy["buildout_config_cookbook"] || 'opsworks_deploy_python'
         owner deploy[:user]

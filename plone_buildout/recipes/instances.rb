@@ -142,7 +142,7 @@ client_config << "\n" << "environment-vars +="
 1.upto(instances) do |n|
   part = "client#{n}"
   extra_parts.push(part)
-  init_commands.push({'name' => "#{part}", 'cmd' => "bin/#{part}", 'args' => "console"})
+  init_commands.push({'name' => part, 'cmd' => "bin/#{part}", 'args' => "console"})
   if n != 1
     client_config << "\n" << "[#{part}]" << "\n" << "<= client1"
     # Hopefully we don't see port conflicts using this caclulation
@@ -184,14 +184,12 @@ if instance_data["nfs_blobs"] || instance_data["gluster_blobs"]
 elsif instance_data["shared_blobs"] && node["plone_blobs"]["blob_dir"]
   blob_location = ::File.join(deploy[:deploy_to], 'shared', 'var', 'blobstorage')
   if node["plone_blobs"]["blob_dir"] != blob_location
-    link blob_location do
-      action :delete
-      only_if "test -l #{blob_location}"
-    end
-    directory blob_location do
-      action :delete
+    directory ::File.join(deploy[:deploy_to], 'shared', 'var') do
+      owner deploy[:user]
+      group deploy[:group]
+      mode 0755
       recursive true
-      only_if "test -d #{blob_location}"
+      action :create
     end
     link blob_location do
       to node["plone_blobs"]["blob_dir"]
