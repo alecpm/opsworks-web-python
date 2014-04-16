@@ -1,4 +1,4 @@
-{"opsworks" : { "ruby_stack" : "ruby", "ruby_version" : "1.9.3" },
+{
 "plone_instances" : {
   "app_name" : "***** YOUR APP NAME *****", "celery_enabled" : false, "broker_layer" : "redis",
   "nfs_blobs" : true, "gluster_blobs" : false, "solr_enabled" : false, celery_enabled: false,
@@ -10,12 +10,12 @@
   "***** YOUR APP NAME *****" : {
     "buildout_extends": ["cfg/sources.cfg"],
     "environment": {"DEPLOYMENT" : "STAGING"},
-    "buildout_cache_archives" : []
+    "buildout_cache_archives" : [{"url" : "https://my-bucket.s3.amazonaws.com/my-eggs-archive.tgz", "path" : "shared"}]
     },
   "zeoserver" : {
     "buildout_extends": ["cfg/sources.cfg"],
     "environment": {"DEPLOYMENT" : "STAGING"},
-    "buildout_cache_archives" : []
+    "buildout_cache_archives" : [{"url" : "https://my-bucket.s3.amazonaws.com/my-eggs-archive.tgz", "path" : "shared"}]
     },
   "solr" : {
     "environment": {"DEPLOYMENT" : "STAGING"},

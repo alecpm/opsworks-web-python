@@ -1,0 +1,205 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    
+    "Description" : "AWS CloudFormation Plone OpsWorks Template: Launches OpsWorks stack, layer, instances and associated resources to run a Plone CMS.",
+    
+    "Resources": {
+        
+        "PloneStack": {
+            "Type": "AWS::OpsWorks::Stack",
+            "Properties": {
+                "Name": {
+                    "Ref": "AWS::StackName"
+                },                
+                "ServiceRoleArn" : { "Fn::Join": ["", ["arn:aws:iam::", {"Ref":"AWS::AccountId"}, ":role/aws-opsworks-service-role"]] },
+                "DefaultInstanceProfileArn" : { "Fn::Join": ["", ["arn:aws:iam::", {"Ref":"AWS::AccountId"}, ":instance-profile/aws-opsworks-ec2-role"]] },
+                "DefaultRootDeviceType": "instance-store",
+                "ConfigurationManager": {
+                    "Version": "11.10",
+                    "Name": "Chef"
+                },
+                "UseCustomCookbooks": true,
+                "CustomCookbooksSource": {
+                    "Url": "https://github.com/alecpm/opsworks-web-python.git",
+                    "Type": "git",
+                    "Revision": "master"
+                },
+                "DefaultOs": "Ubuntu 12.04 LTS"
+            }
+        },
+        
+        "PloneInstances": {
+            "Type": "AWS::OpsWorks::Layer",
+            "Properties": {
+                "StackId": {
+                    "Ref": "PloneStack"
+                },
+                "Name": "Plone Instances",
+                "Type": "custom",
+                "Shortname": "plone_instances",
+                "EnableAutoHealing": "true",
+                "AutoAssignElasticIps": "false",
+                "AutoAssignPublicIps": "true",
+                "Packages": [],
+                "CustomRecipes": {
+                    "Undeploy": ["plone_buildout::instances-undeploy"],
+                    "Setup": ["plone_buildout::instances-setup"],
+                    "Configure": ["plone_buildout::instances-configure"],
+                    "Shutdown": ["plone_buildout::instances-stop"],
+                    "Deploy": ["plone_buildout::instances-deploy"]
+                }
+            }
+        },
+        
+        "SharedBlobs": {
+            "Type": "AWS::OpsWorks::Layer",
+            "Properties": {
+                "StackId": {
+                    "Ref": "PloneStack"
+                },
+                "Type": "custom",
+                "Name": "Shared Blobs",
+                "CustomRecipes": {
+                    "Undeploy": [],
+                    "Setup": ["plone_buildout::nfs_blobs"],
+                    "Configure": ["plone_buildout::nfs_blobs"],
+                    "Shutdown": [],
+                    "Deploy": []
+                },
+                "AutoAssignPublicIps": true,
+                "EnableAutoHealing": true,
+                "Shortname": "shared_blobs",
+                "AutoAssignElasticIps": true,
+                "VolumeConfigurations": [{
+                    "MountPoint": "/srv/exports",
+                    "Size": 200,
+                    "NumberOfDisks": 1
+                }]
+            }
+        },
+        
+        "DBPacking": {
+            "Type": "AWS::OpsWorks::Layer",
+            "Properties": {
+                "StackId": {
+                    "Ref": "PloneStack"
+                },
+                "Type": "custom",
+                "Name": "DB Packing",
+                "CustomRecipes": {
+                    "Undeploy": [],
+                    "Setup": ["plone_buildout::enable_pack"],
+                    "Configure": ["plone_buildout::enable_pack"],
+                    "Shutdown": [],
+                    "Deploy": ["plone_buildout::enable_pack"]
+                },
+                "AutoAssignPublicIps": true,
+                "EnableAutoHealing": true,
+                "Shortname": "db_packing",
+                "AutoAssignElasticIps": false
+            }
+        },
+        
+        "EBSSnapshots": {
+            "Type": "AWS::OpsWorks::Layer",
+            "Properties": {
+                "StackId": {
+                    "Ref": "PloneStack"
+                },
+                "Type": "custom",
+                "Name": "EBS Snapshotting",
+                "CustomRecipes": {
+                    "Undeploy": [],
+                    "Setup": [],
+                    "Configure": ["plone_buildout::ebs_snapshots"],
+                    "Shutdown": [],
+                    "Deploy": []
+                },
+                "AutoAssignPublicIps": true,
+                "EnableAutoHealing": true,
+                "Shortname": "ebs_snapshots",
+                "AutoAssignElasticIps": false
+            }
+        },
+        
+        "LB": {
+            "Type": "AWS::OpsWorks::Layer",
+            "Properties": {
+                "StackId": {
+                    "Ref": "PloneStack"
+                },
+                "Type": "lb",
+                "Name": "HAProxy",
+                "CustomRecipes": {
+                    "Undeploy": [],
+                    "Setup": [
+                    "plone_buildout::haproxy",
+                    "plone_buildout::varnish",
+                    "plone_buildout::nginx"
+                    ],
+                    "Configure": [
+                    "plone_buildout::haproxy",
+                    "plone_buildout::varnish",
+                    "plone_buildout::nginx"
+                    ],
+                    "Shutdown": [],
+                    "Deploy": ["plone_buildout::haproxy"]
+                },
+                "AutoAssignPublicIps": true,
+                "EnableAutoHealing": true,
+                "Attributes": {
+                    "HaproxyHealthCheckUrl": "/misc_/CMFPlone/plone_icon",
+                    "HaproxyHealthCheckMethod": "HEAD",
+                    "HaproxyStatsPassword": "STATS PASSWORD",
+                    "HaproxyStatsUrl": "/haproxy?stats",
+                    "HaproxyStatsUser": "stats"
+                },
+                "Shortname": "lb",
+                "AutoAssignElasticIps": true
+            }
+        },
+
+        "Memcached": {
+            "Type": "AWS::OpsWorks::Layer",
+            "Properties": {
+                "StackId": {
+                    "Ref": "PloneStack"
+                },
+                "Type": "memcached",
+                "Name": "Memcached",
+                "AutoAssignPublicIps": true,
+                "EnableAutoHealing": true,
+                "Shortname": "memcached",
+                "AutoAssignElasticIps": false
+            }
+        },
+
+        "InstancesApp": {
+            "Type": "AWS::OpsWorks::App",
+            "Properties": {
+                "StackId": {
+                    "Ref": "PloneStack"
+                },
+                "Name": "Plone Instances",
+                "Type": "other",
+                "Shortname": "plone_instances",
+                "AppSource": {
+                    "Type": "git",
+                    "Url": "https://github.com/alecpm/opsworks_example_buildouts.git",
+                    "Revision": "master"
+                },
+                "EnableSsl": false,
+                "SslConfiguration": {}
+            }
+        }
+    },
+    
+    "Outputs" : {
+        "StackId" : {
+            "Value" : { "Ref" : "PloneStack" }
+        },   
+        "AppId" : {
+            "Value" : { "Ref" : "PloneInstances" }
+        }
+    }
+}

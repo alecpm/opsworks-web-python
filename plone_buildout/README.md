@@ -2,41 +2,107 @@ OpsWorks Plone Deployments
 ==========================
 
 This cookbook provides mechanisms for automating scalable and
-high-availability deployments of Plone via buildout in AWS OpsWorks.
+highly-availabile deployments of Plone via buildout in AWS OpsWorks.
 
 It expects a buildout stored in one of the allowed OpsWorks app SCM
-repo types (git, http archive, S3 archive), with the following
-structure.
+repo types (git, http archive, S3 archive), with a certain structure,
+an example of which is available in the [opsworks_example_buildouts
+GitHub repo](http://github.com/alecpm/opsworks_example_buildouts)
 
-  * `bootstrap.py`
-  * `cfg/base.cfg`
 
-Where `base.cfg` contains all parts needed for the application
-(explicit support provided for `zeoserver`, `solr` and `celery` (by
-default backed by redis)), but not enabled.  It expects a zeoclient
-named `client1` to be configured in `base.cfg`.  Additionally, it
-expects a file named:
+Quick Start
+-----------
 
-  * `cfg/relstorage.cfg`
+The `plone_buildout` cookbook contains a couple CloudFormation
+templates for automating the build of multi-layered Zeo and Relstorage
+Stack deployments.  To use these to setup an Opsworks stack, login to
+your AWS account and navigate to the [CloudFormation
+Dashboard](https://console.aws.amazon.com/cloudformation/home).  There
+you can select Create New Stack (note that a CloudFormation stack is
+not the same as on OpsWorks stack, but in this case you will be using
+the latter as a mechanism to create the former).
 
-Which customizes `client1` for relstorage enabled deployments.  There
-are examples of these .cfg files provided in `examples/buildout`.  The
-recipes below manage all supervisor/upstart/sysvinit jobs, so there's
-no need to provide job management in the buildout except in the
-development config.
+You should give your stack a name, and then choose Upload Template.
+The templates live in ``examples/zeoserver-stack.template`` and
+``examples/relstorage-stack.template``, choose one of those.  You
+won't need to enter any stack Options/Tags, so click `Next` and then
+`Create`.  Once the create process has completed, you'll have a new
+OpsWorks stack in the OpsWorks console.
 
-Most of the documentation below describes how to create a
+You will Need to add your stack specific JSON and enable `Manage
+Berkshelf` to pull in cookbook dependencies.  Go to `Stack Settings`
+-> `Edit` to set these.  For a Zeo deployment with NFS shared blobs,
+the simplest Custom JSON is the following:
+
+    {"plone_instances" : {
+        "app_name" : "plone_instances", "nfs_blobs" : true
+    },
+    "zeoserver" : {
+        "nfs_blobs" : true
+    },
+    "deploy" : {
+        "plone_instances" : {
+            "shallow_clone" : true
+        },
+        "zeoserver" : {
+            "shallow_clone" : true
+        }
+    }}
+
+For a relstorage stack, the simplest Custom JSON is the following:
+
+    {"plone_instances" : {
+        "app_name" : "plone_instances", "nfs_blobs" : true,
+        "relstorage_enabled": true,
+        "relstorage" : {
+            "db" : {
+                "name" : "YOUR_DB_NAME",
+                "host" : "YOUR_DB_HOST",
+                "user" : "YOUR_DB_USER",
+                "password" : "YOUR_DB_PASSWORD"
+            },
+            "enable_cache" : true
+        }
+    },
+    "deploy" : {
+        "plone_instances" : {
+            "shallow_clone" : true
+        },
+    }}
+
+It is recommended that RelStorage based stacks use Amazon RDS with
+Multi-AZ to provide high avaialability.  If you create and RDS to
+server your database , be sure that its security group allows access
+to the `AWS-OpsWorks-Custom-Server` EC2 Security Group that your
+zope instances will run under.
+
+You'll generally want to update the Stack's Apps to set the
+application repository parameters to your customized buildout.The
+stacks created in this manner can be configured, customized and cloned
+as described in the sections below.
+
+Note: Your Zope instances will be running and the plone site (default
+/Plone) will be server on on Port 80 via Nginx/Varnish/HAProxy, but
+you will not be able to directly access the instances unless you
+change the security group permissions to allow you access to ports
+8081, etc.  You can do this by modifying allowed Inbound rules for the
+`AWS-OpsWorks-Custom-Server` security group in the EC2 Security Groups
+configuration to allow access from specific IP addresses.  You will
+need to do this to initially create your Plone site if you haven't
+already created one.
+
+
+Details: Scalable Stack Structure
+---------------------------------
+
+The documentation below describes how to create and configure a
 multi-layered stack that offers redundancy and scalability.  With a
 complex modular stack you can take advantage of auto-healing of failed
 servers and time/load based instances.  If you want a simple single
 instance stack that's unlikely to need to grow, and for which small
-amounts of downtime are acceptable, skip to the end section
-[A Simple Plone Deployment Stack](#a-simple-plone-deployment-stack)
-for a simpler stack configuration.
-
-
-A Scalable Stack Structure
---------------------------
+amounts of downtime are acceptable, skip to the end section [A Simple
+Plone Deployment Stack](#a-simple-plone-deployment-stack) for a
+simpler stack configuration.
 
 The first step is creating an OpsWorks Stack which includes this set
 of cookbooks and provides the desired layers of functionality.
@@ -67,7 +133,7 @@ layer.  Assign the following custom recipes to the layer:
   *  Undeploy: `plone_buildout::instances-undeploy`
   *  Shutdown: `plone_buildout::instances-stop`
 
-You can custom some aspects of the deployment using the
+You can customize many aspects of the deployment using the
 `plone_instances` key in the Stack configuration JSON.  In particular
 you may wish to customize the following values:
 
@@ -75,18 +141,21 @@ you may wish to customize the following values:
   * `site_id`: The id of the Plone site for VHosting (defaults to 'Plone')
   * `per_cpu`: The number of instances to run per ECU (defaults to 2), alternatively you can set a fixed `instance_count`
   * `nfs_blobs`: Mount shared blobs via NFS
-  * `gluster_blobs`: Mount shared blobs via GlusterFS
-  * `enable_relstorage`: Use RelStorage for Database
+  * `gluster_blobs`: Mount shared blobs via GlusterFS (mutually exclusive with the above parameter)
+  * `enable_relstorage`: Use RelStorage for the Zope database
   * `relstorage`: Contains DB connection, and caching related attributes, see `attributes/default.rb`
   * `enable_celery`: Enable the celery buildout part
-  * `broker_layer`: The name of the layer where the celery broker server(s) live (defaults to 'redis').
+  * `broker_layer`: The name of the layer where the celery broker server(s) live (defaults to 'celery_broker').
   * `broker`: A hash with `host` and `port` for a fixed celery broker server (i.e. ElastiCache for Redis)
   * `zodb_cache_size`: The size of the zodb object cache
   * `persistent_cache`: Whether to enable to ZEO persistent cache (defaults to true)
-  * `zserver_threads`: How many ZServer Threads to use (defaults to 2, setting to 1 makes sense for production use)
+  * `zserver_threads`: How many ZServer Threads to use (defaults to 2, setting to 1 may make sense for production use)
   * `sticky_sessions`: Whether the load balancer should use sticky sessions (defaults to false)
+  * `solr_enabled`: Whether to enable Solr search using `alm.solrindex` (defaults to false)
+  * `solr_layer`: Name of layer in which to find Solr servers
+  * `solr_host`: Host name for a fixed solr server (not needed if you have a solr layer)
   
-You'll want to turn one of the two blob mount options on.  More on that below.
+You'll probably want to turn one of the two blob mount options on.  More on that below.
 
 These recipes will do all the work of setting up the server, running
 the buildout, etc.  However, there will be no DB for it to connect to
@@ -209,6 +278,14 @@ config and install/configure Varnish and Nginx:
 This will give you an all-in-one front-end layer with Nginx -> Varnish
 -> HAProxy.
 
+Note: The built-in HAProxy layer uses an Elastic IP, which is
+desirable if you intend to use a single front-end server to server
+your website.  If you want a high-availability deployment with
+front-ends in multiple AZs, then you may wish to create your own
+custom layer without an Elastic IP to run HAProxy + Varnish + Nginx,
+and use an Elastic Load Balancer to balance between the servers in
+this layer.
+
 
 ### Maintenance Layers
 
@@ -293,15 +370,16 @@ functionality, like a Solr Search engine or a Redis queue server.
 
 #### Solr Layer
 
-To ease Solr configuration, we deploy Solr through the buildout (see
-`example/buildout`) using `collective.recipe.solrinstance`.  This
-means adding another custom layer, with short name `solr` (you can
-customize the layer shortname or assign this functionality to an
-existing layer by setting the `"plone_instances": "solr_layer"`
-attribute to the short name of the desired layer).  Because it needs a
-persistent data store, it should default to EBS Optimized with an EBS
-volume mounted at `/srv/www/solr/shared/var`.  Assign the following
-custom recipes:
+To ease Solr configuration, we deploy Solr through the buildout using
+`alm.solrindez` and `collective.recipe.solrinstance`.  This means
+adding another custom layer, with short name `solr` (you can customize
+the layer shortname or assign this functionality to an existing layer
+by setting the `"plone_instances": "solr_layer"` attribute to the
+short name of the desired layer), as well as another App (named `solr`
+by default) with the repository information for the buildout.  Because
+it needs a persistent data store, it should default to EBS Optimized
+with an EBS volume mounted at `/srv/www/solr/shared/var`.  Assign the
+following custom recipes:
 
   *  Setup: `plone_buildout::solr-setup`
   *  Configure: `plone_buildout::solr-configure`
@@ -309,7 +387,7 @@ custom recipes:
   *  Undeploy: `plone_buildout::solr-undeploy`
   *  Shutdown: `plone_buildout::solr-stop`
 
-All solr configuration should be done in the buildout configs.
+All solr configuration should be done in the buildout base.cfg.
 
 #### Redis Layer
 
@@ -318,8 +396,11 @@ following custom recipe:
 
   * Setup: redis::default 
 
-You may wish to mount an EBS to store redis data persistently, but ne
-necessity of doing so probably depends on your specific application.
+You may wish to mount an EBS to store redis data persistently, but the
+necessity of doing so depends on your specific application.
+Alternatively, you can use AWS Redis ElastiCache service to provide a
+scalable Redis deployment and set the broker host/port manually in the
+Custom JSON for the stack.
 
 
 ## Applications
@@ -330,35 +411,48 @@ Now you need to point your application layers at actual applications
 ### Plone Instances Application
 
 Add a new application with type `Other` and short name
-'plone_instances' (or whatever you set `"plone_instances": "app_name"`
-to in the Stack JSON).  Set the repository type, url and credentials.
-It's important to note that the key entered here will be used by any
-submodule or mr.developer requests, so it must provide access to all
-repos relevant to the application.
+'plone_instances' (or the name specified under `"plone_instances":
+"app_name"` to in the Custom JSON for the stack).  Set the repository
+type, url and credentials.  It's important to note that the SSH key
+entered here will be used by any submodule or mr.developer requests,
+so it must provide access to all repositories required for the
+application.  Github does not allow a single "deploy key" to be used
+for multiple repositories, so I recommend creating a new GitHub user
+with read-only access to all required repositories and providing an
+SSH key for that user.
 
-You may provide application specific configuration via the Stack JSON.
+You may provide application specific configuration via the stack Custom JSON.
 Under the `"deploy": app_name` key.  Properties you may wish to set
 include:
 
   * `os_packages`: Any required packages to be installed via apt
   * `buildout_extends`: An array of additional extends files to use (e.g. `["cfg/sources.cfg"]`)
-  * `buildout_parts_to_include`: An array of additional parts to include (e.g. `["celery"]`)
-  * `buildout_init_commands`: An array of additional (non-instance) commands for supervisor to control (e.g. `[{"name": "celeryd", "cmd": "bin/celeryd", "args": "console"}]`)
-  * `environment`: A mapping of environment variables to include in the buildout
+  * `buildout_parts_to_include`: An array of additional parts to include (e.g. `["mycustompart"]`)
+  * `buildout_init_commands`: An array of additional (non-instance) commands for supervisor to control (e.g. `[{"name": "mydaemon", "cmd": "bin/mydaemon", "args": "console"}]`)
+  * `environment`: A mapping of environment variables to include in the buildout and supervisor
   * `buildout_cache_archives`: An array with tgz archives to be fetched and expanded at a specific path (e.g. a cache of eggs or downloads, to speedup the initial build).  Example: `[{"url" : "https://url.to/plone-5.0-eggs.tgz", "path" : "shared/eggs", "user": "me", "password": "secret"}]`
-  * `always_build_on_deploy`: Always run buildout on a deploy action, even if neither the buildout repo nor the config file changed.  This is necessary if you use mr.developer in your buildout in order to pull in code changes in the deploy step.
+  * `always_build_on_deploy`: Always run buildout on a deploy action, even if neither the buildout repo nor the config file has changed.  This is necessary to update packages when  you use mr.developer in your buildout.  Otherwise the deploy will not re-run the buildout unless the buildout repository has changed.
+  * `symlink_before_migrate`: A mapping of directories to link from the shared directory to the buildout directory in the deployment so their contents persist across deployments.  If you use `mr.developer` you'll probably want to use `{"src" : "src"}`.
+  * `purge_before_symlink`: An array of directories in the buildout to remove before creating symlinks to shared.  For `mr.developer` based buildouts, you'll want `['src']`.
+  * `create_dirs_before_symlink`: An array of directories in the shared directory to create before symlinking.  For `mr.developer` based buildouts, you'll also want `['src']`.
 
 See documentation for opsworks_deploy_python documentation for more
 info on specific deploy options available.
 
 ### Zeoserver Application
 
-Same as above but give your application the short name `zeoserver`.
+Same as above but give your application the short name `zeoserver` (or
+the name specified under `"plone_zeoserver": "app_name"` in the Custom
+JSON for the stack).  You will generally want to set the same Custom
+JSON configuration for this layer as for the instances layer, to
+ensure the zeoserver has access to the same os/python settings.
 
 ### Solr Application
 
-Same as above but give your application the short name `solr` (or
-whatever you set `"plone_solr": "app_name"` to in the Stack JSON).
+Same as above but give your application the short name `solr` (or the
+ name specified under `"plone_solr": "app_name"` to in the Custom JSON
+ for the stack).  You will not generally need to provide any Custom
+ JSON configuraiton for this application.
 
 
 ## Running Instances
@@ -419,7 +513,9 @@ After reading this, it may seem complicated to setup a stack of this
 sort, and it may be overkill for some uses.  It's ideal for
 environments which need multi-server production clusters, but also
 want to have identical single-server staging and development
-environments.
+environments.  Fortunately, the CloudFormation templates described in
+the [Quick Start](#quick-start) section will do much of the Layer and
+Application setup for you.
 
 Using this multi-Layered technique, it's possible to have a staging
 Stack that's cloned from a complex production Stack, all Layers
@@ -474,14 +570,13 @@ Instances Application](#plone-instances-application).
 
 Configure your stack json as follows:
 
-    {"opsworks" : { "ruby_stack" : "ruby", "ruby_version" : "1.9.3" },
-       "deploy" : {
-         "plone_instances" : "buildout_parts_to_include": ["zeoserver", ...],
-         "buildout_extends" : ["cfg/sources.cfg", ...],
-         "buildout_init_commands" : [{"name" : "zeoserver", "cmd" : "bin/zeoserver", "args" : "console"}],
-         "environment" : {"SOME_VARIABLE" : "SOME VALUE"},
-       },
-       "ebs_snapshots" : {
+    {
+        "deploy" : {
+            "plone_instances" : "buildout_parts_to_include": ["zeoserver", ...],
+            "buildout_extends" : [...],
+            "buildout_init_commands" : [{"name" : "zeoserver", "cmd" : "bin/zeoserver", "args" : "console"}]
+        },
+        "ebs_snapshots" : {
          "aws_key" : "***** AWS KEY FOR SNAPSHOTTING (IAM USER) *****",
          "aws_secret" : "***** AWS SECRET FOR SNAPSHOTTING (IAM USER) *****"
        }
@@ -512,7 +607,7 @@ advantages in exchange for a little extra up-front effort.
 
 * [CLI Opsworks](http://docs.aws.amazon.com/cli/latest/reference/opsworks/index.html)
 
-* Some AWS CLI tool JSON exports of an example stack are in `examples/`.  Look in the `examples/example-custom-json.json` for a Stack JSON example which includes an egg cache download.
+* Look in the `examples/example-custom-json.json` for a Stack JSON example which includes an egg cache download.
 
 
 ## To Do
@@ -522,11 +617,7 @@ quick recovery from region wide outages.
 
 * Allow egg cache archives to be stored in private s3 buckets.
 
-* Better management of the comings and goings of GlusterFS peers.
-
 * Alternatives for blob storage.  (S3, Ceph?)
-
-* Boto based scripts to perform initial complex Stack setup interactively (?)
 
 
 ## License && Authors
