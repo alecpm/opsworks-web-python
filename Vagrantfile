@@ -1,5 +1,5 @@
 unless Vagrant.has_plugin?("berkshelf")
-  raise 'vagrant-berkshelf is not installed, use "vagrant plugin install vagrant-berkshelf --plugin-version 2.0.0.rc3" to install it'
+  raise 'vagrant-berkshelf is not installed, use "vagrant plugin install vagrant-berkshelf --version 1.3.7" to install it'
 end
 
 # Depends on installed precise64

@@ -6,7 +6,7 @@ cookbook 'glusterfs', github: 'alecpm/glusterfs-cookbook', tag: '0.1.1'
 
 # We want to be explicit, since we don't explicitly include our
 # packages, except when testing
-cookbook 'varnish', '0.9.10'
+cookbook 'varnish', '0.9.12'
 cookbook 'gunicorn', '1.1.2'
 cookbook 'supervisor', '0.4.10'
 cookbook 'build-essential', '1.4.2'

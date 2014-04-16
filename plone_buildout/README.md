@@ -53,7 +53,7 @@ For a relstorage stack, the simplest Custom JSON is the following:
 
     {"plone_instances" : {
         "app_name" : "plone_instances", "nfs_blobs" : true,
-        "relstorage_enabled": true,
+        "enable_relstorage": true,
         "relstorage" : {
             "db" : {
                 "name" : "YOUR_DB_NAME",
