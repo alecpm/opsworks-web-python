@@ -34,5 +34,8 @@ server {
         proxy_buffers      16   256k;
         proxy_set_header Host $http_host;
         proxy_set_header Accept-Encoding '';
+        <% if node['nginx_plone']['enable_ssi'] %>ssi on;<% end %>
     }
+
+    <%= node['nginx_plone']['additional_config'] %>
 }
