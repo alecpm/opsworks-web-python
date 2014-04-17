@@ -19,6 +19,8 @@ server {
         deny all;
     }
     
+    <%= node['nginx_plone']['additional_config'] %>
+
     location = <%= node[:haproxy][:stats_url] %> {
         proxy_pass http://balancer;
     }
@@ -37,5 +39,4 @@ server {
         <% if node['nginx_plone']['enable_ssi'] %>ssi on;<% end %>
     }
 
-    <%= node['nginx_plone']['additional_config'] %>
 }
