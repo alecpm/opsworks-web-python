@@ -90,18 +90,20 @@ define :django_configure do
     end
   end
 
-  celery = deploy["django_celery"]
+  celery = Hash.new
+  celery.update node["deploy_django"]["celery"] || {}
+  celery.update deploy["django_celery"] || {}
+  node.normal[:deploy][application]["django_celery"] = celery
+
   if celery["djcelery"] && celery["enabled"]
     django_djcelery do
-      deploy_data deploy
+      deploy_data node[:deploy][application]
       app_name application
-      celery_data celery
     end
   elsif celery["enabled"]
     django_celery do
-      deploy_data deploy
+      deploy_data node[:deploy][application]
       app_name application
-      celery_data celery
     end
   end
   if run_action
