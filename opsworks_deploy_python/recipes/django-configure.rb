@@ -8,8 +8,10 @@ node[:deploy].each do |application, deploy|
     next
   end
 
-  django_configure do
-    deploy_data deploy
-    app_name application
+  if deploy[:deploy_to]
+    django_configure do
+      deploy_data deploy
+      app_name application
+    end
   end
 end
