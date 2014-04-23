@@ -15,7 +15,7 @@ define :django_setup do
 
   if gunicorn["enabled"]
     python_pip "gunicorn" do
-      virtualenv node[:deploy][application][:venv]
+      virtualenv ::File.join(deploy[:deploy_to], 'shared', 'env')
       user deploy[:user]
       group deploy[:group]
       action :install
@@ -53,7 +53,7 @@ define :django_configure do
   gunicorn = Helpers.django_setting(deploy, 'gunicorn', node) || {}
   if gunicorn["enabled"]
     include_recipe 'supervisor'
-    base_command = "#{::File.join(node[:deploy][application]["venv"], "bin", "python")} manage.py run_gunicorn"
+    base_command = "#{::File.join(deploy[:deploy_to], 'shared', 'env', 'bin', 'python')} manage.py run_gunicorn"
 
     gunicorn_cfg = ::File.join(deploy[:deploy_to], 'shared', 'gunicorn_config.py')
     gunicorn_command = "#{base_command} -c #{gunicorn_cfg}"
