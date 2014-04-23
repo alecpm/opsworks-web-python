@@ -55,7 +55,11 @@ define :django_configure do
       variables.update :django_database => Helpers.django_setting(deploy, 'database', node)
     end
     
-    gunicorn = Helpers.django_setting(deploy, 'gunicorn', node) || {}
+    gunicorn = Hash.new
+    gunicorn.update node["deploy_django"]["gunicorn"] || {}
+    gunicorn.update deploy["django_gunicorn"] || {}
+    node.normal[:deploy][application]["django_gunicorn"] = gunicorn
+    
     if gunicorn["enabled"]
       include_recipe 'supervisor'
       base_command = "#{::File.join(deploy[:deploy_to], 'shared', 'env', 'bin', 'python')} manage.py run_gunicorn"
