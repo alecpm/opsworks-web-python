@@ -1,32 +1,18 @@
-upstream cache {
-    server 127.0.0.1:6081;
-}
-
-upstream balancer {
-    server 127.0.0.1:8080;
-}
-
-client_header_buffer_size 4k;
-client_body_buffer_size 32k;
-
-<%= node['nginx_plone']['additional_servers'] %>
-
 server {
-    listen *:80;
-    
-    # Show status information on /_main-status
-    location = /_main_status_ {
-        stub_status on;
-        allow 127.0.0.1;
-        deny all;
-    }
-    
-    <%= node['nginx_plone']['additional_config'] %>
+    listen  443;
 
-    location = <%= node[:haproxy][:stats_url] %> {
-        proxy_pass http://balancer;
-    }
-    
+    ssl on;
+    ssl_certificate /etc/nginx/ssl/<%= @application[:domains].first %>.crt;
+    ssl_certificate_key /etc/nginx/ssl/<%= @application[:domains].first %>.key;
+    <% if @application[:ssl_certificate_ca] -%>
+    ssl_client_certificate /etc/nginx/ssl/<%= @application[:domains].first %>.ca;
+    <% end -%>
+    ssl_session_cache   shared:SSL:10m;
+    ssl_session_timeout 10m;
+    keepalive_timeout 30;
+
+    <%= node['nginx_plone']['additional_ssl_config'] %>
+
     # Rewrite Plone URLs and proxy everything to Varnish
     location / {
         rewrite ^/(.*)$ /VirtualHostBase/$scheme/$http_host:$server_port/<%= node["plone_instances"]["site_id"]%>/VirtualHostRoot/$1 break;

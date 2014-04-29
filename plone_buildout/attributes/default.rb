@@ -77,7 +77,9 @@ default["ebs_snapshots"]["aws_secret"] = nil
 
 # Nginx config options
 default['nginx_plone']['enable_ssi'] = false
+default['nginx_plone']['additional_servers'] = nil
 default['nginx_plone']['additional_config'] = nil
+default['nginx_plone']['additional_ssl_config'] = nil
 
 # Change default configs for other packages
 node.normal["redis"]["config"]["listen_addr"] = "0.0.0.0"
