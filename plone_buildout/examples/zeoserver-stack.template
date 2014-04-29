@@ -205,7 +205,7 @@
                 "EnableSsl": false,
                 "SslConfiguration": {}
             }
-        }
+        },
 
         "OpsWorksServiceRole": {
             "Type": "AWS::IAM::Role",
