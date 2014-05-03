@@ -78,6 +78,7 @@ default["ebs_snapshots"]["aws_secret"] = nil
 # Nginx config options
 default['nginx_plone']['enable_ssi'] = false
 default['nginx_plone']['additional_config'] = nil
+default['nginx_plone']['proxy_port'] = 6081
 
 # Change default configs for other packages
 node.normal["redis"]["config"]["listen_addr"] = "0.0.0.0"

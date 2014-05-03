@@ -1,5 +1,5 @@
 upstream cache {
-    server 127.0.0.1:6081;
+    server 127.0.0.1:<%= node['nginx_plone']['proxy_port'] %>;
 }
 
 upstream balancer {
