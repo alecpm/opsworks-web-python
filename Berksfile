@@ -19,6 +19,7 @@ cookbook 'sqlite', '1.0.0'
 cookbook 'ulimit', '0.3.2'
 cookbook 'nfs', '1.0.0'
 cookbook 'line', '0.5.1'
+cookbook 'postfix', '3.1.8'
 cookbook 'python', '1.4.6'
 cookbook 'runit', '1.5.10'
 
