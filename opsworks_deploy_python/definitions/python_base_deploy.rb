@@ -132,12 +132,12 @@ define :python_base_deploy do
     if node["deploy_#{deploy[:custom_type]}"] && node["deploy_#{deploy[:custom_type]}"][attr]
       begin
         values = {}
-        values.update(node[:deploy]["deploy_python"][attr] || {})
+        values.update(node["deploy_python"][attr] || {})
         values.update(node["deploy_#{deploy[:custom_type]}"][attr] || {})
         values.update(node[:deploy][application][attr] || {})
       rescue
         values = []
-        values.concat(node[:deploy]["deploy_python"][attr] || [])
+        values.concat(node["deploy_python"][attr] || [])
         values.concat(node["deploy_#{deploy[:custom_type]}"][attr] || [])
         values.concat(node[:deploy][application][attr] || [])
       end
