@@ -129,14 +129,15 @@ define :python_base_deploy do
 
   # Merge symlink values from node default definitions
   ['symlink_before_migrate', 'purge_before_symlink', 'create_dirs_before_symlink'].each do |attr|
-    node.default[:deploy][application][attr] = node["deploy_python"][attr]
     if node["deploy_#{deploy[:custom_type]}"] && node["deploy_#{deploy[:custom_type]}"][attr]
       begin
         values = {}
+        values.update(node[:deploy]["deploy_python"][attr] || {})
         values.update(node["deploy_#{deploy[:custom_type]}"][attr] || {})
         values.update(node[:deploy][application][attr] || {})
       rescue
         values = []
+        values.concat(node[:deploy]["deploy_python"][attr] || [])
         values.concat(node["deploy_#{deploy[:custom_type]}"][attr] || [])
         values.concat(node[:deploy][application][attr] || [])
       end
