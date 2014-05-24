@@ -36,6 +36,14 @@ if node["plone_zeoserver"]["nfs_blobs"] || node["plone_zeoserver"]["gluster_blob
     use_gluster node["plone_zeoserver"]["gluster_blobs"]
   end
 elsif node["plone_blobs"]["blob_dir"]
+  # Create the blob dir if it doesn't exist, and give it "safe" permissions
+  directory node["plone_blobs"]["blob_dir"] do
+    owner deploy[:user]
+    group deploy[:group]
+    mode 0700
+    recursive true
+    action :create
+  end
   blob_location = ::File.join(deploy[:deploy_to], 'shared', 'var', 'blobstorage')
   if node["plone_blobs"]["blob_dir"] != blob_location
     directory ::File.join(deploy[:deploy_to], 'shared', 'var') do

@@ -5,9 +5,13 @@ This cookbook provides mechanisms for automating scalable and
 highly-availabile deployments of Plone via buildout in AWS OpsWorks.
 
 It expects a buildout stored in one of the allowed OpsWorks app SCM
-repo types (git, http archive, S3 archive), with a certain structure,
-an example of which is available in the [opsworks_example_buildouts
-GitHub repo](http://github.com/alecpm/opsworks_example_buildouts)
+repo types (git, SVN, http archive, S3 archive), with a certain
+structure and naming convention for parts.  An example buildout is
+available in the [opsworks_example_buildouts GitHub
+repo](http://github.com/alecpm/opsworks_example_buildouts).  This
+example buildout is intended to be used as a base for new projects
+which are intended to be deployed in a modular manner (with services
+potentially running across multiple machines).
 
 
 Quick Start
@@ -70,6 +74,11 @@ For a relstorage stack, the simplest Custom JSON is the following:
         },
     }}
 
+Additionally, you may also want to enable EBS Optimized instances for
+any layers which have mounted EBS volumes (Shared Blobs, Zeoserver,
+...).  You can do this by editing the EBS Volumes tab of the desired
+layer.
+
 It is recommended that RelStorage based stacks use Amazon RDS with
 Multi-AZ to provide high avaialability.  If you create and RDS to
 server your database , be sure that its security group allows access
@@ -77,9 +86,16 @@ to the `AWS-OpsWorks-Custom-Server` EC2 Security Group that your
 zope instances will run under.
 
 You'll generally want to update the Stack's Apps to set the
-application repository parameters to your customized buildout.The
-stacks created in this manner can be configured, customized and cloned
-as described in the sections below.
+application repository parameters to your buildout (see
+[Applications](#applications)).  Then you'll want to configure and
+start some instances (see [Instances](#instances)).  Initially, you'll
+probably want to start by adding all layers to a single instance, but
+you can have multiple instances per layer and multiple layers per
+instance in whatever configuration makes sense for your application.
+
+The layers automatically created by CloudFormation can be customized
+extensively, and details are provided below regarding the
+functionality and configuration of each layer.
 
 Note: Your Zope instances will be running and the plone site (default
 /Plone) will be server on on Port 80 via Nginx/Varnish/HAProxy, but
@@ -92,46 +108,38 @@ need to do this to initially create your Plone site if you haven't
 already created one.
 
 
-Details: Scalable Stack Structure
----------------------------------
+Under the Hood of a Scalable Stack Structure
+--------------------------------------------
 
-The documentation below describes how to create and configure a
-multi-layered stack that offers redundancy and scalability.  With a
-complex modular stack you can take advantage of auto-healing of failed
+The Quick Start will automatically create a number of layers for you.
+However, it's important to understand how those layers work, how you
+can customize them and how to add additional layers which you might
+need.  The default stacks for Plone involve a large number of layers,
+which may at first seem unnecessary.  However, with a complex modular
+stack you can easily scale horizontally, and create high availablity
+deployments.  You can even take advantage of auto-healing of failed
 servers and time/load based instances.  If you want a simple single
-instance stack that's unlikely to need to grow, and for which small
-amounts of downtime are acceptable, skip to the end section [A Simple
-Plone Deployment Stack](#a-simple-plone-deployment-stack) for a
-simpler stack configuration.
-
-The first step is creating an OpsWorks Stack which includes this set
-of cookbooks and provides the desired layers of functionality.
-
-In the OpsWorks console create a stack with `Use Custom Cookbooks`
-enabled, the `Repository URL` set to
-`git@github.com:alecpm/opsworks-web-python.git` the branch set to
-`opsworks-cookbooks`, and an appropriate SSH key.  It's best to choose
-Ubuntu LTS as the default OS, and instance store instances.
+instance stack that's unlikely to need to grow, and for which some
+downtime is acceptable, skip to the end section [A Simple Plone
+Deployment Stack](#a-simple-plone-deployment-stack) for a simple
+non-scalable stack configuration.
 
 
-## Layers
-
-Next you will need to create layers of functionality for the stack.
-We'll start with the app itself.
+## The Essential Layers
 
 
 ### Plone Instances Layer
 
-Add a layer, choose type `custom` and give it the shortname
-`plone_instances` (the default HAProxy config depends on this name to
-find the instances).  The default values should be fine for this
-layer.  Assign the following custom recipes to the layer:
+This is a custom application server layer named `plone_instances` by default.
+It includes the following recipes:
 
   *  Setup: `plone_buildout::instances-setup`
   *  Configure: `plone_buildout::instances-configure`
   *  Deploy: `plone_buildout::instances-deploy`
   *  Undeploy: `plone_buildout::instances-undeploy`
   *  Shutdown: `plone_buildout::instances-stop`
+
+This layer needs an associated App (essentially a buildout repository configuration).
 
 You can customize many aspects of the deployment using the
 `plone_instances` key in the Stack configuration JSON.  In particular
@@ -145,8 +153,9 @@ you may wish to customize the following values:
   * `enable_relstorage`: Use RelStorage for the Zope database
   * `relstorage`: Contains DB connection, and caching related attributes, see `attributes/default.rb`
   * `enable_celery`: Enable the celery buildout part
+  * `celerybeat`: Enable a celerybeat worker (defaults to false, should be applied in a layer in a multi-server config to avoid duplicate schedulers)
   * `broker_layer`: The name of the layer where the celery broker server(s) live (defaults to 'celery_broker').
-  * `broker`: A hash with `host` and `port` for a fixed celery broker server (i.e. ElastiCache for Redis)
+  * `broker`: A hash with `host` and `port` for a fixed celery broker server (i.e. for use with ElastiCache for Redis)
   * `zodb_cache_size`: The size of the zodb object cache
   * `persistent_cache`: Whether to enable to ZEO persistent cache (defaults to true)
   * `zserver_threads`: How many ZServer Threads to use (defaults to 2, setting to 1 may make sense for production use)
@@ -155,40 +164,46 @@ you may wish to customize the following values:
   * `solr_layer`: Name of layer in which to find Solr servers
   * `solr_host`: Host name for a fixed solr server (not needed if you have a solr layer)
   
-You'll probably want to turn one of the two blob mount options on.  More on that below.
+You'll probably want to turn one of the two blob mount options on.  The default stack configuration sets up an NFS lauyer for shared blobs.  More on that below.
 
 These recipes will do all the work of setting up the server, running
-the buildout, etc.  However, there will be no DB for it to connect to
-and no persistent storage.  We want some more layer(s) for that.
+the buildout, etc.
 
 
 ### DB Layer(s)
 
 I recommend two layers for a ZEO server setup.  One providing shared
 blobs via NFS or GlusterFS, and one providing the ZEO server itself.
-Alternatively, you can use Relstorage (perhaps with Amazon RDS), but
-you'll still need the shared blobs layer, so we'll start with that.
+Alternatively, if you have a single instance you can just have a
+shared `blob_dir` on the instance.
 
 
 #### Shared Blobs Layer
 
-Create a new layer of type `custom` and give it the short name
+This is another layer of type `custom` with the short name
 `shared_blobs` (you can customize the layer shortname and assign this
-functionality to an existing layer by setting the
-`"plone_blobs": "layer"` attribute to the short name of the desired
-layer).  You'll want to use EBS optimized instances here, and
-assign an EBS mount to `/srv/exports` for NFS or
-`/srv/gluster-exports` for GlusterFS.
+functionality to an existing layer by setting the `"plone_blobs":
+"layer"` attribute in the Stack Custom JSON to the layer short).
+You'll probably want to use EBS optimized instances here, and assign
+an EBS mount to `/srv/exports` for NFS or `/srv/gluster-exports` for
+GlusterFS.
 
-Assign the following custom recipes for NFS:
+The layer uses NFS by default and runs the following recipes:
 
   * Setup: `plone_buildout::nfs_blobs`
   * Configure: `plone_buildout::nfs_blobs`
 
-Or for GlusterFS:
+For GlusterFS it would need to be modified to run the following recipes instead:
 
   * Setup: `plone_buildout::gluster`
   * Configure: `plone_buildout::gluster`
+
+There are a number of configuration options for the shared blob
+storage under the `plone_blobs` key.  See `attributes/defaults.rb` for
+details.  If you would like to simply use a shared blob dir on a
+single instance, you may remobe this layer, and set the "plone_blobs":
+"blob_dir" attribute to the desired location (generally
+`/srv/www/zeoserver/shared/var/blobstorage`).
 
 ##### Notes on using GlusterFS (EXPERIMENTAL)
 
@@ -206,30 +221,32 @@ static private address.  Gluster will not recognize a re-attached
 `brick` (in our case EBS volume) unless it's on a host with the same
 hostname.
 
-Finally, you will likely want to preserve the volume configuration on
-your GlusterFS servers across reboots.  That means that you should
-either use EBS backed instances for your GlusterFS servers, or mount a
-small EBS volume for holding the GlusterFS configuration across
-reboots (mounted at /var/lib/glusterd).  If you ever do accidentally
-loose the configuration for your volume, you can remount an existing
-brick while preserving data by following the [guidelines
-here](http://joejulian.name/blog/glusterfs-path-or-a-prefix-of-it-is-already-part-of-a-volume/).  You should never attempt to add an EBS volume which already
-has (potentially out of date) data to an existing GlusterFS volume.
-Newly launched replica servers must either retain configuration from
-an older server or use a fresh EBS volume.
+By default, the GlusterFS configuration retains configuration
+across instance termination by storing configuration on the same EBS
+volume used for the FS exports.  You can, but probably should not, disable this by setting "plone_blobs": "gluster_store_config_in_exports" to `false`.
+
+If you ever do accidentally loose the configuration for your volume,
+you can remount an existing brick while preserving data by following
+the [guidelines
+here](http://joejulian.name/blog/glusterfs-path-or-a-prefix-of-it-is-already-part-of-a-volume/).
+You should never attempt to add an EBS volume which already has
+(potentially out of date) data to an existing GlusterFS volume.  Newly
+launched replica servers must either retain configuration from an
+older server or use a fresh EBS volume.
 
 
 #### ZEO Server Layer
 
-Create a new layer for a ZEO server and give it the short name
+The ZEO server layer is a custom application server layer named
 `zeoserver` (you can customize the layer shortname and assign this
-functionality to an existing layer by setting the
-`"plone_instances": "zeo_layer"` attribute to the short name of the
-desired layer).  You'll want to default to an EBS Optimized
-instance here, and setup an initial EBS mount on
-`/srv/www/zeoserver/shared/var`.
+functionality to an existing layer by setting the `"plone_instances":
+"zeo_layer"` attribute in the Stack Custom JSON to the layer short
+name).  You'll probably want to use an EBS Optimized instance here,
+and setup an initial EBS mount on `/srv/www/zeoserver/shared/var` (or
+perhaps just `var/filestorage` and another on `var/blobstorage` if you
+aren't mounting a shared blob directory).
 
-Assign the following custom recipes:
+This layer is assigned the following recipes:
 
   *  Setup: `plone_buildout::zeoserver-setup`
   *  Configure: `plone_buildout::zeoserver-configure`
@@ -252,34 +269,32 @@ You'll want to turn one of the two blob mount options on.
 #### RelStorage Layer
 
 No Layer is needed for Relstorage.  Though you could use the built-in
-MySQL layer to provide your DB, the instances recipe assumes a
-hardcoded DB, and using PostgreSQL RDS is recommended.  If you enable
-caching in RelStorage, you can either add a Memcached layer, with the
-default settings, or point `"plone_instances": "relstorage":
-"cache_servers"` to list of `host:port` pairs for static memcached
-server(s) (e.g. ElastiCache for Memcached).
+MySQL layer to provide your DB, using PostgreSQL RDS is recommended.
+You may enable caching in RelStorage, either add an OpsWorks Memcached
+layer with the default settings, or point `"plone_instances":
+"relstorage": "cache_servers"` to a set of static `host:port` pairs
+for existing memcached server(s) (e.g. ElastiCache for Memcached).
 
 
 ### Front End Layer
 
-OpsWorks has a nice HAProxy layer which detects application instances
-(with a little help from this cookbook), but Plone needs a custom
-config with multiple services per instance, it's also nice to pair
-that up with Varnish and Nginx.  Create an HAProxy layer, set a
-reasonable health check url (I use '/misc_/CMFPlone/plone_icon') and
-method (`HEAD`).  Enable stats and customize the stats username and
-password.  Then add the following custom recipes to get use a custom
-config and install/configure Varnish and Nginx:
+This layer is built on OpsWorks built-in HAProxy layer which detects
+application instances (with a little extra help from this cookbook),
+but Plone needs a custom config with multiple services per instance,
+it's also nice to pair the load-balancer up with Varnish and Nginx.
+You'll probably want to customize the stats username and password.
+
+The front end layer uses the following recipes:
 
   * Setup: `plone_buildout::haproxy` `plone_buildout::varnish` `plone_buildout::nginx`
   * Configure: `plone_buildout::haproxy` `plone_buildout::varnish` `plone_buildout::nginx`
   * Deploy: `plone_buildout::haproxy`
 
-This will give you an all-in-one front-end layer with Nginx -> Varnish
+It provides an all-in-one front-end layer with Nginx -> Varnish
 -> HAProxy.
 
 Note: The built-in HAProxy layer uses an Elastic IP, which is
-desirable if you intend to use a single front-end server to server
+desirable if you intend to use a single front-end server to serve
 your website.  If you want a high-availability deployment with
 front-ends in multiple AZs, then you may wish to create your own
 custom layer without an Elastic IP to run HAProxy + Varnish + Nginx,
@@ -293,14 +308,15 @@ this layer.
 #### EBS Snapshots Layer
 
 Those instances that have EBS volumes will probably want those volumes
-snapshotted regularly.  You can assign the following recipe to all
-layers that mount EBS volumes:
+snapshotted regularly.  This layer takes care of that automatically,
+by providing nightly snapshots and automatic pruning.  It should be
+included on any instances that have mounted EBS volumes.
+
+It consists of the following recipe:
 
   * Setup: plone_buildout::ebs_snapshots
 
-Alternatively, if you have multiple layers with EBS mounts, you could
-create a new custom layer with only that recipe assignment.  By
-default snapshots will be taken daily and 15 will be kept for each
+By default snapshots will be taken daily and 15 will be kept for each
 volume.
 
 ##### A Custom User with Snapshot Permissions
@@ -344,10 +360,11 @@ for an example of Stack JSON that includes these values).
 
 #### RelStorage Packing Layer
 
-You only want one of your instances running RelStorage DB packs, so
-it's best to create new layer for that and assign only one of your
-application instances at a time to it.  Create a new custom layer and
-assign it the following recipes:
+You only want one of your instances running RelStorage DB packs.  This
+is a layer that should be applied to just one of your plone_instances
+instances, in order to ensure that it runs DB packing.
+
+It runs the following recipes:
 
   * Configure: `plone_buildout::enable_pack`
   * Deploy: `plone_buildout::enable_pack`
@@ -358,28 +375,31 @@ The packing supports a couple options (under the `"plone_instances": "relstorage
   * `two_stage_pack`: Whether to separate the pack into a pre-pack and pack phases over two days.
 
 This recipe assumes the presence of `zodbpack`, `zodbpack-prepack`,
-and `zodbpack-pack` builsout parts in `cfg/base.cfg`.  Those parts
+and `zodbpack-pack` builsout parts in the base buildout config.  Those parts
 determine pack frequency/time, and default to weekly.
 
 
-### Extra Layers
+### Additional Layers
 
-Some applicatons may wish to install additional layers of
-functionality, like a Solr Search engine or a Redis queue server.
+You may wish to create additional layers of functionality for your
+particular application.  Below are a couple of optional layers that
+you can create based on recipes in this cookbook.
 
 
 #### Solr Layer
 
-To ease Solr configuration, we deploy Solr through the buildout using
-`alm.solrindez` and `collective.recipe.solrinstance`.  This means
-adding another custom layer, with short name `solr` (you can customize
-the layer shortname or assign this functionality to an existing layer
-by setting the `"plone_instances": "solr_layer"` attribute to the
-short name of the desired layer), as well as another App (named `solr`
-by default) with the repository information for the buildout.  Because
-it needs a persistent data store, it should default to EBS Optimized
-with an EBS volume mounted at `/srv/www/solr/shared/var`.  Assign the
-following custom recipes:
+To ease Solr configuration, you can deploy Solr through a buildout
+using `alm.solrindex` and `collective.recipe.solrinstance`.  This
+means adding another custom layer, with short name `solr` (you can
+customize the layer shortname or assign this functionality to an
+existing layer by setting the `"plone_instances": "solr_layer"`
+attribute in the Stack Custom JSON to the layer short name), as well
+as another App (named `solr` by default) with the repository
+information for the buildout.  Because it needs a persistent data
+store, it should use EBS Optimized instances with an EBS volume
+mounted at `/srv/www/solr/shared/var`.
+
+It should have the following recipes assigned:
 
   *  Setup: `plone_buildout::solr-setup`
   *  Configure: `plone_buildout::solr-configure`
@@ -387,11 +407,9 @@ following custom recipes:
   *  Undeploy: `plone_buildout::solr-undeploy`
   *  Shutdown: `plone_buildout::solr-stop`
 
-All solr configuration should be done in the buildout base.cfg.
-
 #### Redis Layer
 
-If you want to install Redis on an new/existing layer add the
+If you want to install Redis on a new or existing layer add the
 following custom recipe:
 
   * Setup: redis::default 
@@ -402,6 +420,18 @@ Alternatively, you can use AWS Redis ElastiCache service to provide a
 scalable Redis deployment and set the broker host/port manually in the
 Custom JSON for the stack.
 
+#### Celerybeat Layer
+
+If you have enabled `celery` on your plone instances and want to have
+one of your instances run a celerybeat scheduler, create a layer with
+the following recipes:
+
+  * Configure: `plone_buildout::instances-celerybeat`
+  * Deploy: `plone_buildout::instances-celerybeat`
+
+Applying that layer to a single plone_instances application server
+instance will ensure that the celerybeat worker runs on only that
+instance.
 
 ## Applications
 
@@ -410,16 +440,16 @@ Now you need to point your application layers at actual applications
 
 ### Plone Instances Application
 
-Add a new application with type `Other` and short name
+The primary application is of type `Other` and short name
 'plone_instances' (or the name specified under `"plone_instances":
-"app_name"` to in the Custom JSON for the stack).  Set the repository
-type, url and credentials.  It's important to note that the SSH key
-entered here will be used by any submodule or mr.developer requests,
-so it must provide access to all repositories required for the
-application.  Github does not allow a single "deploy key" to be used
-for multiple repositories, so I recommend creating a new GitHub user
-with read-only access to all required repositories and providing an
-SSH key for that user.
+"app_name"` to in the Stack Custom JSON).  This is where you can set
+the repository type, url and credentials.  It's important to note that
+the SSH key entered here will be used by any submodule or mr.developer
+requests, so it must provide access to all repositories required for
+the application.  Github does not allow a single "deploy key" to be
+used for multiple repositories, so I recommend creating a new GitHub
+user with read-only access to all required repositories and providing
+an SSH key for that user.
 
 You may provide application specific configuration via the stack Custom JSON.
 Under the `"deploy": app_name` key.  Properties you may wish to set
@@ -437,22 +467,30 @@ include:
   * `create_dirs_before_symlink`: An array of directories in the shared directory to create before symlinking.  For `mr.developer` based buildouts, you'll also want `['src']`.
 
 See documentation for opsworks_deploy_python documentation for more
-info on specific deploy options available.
+info on specific deploy options available to the buildout and python
+deployment recipes.
+
+Using an egg cache archive is highly recommended, it can significantly
+improve instance build time.  It's possible to build one instance with
+no cache and then tar up the resulting egg dir
+(`/srv/www/plone_instances/shared/eggs/`) and upload it to a public s3
+bucket or some other web accessible (possibly HTTP AUTH protected)
+location.
 
 ### Zeoserver Application
 
-Same as above but give your application the short name `zeoserver` (or
-the name specified under `"plone_zeoserver": "app_name"` in the Custom
-JSON for the stack).  You will generally want to set the same Custom
-JSON configuration for this layer as for the instances layer, to
-ensure the zeoserver has access to the same os/python settings.
+Same as above but with the short name `zeoserver` (or the name
+specified under `"plone_zeoserver": "app_name"` in the Stack Custom
+JSON).  You will generally want to set the same Custom JSON
+configuration for this layer as for the instances layer, to ensure the
+zeoserver has access to the same os/python packages and settings.
 
 ### Solr Application
 
-Same as above but give your application the short name `solr` (or the
- name specified under `"plone_solr": "app_name"` to in the Custom JSON
- for the stack).  You will not generally need to provide any Custom
- JSON configuraiton for this application.
+Same as above but with the short name `solr` (or the name specified
+under `"plone_solr": "app_name"` to in the Custom JSON for the stack).
+You will not generally need to provide any Custom JSON configuraiton
+for this application.
 
 
 ## Running Instances
@@ -465,32 +503,33 @@ before starting it, you can assign additonal layers.  Some layers
 should only have a single instance (Shared Blobs if using NFS, ZEO
 Server, Solr, Redis), generally they are the ones with persistent
 storage requirements.  Others can support multiple instances (the
-Plone instances, the HAProxy front end), GlusterFS shared blobs which
+Plone instances, the HAProxy front end, GlusterFS shared blobs which
 replicate the storage across each new instance).
 
 The Resources tab lets you assign existing resources (e.g. Elastic
 IPs, EBS volumes or snapshots) to stopped instances.  When you start
 an instance all of the functionality of the assigned layers will be
 incorporated, all assigned resources will be attached, and all
-resources expected by the layers which are not yet attached will be
-created.
+resources expected by the assigned layers which are not yet attached
+will be created.
 
 Whenever a new instance is started and comes online, the Configure
 event is triggered for all instances/Layers in the Stack.  This allows
 things like HAProxy to detect new instances, the Gluster server to add
 new replica volumes, etc.  By default the buildout based layers will
-not be re-built or restarted on configure events, though it's possible
-to force this behavior if desired (see above).
+not be re-built or restarted on configure events (unless the event
+causes the buildout config to change, e.g. adding or replacing a
+memcached, zeo, solr or celery broker server).
 
 
 ## Deployments
 
 Apps are deployed to their respective layers (as determined by the
-custom recipe `app_name` parameters) automatically after instance
-start.  Apps can be re-deployed from the App page.  A Deploy causes
-code to be updated from the App SCM repository, the configuration
-updated based on current stack configuration, buildout re-run and
-services restarted.
+custom `app_name` parameters used by each application server recipe)
+automatically after instance start.  Apps can be re-deployed from the
+App or Deployments sections.  A Deploy causes code to be updated from
+the App SCM repository, the configuration updated based on current
+stack configuration, buildout re-run and services restarted.
 
 The Deploy page also offers other commands (e.g. Stop, Start,
 Restart). Unfortunately, those do not work with custom application
@@ -505,17 +544,17 @@ This cookbook also includes a couple simple helper recipes:
 
   * varnish-restart: Restarts varnish
   * varnish-purge: Runs a "ban.url" for a array of url regexps provided (defaults to all content in the cache).  Provide the array in the `node["varnish_purge_urls"]` attribute.
+  * instances-rebuild: Re-runs buildout on all plone_instances layers, restarts instances.
 
 
 ## Motivation
 
-After reading this, it may seem complicated to setup a stack of this
-sort, and it may be overkill for some uses.  It's ideal for
-environments which need multi-server production clusters, but also
-want to have identical single-server staging and development
-environments.  Fortunately, the CloudFormation templates described in
-the [Quick Start](#quick-start) section will do much of the Layer and
-Application setup for you.
+After reading this, it still may not be clear why so many stack layers
+are useful and/or necessary.  The fact is, it is likely unnecessary
+for many small deployments which never anticipate using more than a
+single server.  However, it is ideal for environments which need
+multi-server production clusters, and also want to have identical
+single-server staging and development environments.
 
 Using this multi-Layered technique, it's possible to have a staging
 Stack that's cloned from a complex production Stack, all Layers
@@ -534,25 +573,26 @@ This configuration can allow elimination of nearly all SPF (Solr is
 generally an exception if enabled).
 
 Additionally, OpsWorks has built-in time and Load based auto-scaling
-allow you to automatically spin up new instances or other services as
-needed based on a fixed schedule or on server load.  This layered
+allowing you to automatically spin up new instances or other services
+as needed based on a fixed schedule or on server load.  This layered
 configuration allows you to easily scale up just those parts of your
-deployment which need it (generally the plone instances).
+deployment which need it (generally the plone instances), or quickly
+replace or upgrade instances.
 
 
 A Simple Plone Deployment Stack
 -------------------------------
 
-If you really don't need any of that fancy redundancy or scalability,
+If you really don't need any fancy redundancy or scalability,
 you can make a simple single layer stack.
 
-Create a [Front End Layer](#front-end-layer), as described above and
-assign it the custom recipes for that layer as documented above.
-Also, assign it the custom recipes from [Plone Instances Layer](#plone-instances-layer)
-and those from the [EBS Snapshots Layer](#ebs-snapshots-layer).
-Set the layer to use EBS Optimized instances (you will only
-ever be using one instance), and assign two EBS volumes at
-'/srv/www/plone_instances/shared/var/blobstorage' and
+Just create a [Front End Layer](#front-end-layer), as described above
+and assign it the custom recipes for that layer as documented above.
+Also, assign it the custom recipes from [Plone Instances
+Layer](#plone-instances-layer) and those from the [EBS Snapshots
+Layer](#ebs-snapshots-layer).  Set the layer to use EBS Optimized
+instances (you will only ever be using one instance), and assign two
+EBS volumes at '/srv/www/plone_instance/shared/var/blobstorage' and
 '/srv/www/plone_instances/shared/var/filestorage'.
 
 You can mount additional EBS volumes for repozo backups if you want
@@ -564,11 +604,15 @@ include which require persistent storage (e.g. `.../shared/var/solr`).
 In theory, you could mount the entire `.../shared/var` as a single EBS
 volume, but EBS is much slower than instance storage and is probably
 not an ideal place for storing logs, tmp files and other ephemera.
+Additionally, using more EBS volumes in parallel provides greater
+potential I/O throughput (and OpsWorks allows you to easily use RAID
+EBS volumes if you need further performance improvements).
 
-Create an App pointing at your repository as described in [Plone
-Instances Application](#plone-instances-application).
+Once your layer is setup, create an App pointing at your repository as
+described in [Plone Instances
+Application](#plone-instances-application).
 
-Configure your stack json as follows:
+Configure your Stack Custom JSON as follows:
 
     {
         "deploy" : {
@@ -587,11 +631,11 @@ above for info about setting up IAM user credentials for taking EBS
 snapshots.
 
 Notice that it's possible to manually include whatever buildout parts
-and extends values you want in the deploy JSON.  You can also add any
-commands you wish to the supervisor init (in this case we add our
-zeoserver).  The recipe will still generate a number of `client#{n}`
-parts based on the instance size and launch them via the system
-supervisor.
+as well as include custom extends files in the deploy JSON.  You can
+also add any commands you wish to the supervisor init (in this case we
+add our zeoserver).  The recipe will still generate a number of
+`client#{n}` parts based on the instance size and launch them via the
+system supervisor.
 
 That's all that's needed for a single layer deployment; however,
 breaking each bit of functionality (App Servers, DB Servers/Blob
@@ -607,17 +651,24 @@ advantages in exchange for a little extra up-front effort.
 
 * [CLI Opsworks](http://docs.aws.amazon.com/cli/latest/reference/opsworks/index.html)
 
+* [Case study of a move from Heroku to OpsWorks (rails application)](http://www.stefanwrobel.com/heroku-to-opsworks)
+
 * Look in the `examples/example-custom-json.json` for a Stack JSON example which includes an egg cache download.
 
 
 ## To Do
 
-* Enable automated copying/pruning of EBS snapshots across regions, to allow
-quick recovery from region wide outages.
+* Enable automated copying/pruning of EBS snapshots across regions, to
+  allowing recovery from region wide outages.
 
-* Allow egg cache archives to be stored in private s3 buckets.
+* Allow cache archives (eggs, etc.) to be stored in private s3 buckets.
 
-* Alternatives for blob storage.  (S3, Ceph?)
+* Alternatives for blob storage (S3, Ceph?)
+
+* Rolling deployments, configurable delays between each instance restart
+
+* Convert Solr layer to use OS installed Solr and configure it
+  directly, rather than using buildout.
 
 
 ## License && Authors

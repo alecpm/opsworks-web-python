@@ -17,4 +17,5 @@ Vagrant.configure("2") do |config|
     chef.json = {}
   end
   config.vm.network :forwarded_port, guest: 80, host: 12080
+  config.vm.network :forwarded_port, guest: 8081, host: 12081
 end

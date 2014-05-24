@@ -53,6 +53,7 @@ default["plone_instances"]["zeo"] = {"address" => nil}
 
 # Celery stuff
 default["plone_instances"]["enable_celery"] = false
+default["plone_instances"]["celerybeat"] = false
 # Broker will generally be attached to an exisitng layer
 default["plone_instances"]["broker_layer"] = "celery_broker"
 # Set the host if e.g. you want to use an ElastiCache Redis cluster.
@@ -79,6 +80,10 @@ default["ebs_snapshots"]["aws_secret"] = nil
 default['nginx_plone']['enable_ssi'] = false
 default['nginx_plone']['additional_config'] = nil
 default['nginx_plone']['proxy_port'] = 6081
+
+# Varnish config options
+default['varnish_plone']['grace'] = 60
+default['varnish_plone']['default_ttl'] = 300
 
 # Change default configs for other packages
 node.normal["redis"]["config"]["listen_addr"] = "0.0.0.0"

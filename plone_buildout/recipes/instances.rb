@@ -36,23 +36,6 @@ if instance_data["enable_relstorage"]
   if storage["enable_cache"]
     cache_servers = nil
     additional_config << "\n" << "eggs +="<< "\n" << "    pylibmc"
-    if storage["cache_servers"]
-      cache_servers = storage["cache_servers"]
-    elsif node[:opsworks] && node[:opsworks][:layers] && node[:opsworks][:layers]["memcached"] && node[:opsworks][:layers]["memcached"][:instances]
-      cache_listing = []
-      node[:opsworks][:layers]["memcached"][:instances].each {
-        |name, instance| cache_listing.push("#{instance[:private_dns_name]}:11211") if instance[:status] == "online"
-      }
-      cache_servers = cache_listing.join(" ")
-    end
-    if cache_servers
-      # Would be nice to order these based on the instance AZ, so that
-      # the closer one is preferred, or perhaps so that only the
-      # co-zoned cache is used
-      storage_config << "\n" << "cache-servers = #{cache_servers}"
-      # We set a poll-interval if we are using caches
-      storage_config << "\n" << "poll-interval = 60"
-    end
     case db["type"]
     when nil || 'postgres'
       driver = 'psycopg2'
@@ -68,6 +51,26 @@ if instance_data["enable_relstorage"]
     if driver
       additional_config << "\n" << "    #{driver}"
     end
+    if storage["cache_servers"]
+      cache_servers = storage["cache_servers"]
+    elsif node[:opsworks] && node[:opsworks][:layers] && node[:opsworks][:layers]["memcached"] && node[:opsworks][:layers]["memcached"][:instances]
+      cache_listing = []
+      node[:opsworks][:layers]["memcached"][:instances].each {
+        |name, instance| cache_listing.push("#{instance[:private_dns_name]}:11211") if instance[:status] == "online"
+      }
+      cache_servers = cache_listing.join(" ")
+    end
+    if cache_servers
+      # Would be nice to order these based on the instance AZ, so that
+      # the closer one is preferred, or perhaps so that only the
+      # co-zoned cache is specified
+      # We set a poll-interval if we are using caches
+      storage_config << "\n" << "poll-interval = 60"
+      # BBB
+      storage_config << "\n" << "cache-servers = ${memcached:servers}"
+      # The actual setting
+      storage_config << "\n" << '[memcached]' << "\n" << "servers = #{cache_servers}"
+    end
   end
   # Packing to be enabled on only one instance
   if storage["enable_pack"]
@@ -81,7 +84,7 @@ if instance_data["enable_relstorage"]
   end
 else
   storage = instance_data["zeo"]
-  storage_config = "\n[zeoserver]"
+  storage_config = ''
   address = nil
   zeo_layer = instance_data["zeo_layer"]
   if instance_data["zeo"]["address"]
@@ -93,7 +96,11 @@ else
     address = "#{zeo_instance[:private_dns_name]}:8001" if zeo_instance
   end
   if address
+    storage_config << "\n" << '[zeo-host]'
     storage_config << "\n" << "address = #{address}"
+    # BBB
+    storage_config << "\n" << '[zeoserver]'
+    storage_config << "\n" << 'address = ${zeo-host:address}'
   end
 end
 
@@ -165,10 +172,17 @@ if instance_data["enable_celery"]
   end
   if host
     extra_parts.push("celery")
-    storage_config << "\n" << "[celery]" << "\n" << "broker-host = #{host}"
-    storage_config << "\n" << "broker-port = #{port}"
+    storage_config << "\n" << "[celery-broker]" << "\n" << "host = #{host}"
+    storage_config << "\n" << "port = #{port}"
+    # For BBB with existing deployments
+    storage_config << "\n" << '[celery]' << "\n" << 'broker-host = ${celery-broker:host}'
+    storage_config << "\n" << 'broker-port = ${celery-broker:port}'
+    celery_cmd = 'worker'
+    init_commands.push({'name' => "celery", 'cmd' => 'bin/celery', 'args' => celery_cmd})
+    if instance_data['celerybeat']
+      init_commands.push({'name' => "celerybeat", 'cmd' => 'bin/celerybeat'})
+    end
   end
-  init_commands.push({'name' => "celery", 'cmd' => "bin/celery", 'args' => "worker -B"})
 end
 
 node.normal[:deploy][app_name]["buildout_init_commands"] = init_commands
@@ -182,6 +196,14 @@ if instance_data["nfs_blobs"] || instance_data["gluster_blobs"]
     use_gluster instance_data["gluster_blobs"]
   end
 elsif instance_data["shared_blobs"] && node["plone_blobs"]["blob_dir"]
+  # Create the blob dir if it doesn't exist, and give it "safe" permissions
+  directory node["plone_blobs"]["blob_dir"] do
+    owner deploy[:user]
+    group deploy[:group]
+    mode 0700
+    recursive true
+    action :create
+  end
   blob_location = ::File.join(deploy[:deploy_to], 'shared', 'var', 'blobstorage')
   if node["plone_blobs"]["blob_dir"] != blob_location
     directory ::File.join(deploy[:deploy_to], 'shared', 'var') do

@@ -55,6 +55,9 @@ node.default[:opsworks][:layers] = {
 
 # This does not actually use CPU count on AWS, but the opsworks estimate of instance cpu capacity (`backends`)
 node.default["plone_instances"]["per_cpu"] = 1
+node.default["plone_instances"]["enable_celery"] = true
+node.default["plone_instances"]["celerybeat"] = true
+node.default["plone_instances"]["broker_layer"] = 'plone_instances'
 node.default["plone_blobs"]["blob_dir"] = "/srv/zeoserver/shared/var/blobstorage"
 
 # Set application dirs
@@ -70,7 +73,7 @@ node.default[:deploy] = {
 
 # Setup
 Chef::Log.debug('************************** Running Setup Steps *****************************')
-#include_recipe "redis::server"
+include_recipe "redis::server"
 include_recipe "plone_buildout::nginx"
 include_recipe "plone_buildout::varnish"
 include_recipe "plone_buildout::haproxy"
@@ -81,6 +84,7 @@ include_recipe "plone_buildout::instances-setup"
 # Configure
 Chef::Log.debug('************************** Setup Completed Running Configure Steps *****************************')
 include_recipe "plone_buildout::zeoserver-configure"
+include_recipe "plone_buildout::instances-celerybeat"
 include_recipe "plone_buildout::instances-configure"
 
 # Deploy
