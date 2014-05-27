@@ -104,19 +104,20 @@ sub vcl_pipe {
 # Called after a document has been successfully retrieved from the backend.
 sub vcl_fetch {
     set beresp.grace = <%= node['varnish_plone']['grace'] %>s;
+    call rewrite_s_maxage;
     
     if (beresp.ttl <= 0s) {
-        beresp.ttl = 0;
+        set beresp.ttl = 0s;
         set beresp.http.X-Varnish-Action = "FETCH (pass - not cacheable)";
         return(hit_for_pass);
     }
     if (beresp.http.Set-Cookie) {
-        beresp.ttl = 0;
+        set beresp.ttl = 0s;
         set beresp.http.X-Varnish-Action = "FETCH (pass - response sets cookie)";
         return(hit_for_pass);
     }
     if (!beresp.http.Cache-Control ~ "s-maxage=[1-9]" && beresp.http.Cache-Control ~ "(private|no-cache|no-store)") {
-        beresp.ttl = 0;
+        set beresp.ttl = 0s;
         set beresp.http.X-Varnish-Action = "FETCH (pass - response sets private/no-cache/no-store token)";
         return(hit_for_pass);
     }
@@ -125,11 +126,10 @@ sub vcl_fetch {
         set beresp.http.X-Varnish-Action = "FETCH (override - backend not setting cache control)";
     }
     if (!req.http.X-Anonymous && !beresp.http.Cache-Control) {
-        beresp.ttl = 0;
+        set beresp.ttl = 0s;
         set beresp.http.X-Varnish-Action = "FETCH (pass - not cacheable)";
         return(hit_for_pass);
     }
-    call rewrite_s_maxage;
     return(deliver);
 }
 
