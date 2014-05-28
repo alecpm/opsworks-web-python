@@ -93,7 +93,7 @@ else
     instance_name, zeo_instance = node[:opsworks][:layers][zeo_layer][:instances].detect {
       |name, instance| instance[:status] == "online"
     }
-    address = "#{zeo_instance[:public_dns_name] | zeo_instance[:private_dns_name]}:8001" if zeo_instance
+    address = "#{zeo_instance[:public_dns_name] || zeo_instance[:private_dns_name]}:8001" if zeo_instance
   end
   if address
     storage_config << "\n" << '[zeo-host]'
@@ -114,7 +114,7 @@ if instance_data["solr_enabled"] && node[:opsworks]
       |name, instance| instance[:status] == "online"
     }
     if solr_instance
-      storage_config << "\n" << "[solr-host]" << "\n" << "host = #{solr_instance[:public_dns_name] | solr_instance[:private_dns_name]}"
+      storage_config << "\n" << "[solr-host]" << "\n" << "host = #{solr_instance[:public_dns_name] || solr_instance[:private_dns_name]}"
     end
   end
 end
