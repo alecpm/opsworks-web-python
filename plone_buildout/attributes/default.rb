@@ -89,6 +89,7 @@ default['varnish_plone']['default_ttl'] = 300
 node.normal["redis"]["config"]["listen_addr"] = "0.0.0.0"
 node.normal["redis"]["config"]["dir"] = "/mnt/redis"
 node.normal["redis"]["config"]['vm'][:vm_swap_file] = "/mnt/redis/redis.swap"
+node.normal[:haproxy][:stats_url] = "/balancer/stats"
 node.normal[:haproxy][:balance] = "leastconn"
 node.normal[:haproxy][:retries] = 3
 node.normal[:haproxy][:check_interval] = 10000

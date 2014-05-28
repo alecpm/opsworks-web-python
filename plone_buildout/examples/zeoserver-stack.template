@@ -161,7 +161,7 @@
                     "HaproxyHealthCheckUrl": "/misc_/CMFPlone/plone_icon",
                     "HaproxyHealthCheckMethod": "HEAD",
                     "HaproxyStatsPassword": "STATS PASSWORD",
-                    "HaproxyStatsUrl": "/_balancer_stats_",
+                    "HaproxyStatsUrl": "/balancer/stats",
                     "HaproxyStatsUser": "stats"
                 },
                 "Shortname": "lb",

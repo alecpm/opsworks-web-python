@@ -142,6 +142,7 @@ node.normal[:deploy][app_name]["environment"] = environment.update(deploy[:envir
 # Add environment variables to client config, enforce ordering
 client_config << "\n" << "environment-vars +="
 (node[:deploy][app_name]["environment"].sort_by { |key, value| key.to_s }).each { |item| client_config << "\n    #{item[0]} #{item[1]}" if !item[0].match(/^(TMP|TEMP|RUBY|RAILS|RACK)/) }
+Chef::Log.debug("Merged environment: #{node[:deploy][app_name]["environment"]}")
 
 # client1 is already defined in the base configs.  Add more parts
 # based on cpu count or explicit specification, and put them all in
@@ -229,7 +230,6 @@ node.normal[:deploy][app_name]["buildout_parts_to_include"] = extra_parts.concat
 Chef::Log.debug("Merged extra_parts: #{node[:deploy][app_name]["buildout_parts_to_include"]}")
 node.normal[:deploy][app_name]["buildout_additional_config"] = additional_config
 Chef::Log.debug("Merged additional_config: #{node[:deploy][app_name]["buildout_additional_config"]}")
-Chef::Log.debug("Merged environment: #{node[:deploy][app_name]["environment"]}")
 
 # Enable recipe
 node.normal[:deploy][app_name]["custom_type"] = "buildout"
