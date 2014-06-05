@@ -36,6 +36,8 @@ instance_defaults = _opsworks_buildout_defaults()
 zeo_defaults = _opsworks_buildout_defaults()
 
 node.default[:opsworks] = {}
+node.default[:opsworks][:ruby_stack] = 'ruby'
+node.default[:opsworks][:ruby_version] = '1.9.3'
 node.default[:opsworks][:instance] = {}
 node.default[:opsworks][:instance][:backends] = 1
 node.default[:opsworks][:instance][:private_ip] = "127.0.0.1"

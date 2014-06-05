@@ -1,3 +1,4 @@
+include_attribute "deploy"
 include_attribute "opsworks_deploy_python::django"
 include_attribute "opsworks_deploy_python::buildout"
 

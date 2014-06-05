@@ -157,35 +157,43 @@ define :python_base_deploy do
     end
   end
 
-  opsworks_deploy do
-    deploy_data deploy
-    app application
-  end
+  if deploy[:scm]
+    opsworks_deploy do
+      deploy_data deploy
+      app application
+    end
 
-  # Deploy recipe doesn't pass these through and we can only access the dirs after deployment
-  (node[:deploy][application]["purge_before_symlink"] || []).each do |dirname|
-    dir_path = ::File.join(deploy[:deploy_to], 'current', dirname)
-    directory dir_path do
-      recursive true
-      action :delete
-      only_if "test -d '#{dir_path}'"
-    end
-    # Now we create those links (possibly deleting them first to avoid deploy's duplicates)
-    if node[:deploy][application]["symlink_before_migrate"].has_value?dirname
-      shared_dirname = node[:deploy][application]["symlink_before_migrate"].key(dirname)
-      shared_path = ::File.join(deploy[:deploy_to], 'shared',  shared_dirname)
-      Chef::Log.debug("Relinking #{shared_path} and deleting stray link #{shared_path}/#{dirname}")
-      link ::File.join(shared_path, dirname) do
+    # Deploy recipe doesn't pass these through and we can only access the dirs after deployment
+    (node[:deploy][application]["purge_before_symlink"] || []).each do |dirname|
+      dir_path = ::File.join(deploy[:deploy_to], 'current', dirname)
+      directory dir_path do
+        recursive true
         action :delete
+        only_if "test -d '#{dir_path}'"
       end
-      link dir_path do
-        link_type :symbolic
-        to shared_path
-        owner deploy[:user]
-        group deploy[:group]
-        action [:delete, :create]
+      # Now we create those links (possibly deleting them first to avoid deploy's duplicates)
+      if node[:deploy][application]["symlink_before_migrate"].has_value?dirname
+        shared_dirname = node[:deploy][application]["symlink_before_migrate"].key(dirname)
+        shared_path = ::File.join(deploy[:deploy_to], 'shared',  shared_dirname)
+        Chef::Log.debug("Relinking #{shared_path} and deleting stray link #{shared_path}/#{dirname}")
+        link ::File.join(shared_path, dirname) do
+          action :delete
+        end
+        link dir_path do
+          link_type :symbolic
+          to shared_path
+          owner deploy[:user]
+          group deploy[:group]
+          action [:delete, :create]
+          only_if "test -e #{::File.join(deploy[:deploy_to], 'current')}"
+        end
       end
     end
+
+    node.set[:deploy][application]["initially_deployed"] = true
+  else
+    node.set[:deploy][application]["initially_deployed"] = false
+    Chef::Log.error("Could not deploy app #{application} no SCM repository set")
   end
 
   # Setup venv
@@ -200,7 +208,7 @@ define :python_base_deploy do
 
   os_packages = deploy["os_packages"] ? deploy["os_packages"] : node["deploy_python"]["os_packages"]
   # Install os dependencies
-    os_packages.each do |pkg,ver|
+  os_packages.each do |pkg,ver|
     package pkg do
       action :install
       version ver if ver && ver.length > 0
@@ -218,5 +226,4 @@ define :python_base_deploy do
       action :install
     end
   end
-  node.set[:deploy][application]["initially_deployed"] = true
 end
