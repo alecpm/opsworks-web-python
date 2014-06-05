@@ -139,7 +139,6 @@
                     "Setup": [
                     "plone_buildout::haproxy",
                     "plone_buildout::varnish",
-                    "plone_buildout::nginx"
                     ],
                     "Configure": [
                     "plone_buildout::haproxy",

@@ -286,7 +286,7 @@ You'll probably want to customize the stats username and password.
 
 The front end layer uses the following recipes:
 
-  * Setup: `plone_buildout::haproxy` `plone_buildout::varnish` `plone_buildout::nginx`
+  * Setup: `plone_buildout::haproxy` `plone_buildout::varnish`
   * Configure: `plone_buildout::haproxy` `plone_buildout::varnish` `plone_buildout::nginx`
   * Deploy: `plone_buildout::haproxy`
 
