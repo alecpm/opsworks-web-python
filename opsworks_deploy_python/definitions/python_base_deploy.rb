@@ -166,6 +166,7 @@ define :python_base_deploy do
   (node[:deploy][application]["purge_before_symlink"] || []).each do |dirname|
     dir_path = ::File.join(deploy[:deploy_to], 'current', dirname)
     directory dir_path do
+      recursive true
       action :delete
       only_if "test -d '#{dir_path}'"
     end
