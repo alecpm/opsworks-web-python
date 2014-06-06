@@ -34,6 +34,7 @@ default["plone_instances"]["zodb_cache_size"] = nil
 default["plone_instances"]["persistent_cache"] = true
 default["plone_instances"]["zserver_threads"] = nil
 default["plone_instances"]["sticky_sessions"] = false
+default["plone_instances"]["restart_delay"] = 0
 
 # Relstorage stuff
 default["plone_instances"]["enable_relstorage"] = false

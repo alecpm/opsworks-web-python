@@ -63,7 +63,8 @@ The `buildout` recipe sets up, deploys and configures a zc.buildout project from
 - init_commands: An array of commands to have the system supervisor manage, each element is a hash with the following entries:
   - cmd (the command, e.g. 'bin/instance')
   - args (any arguments to be passed, e.g. "console" for `:supervisor` or "start" for `:upstart`)
-- init_type: A symbol representing how the service is managed, currently either `:supervisor` or `:upstart`
+  - init_type: A symbol representing how the service is managed, currently either `:supervisor` or `:upstart`
+  - delay: A delay in seconds, the command will only be started/restarted after waiting this amount of time (useful for rolling restarts of multiple services running on an instance).
 - always_build_on_deploy: A flag that determines whether buildout will be run on every deploy, even if the repository and the config did not change.  This defaults to false, but should be set to true for buildouts which use mr.developer or similar to update sources during a buildout run. This should only be set on node[:deploy][application_name] and is not prefixed with `buildout_`.
 
 All of these attributes are set globally in node[:deploy_buildout], but they also can be read on an application specific basis prefixed by `buildout_` as node[:deploy][application_name]['buildout_#{attribute}']

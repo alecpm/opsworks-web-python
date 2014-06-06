@@ -150,7 +150,8 @@ Chef::Log.debug("Merged environment: #{node[:deploy][app_name]["environment"]}")
 1.upto(instances) do |n|
   part = "client#{n}"
   extra_parts.push(part)
-  init_commands.push({'name' => part, 'cmd' => "bin/#{part}", 'args' => "console"})
+  init_commands.push({'name' => part, 'cmd' => "bin/#{part}", 'args' => "console",
+                      'delay' =>  instance_data['restart_delay']})
   if n != 1
     client_config << "\n" << "[#{part}]" << "\n" << "<= client1"
     # Hopefully we don't see port conflicts using this caclulation

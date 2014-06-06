@@ -163,6 +163,7 @@ you may wish to customize the following values:
   * `solr_enabled`: Whether to enable Solr search using `alm.solrindex` (defaults to false)
   * `solr_layer`: Name of layer in which to find Solr servers
   * `solr_host`: Host name for a fixed solr server (not needed if you have a solr layer)
+  * `restart_delay`: Delay in seconds between starting/restarting each instance, used for rolling restarts.
   
 You'll probably want to turn one of the two blob mount options on.  The default stack configuration sets up an NFS lauyer for shared blobs.  More on that below.
 
@@ -545,6 +546,7 @@ This cookbook also includes a couple simple helper recipes:
   * varnish-restart: Restarts varnish
   * varnish-purge: Runs a "ban.url" for a array of url regexps provided (defaults to all content in the cache).  Provide the array in the `node["varnish_purge_urls"]` attribute.
   * instances-rebuild: Re-runs buildout on all plone_instances layers, restarts instances.
+  * instances-develop-up: Re-runs `bin/develop up` on all plone_instances layers, does not restart instances.  Useful for quick deployment of resource/template changes when developing.
 
 
 ## Motivation

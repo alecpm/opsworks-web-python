@@ -98,6 +98,13 @@ define :buildout_configure do
             directory ::File.join(deploy[:deploy_to], "current")
             autostart true
             action :enable
+            if command['delay'] && command['delay'] != 0
+              only_if do
+                Chef::Log.info("Delaying service #{service_name} by #{command['delay']} seconds")
+                sleep command['delay']
+                true
+              end
+            end
             subscribes :restart, "execute[#{build_cmd}]", :delayed
           end
           services.push(s)
@@ -116,6 +123,13 @@ define :buildout_configure do
           s = service service_name do
             provider Chef::Provider::Service::Upstart
             action :enable
+            if command['delay'] && command['delay'] != 0
+              only_if do
+                Chef::Log.info("Delaying service #{service_name} by #{command['delay']} seconds")
+                sleep command['delay']
+                true
+              end
+            end
             subscribes :restart, "template[#{service_conf}]", :delayed
             subscribes :restart, "execute[#{build_cmd}]", :delayed
           end
