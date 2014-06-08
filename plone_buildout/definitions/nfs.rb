@@ -51,7 +51,7 @@ define :blob_mounts do
       |name, instance| storage_instances.push(instance) if instance[:status] == "online"
     }
     if !storage_instances.empty?
-      host = storage_instances[0][:public_dns_name] || storage_instances[0][:private_dns_name]
+      host = storage_instances[0][:private_ip]
     end
   end
   if host
@@ -61,7 +61,7 @@ define :blob_mounts do
     if use_gluster
       mount_options = node["plone_blobs"]["gluster_mount_options"]
         # Add redundancy
-        mount_options << ",backupvolfile-server=#{storage_instances[1][:public_dns_name] || storage_instances[1][:private_dns_name]}" if storage_instances.length > 1
+        mount_options << ",backupvolfile-server=#{storage_instances[1][:private_ip]}" if storage_instances.length > 1
     end
     mount_options << ",_netdev,nobootwait"  # Ensure reboot doesn't hang on mounts
     mount mount_dir do

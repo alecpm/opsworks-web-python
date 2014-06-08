@@ -211,20 +211,21 @@ single instance, you may remobe this layer, and set the "plone_blobs":
 Use of GlusterFS for shared blobs should be considered eperimental.
 Your stack should only start a single GlusterFS shared blob instance
 initially, otherwise it is impossible to determine on which instance
-the volume configuration should happen leading to unpredictable
+the volume configuration should be primary leading to unpredictable
 results.  You can later add additional instances to the layer for
 redundancy and read performance improvements.
 
 If you are using GlusterFS in production, you should ensure the
 instances running it have an unchanging Hostname/IP, which means
-either using an Elastic IP or a private VPS instance with only a
-static private address.  Gluster will not recognize a re-attached
-`brick` (in our case EBS volume) unless it's on a host with the same
-hostname.
+either using aa private VPS instance with only a static private
+address.  Gluster will not recognize a re-attached `brick` (in our
+case EBS volume) unless it's on a host with the same hostname.
 
-By default, the GlusterFS configuration retains configuration
-across instance termination by storing configuration on the same EBS
-volume used for the FS exports.  You can, but probably should not, disable this by setting "plone_blobs": "gluster_store_config_in_exports" to `false`.
+By default, the GlusterFS configuration retains configuration across
+instance termination by storing configuration on the same EBS volume
+used for the FS exports.  You can, but probably should not, disable
+this by setting "plone_blobs": "gluster_store_config_in_exports" to
+`false`.
 
 If you ever do accidentally loose the configuration for your volume,
 you can remount an existing brick while preserving data by following
@@ -234,6 +235,10 @@ You should never attempt to add an EBS volume which already has
 (potentially out of date) data to an existing GlusterFS volume.  Newly
 launched replica servers must either retain configuration from an
 older server or use a fresh EBS volume.
+
+Stopping and starting a Gluster peer will generally require some
+manual intervention to reconnect the brick to the cluster.  You should
+always try to keep one Gluster peer online.
 
 
 #### ZEO Server Layer

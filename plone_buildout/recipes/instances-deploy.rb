@@ -8,6 +8,9 @@ python_base_deploy do
   app_name app_name
 end
 
+# Update deploy
+deploy = node[:deploy][app_name]
+
 buildout_configure do
   deploy_data deploy
   app_name app_name

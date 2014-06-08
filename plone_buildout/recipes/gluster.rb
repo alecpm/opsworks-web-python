@@ -34,16 +34,12 @@ peers = node["plone_blobs"]["servers"]
 if !peers && node[:opsworks] && node[:opsworks][:layers] && node[:opsworks][:layers][gluster_layer] && node[:opsworks][:layers][gluster_layer][:instances]
   peers = []
   node[:opsworks][:layers][gluster_layer][:instances].each {
-    |name, instance| peers.push(instance[:public_dns_name] || instance[:private_dns_name])
+    |name, instance| peers.push(instance[:private_ip])
   }
 end
 
-# We prefer a public DNS name (ideally an elastic IP that can be
-# assigned permanently), but if it's not available, we may be in a VPC
-# where we have static internal IPs/Names.
-
 # Make sure the current instance is included as a peer, even if it's not fully booted
-instance_host = node[:opsworks][:instance][:public_dns_name] || node[:opsworks][:instance][:private_dns_name]
+instance_host =  node[:opsworks][:instance][:private_ip]
 peers << instance_host if !peers.include? instance_host
 
 # Only perform server operations on first/existing layer member
