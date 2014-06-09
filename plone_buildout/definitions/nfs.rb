@@ -60,8 +60,20 @@ define :blob_mounts do
     mount_options = node["plone_blobs"]["nfs_mount_options"]
     if use_gluster
       mount_options = node["plone_blobs"]["gluster_mount_options"]
+      if storage_instances.length > 1
+        # Avoid duplicate entries
+        orig_options = mount_options
+        storage_instances.each { |instance|
+          mount mount_dir do
+            device "#{instance[:private_ip]}:#{share}"
+            fstype mount_type
+            options orig_options
+            action [:umount, :disable]
+          end
+        }
         # Add redundancy
-        mount_options << ",backupvolfile-server=#{storage_instances[1][:private_ip]}" if storage_instances.length > 1
+        mount_options << ",backupvolfile-server=#{storage_instances[1][:private_ip]}"
+      end
     end
     mount_options << ",_netdev,nobootwait"  # Ensure reboot doesn't hang on mounts
     mount mount_dir do
