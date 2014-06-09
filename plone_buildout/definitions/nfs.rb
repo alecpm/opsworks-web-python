@@ -80,7 +80,7 @@ define :blob_mounts do
       device "#{host}:#{share}"
       fstype mount_type
       options mount_options
-      action [:mount, :remount, :enable]
+      action [:mount, :enable]
     end
     # Create the blob dir on the mount location if it doesn't already exist
     directory blob_mount_dir do
