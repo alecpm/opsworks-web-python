@@ -16,10 +16,8 @@ default["plone_blobs"]["nfs_mount_options"] = "auto,rw,noatime,nodiratime"
 default["plone_blobs"]["gluster_mount_options"] = "auto,rw,direct-io-mode=disable"
 # Store gluster config in export directory and bind mount it into the
 # real configuration locaton.  This is unnecessary if your instance is
-# EBS backed, but otherwise makes it much simpler to preserve the
-# bricks/volumes/exports/mounts between stop/start or server
-# recreation
-default["plone_blobs"]["gluster_store_config_in_exports"] = true
+# EBS backed, but is useful on a VPS instance with a fixed IP
+default["plone_blobs"]["gluster_store_config_in_exports"] = false
 default["plone_blobs"]["blob_dir"] = nil # Use if using shared blobs, but not NFS/Gluster, will symlink into zeoserver and instances
 
 default["plone_instances"]["base_config"] = "cfg/base.cfg"  # This must be set

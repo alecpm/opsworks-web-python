@@ -215,30 +215,68 @@ the volume configuration should be primary leading to unpredictable
 results.  You can later add additional instances to the layer for
 redundancy and read performance improvements.
 
-If you are using GlusterFS in production, you should ensure the
-instances running it have an unchanging Hostname/IP, which means
-either using aa private VPS instance with only a static private
-address.  Gluster will not recognize a re-attached `brick` (in our
-case EBS volume) unless it's on a host with the same hostname.
+If you are using GlusterFS in production, you would ideally have
+instances with a static private IP, which means using a private VPS
+instances.  Gluster will not recognize a re-attached `brick` (in our
+case EBS volume) unless it's on a host with the same hostname or IP.
 
-By default, the GlusterFS configuration retains configuration across
-instance termination by storing configuration on the same EBS volume
-used for the FS exports.  You can, but probably should not, disable
-this by setting "plone_blobs": "gluster_store_config_in_exports" to
-`false`.
+If you have instances which retain their priavte IP between restarts,
+you will want to retain the GlusterFS configuration across instance
+termination.  You can do this using EBS backed instances, or by storing
+configuration on the same EBS volume used for the FS exports by
+setting "plone_blobs": "gluster_store_config_in_exports" to `true`.
 
-If you ever do accidentally loose the configuration for your volume,
+If you do accidentally loose the configuration for your volume,
 you can remount an existing brick while preserving data by following
 the [guidelines
-here](http://joejulian.name/blog/glusterfs-path-or-a-prefix-of-it-is-already-part-of-a-volume/).
-You should never attempt to add an EBS volume which already has
-(potentially out of date) data to an existing GlusterFS volume.  Newly
-launched replica servers must either retain configuration from an
-older server or use a fresh EBS volume.
+here](http://joejulian.name/blog/glusterfs-path-or-a-prefix-of-it-is-already-part-of-a-volume/), more on this below.
 
-Stopping and starting a Gluster peer will generally require some
-manual intervention to reconnect the brick to the cluster.  You should
-always try to keep one Gluster peer online.
+Stopping and starting a Gluster peer without a fixed internal IP will
+generally require some manual intervention to reconnect the brick to
+the cluster.  You should always try to keep one Gluster peer online.
+The following steps should work to re-incoporate a restarted instance
+into the volume:
+
+  * On the working peer (IP0), find any disconnected peer IPs (IPN):
+  (`gluster peer status`)
+  * On the newly restarted peer (IP1)
+    * Detach peer "gluster peer detach IP0 force"
+    * Shutdown gluster: "service glusterfs-server stop"
+    * Install the `attr` package (`aptitude install attr`)
+    * In the export mount ( `/srv/gluster-exports` by default) run the following
+    commands to force gluster to treat the brick as new:
+
+        setfattr -x trusted.glusterfs.volume-id brick
+        setfattr -x trusted.gfid brick
+        rm -rf brick/.glusterfs
+
+    * Start gluster: `service glusterfs-server stop`
+    * Connect to peer: `gluster peer probe IP0`
+    * Initiate brick replacement: `gluster volume replace-brick VOLNAME IPN:BRICKPATH IP0:BRICKPATH start` (BRICKPATH is typically `/srv/gluster-exports/brick`)
+    * Monitor status: `watch gluster volume replace-brick VOLNAME IPN:BRICKPATH IP0:BRICKPATH status`
+    * When complete, commit: `gluster volume replace-brick VOLNAME IPN:BRICKPATH IP0:BRICKPATH status commit`
+
+If you ever loose you primary Gluster configuration, you can re-create the volume manually by using the following steps:
+
+  * Install the `attr` package (`aptitude install attr`)
+  * In the export mount (`/srv/gluster-exports` by default) run the following
+  commands to force gluster to treat the brick as new:
+
+      setfattr -x trusted.glusterfs.volume-id brick
+      setfattr -x trusted.gfid brick
+      rm -rf brick/.glusterfs
+
+  * Create the new volume (`gluster volume create blobs IP0:BRICKPATH`)
+  * Enable it (`gluster volume start blobs`)
+  * Verify (`gluster volume status blobs detail`)
+
+You should generally aim to have three or fewer replicated GlusterFS
+blob servers.  Two (each in a different AZ) is probably ideal for
+reduncancy.  It may make sense to have a primary peer with an EBS
+mounted export volume (with frequent snapshots), and additional
+replica peers which use the local (ephemeral) instance store (SSD on
+current generation instances), to speed replication and reads for
+those servers which connect to that peer.
 
 
 #### ZEO Server Layer
