@@ -7,7 +7,7 @@ default["plone_zeoserver"]["gluster_blobs"] = false
 # NFS shared blobs should be assigned to their own layer
 default["plone_blobs"]["layer"] = "shared_blobs"
 default["plone_blobs"]["nfs_export_dir"] = '/srv/exports'
-default["plone_blobs"]["gluster_export_dir"] = '/srv/gluster-exports'
+default["plone_blobs"]["gluster_export_dir"] = '/mnt/gluster-exports'
 default["plone_blobs"]["network"] = nil
 default["plone_blobs"]["host"] = nil
 default["plone_blobs"]["servers"] = nil

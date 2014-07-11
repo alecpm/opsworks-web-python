@@ -186,7 +186,7 @@ This is another layer of type `custom` with the short name
 functionality to an existing layer by setting the `"plone_blobs":
 "layer"` attribute in the Stack Custom JSON to the layer short).
 You'll probably want to use EBS optimized instances here, and assign
-an EBS mount to `/srv/exports` for NFS or `/srv/gluster-exports` for
+an EBS mount to `/srv/exports` for NFS or `/mnt/gluster-exports` for
 GlusterFS.
 
 The layer uses NFS by default and runs the following recipes:
