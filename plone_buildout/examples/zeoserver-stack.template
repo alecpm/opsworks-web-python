@@ -144,7 +144,7 @@
                     "Undeploy": [],
                     "Setup": [
                     "plone_buildout::haproxy",
-                    "plone_buildout::varnish",
+                    "plone_buildout::varnish"
                     ],
                     "Configure": [
                     "plone_buildout::haproxy",
