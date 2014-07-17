@@ -202,7 +202,7 @@ For GlusterFS it would need to be modified to run the following recipes instead:
 There are a number of configuration options for the shared blob
 storage under the `plone_blobs` key.  See `attributes/defaults.rb` for
 details.  If you would like to simply use a shared blob dir on a
-single instance, you may remobe this layer, and set the "plone_blobs":
+single instance, you may remove this layer, and set the "plone_blobs":
 "blob_dir" attribute to the desired location (generally
 `/srv/www/zeoserver/shared/var/blobstorage`).
 
