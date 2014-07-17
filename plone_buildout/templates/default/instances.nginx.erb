@@ -9,6 +9,8 @@ upstream balancer {
 client_header_buffer_size 4k;
 client_body_buffer_size 32k;
 
+<%= node['nginx_plone']['additional_servers'] %>
+
 server {
     listen *:80;
     
