@@ -56,45 +56,6 @@ define :buildout_configure do
     buildout_cmd = ::File.join(release_path, "bin", "buildout")
     build_cmd = "#{buildout_cmd} -c #{config_file} #{Helpers.buildout_setting(deploy, 'flags', node)}"
 
-    env["PYTHON_EGG_CACHE"] = ::File.join(deploy[:deploy_to], 'shared', 'eggs')
-    if !run_actions
-      template ::File.join(release_path, config_file) do
-        source Helpers.buildout_setting(deploy,'config_template', node)
-        cookbook deploy["buildout_config_cookbook"] || 'opsworks_deploy_python'
-        owner deploy[:user]
-        group deploy[:group]
-        mode 0644
-
-        variables Hash.new
-        variables.update deploy # include any custom stuff in the deploy properties
-        variables.update :extends => Helpers.buildout_setting(deploy, 'extends', node), :debug => Helpers.buildout_setting(deploy, 'debug', node), :supervisor_part => Helpers.buildout_setting(deploy, 'supervisor_part', node), :inherit_parts => Helpers.buildout_setting(deploy, 'inherit_parts', node), :parts_to_include => Helpers.buildout_setting(deploy, 'parts_to_include', node), :additional_config => Helpers.buildout_setting(deploy, 'additional_config', node)
-
-        notifies :run, "execute[#{bootstrap_cmd}]", :immediately
-        notifies :run, "execute[#{build_cmd}]", :immediately
-      end
-
-      # We define our commands for bootstrap and buildout, but don't run
-      # them until we have a cfg change.
-      # Bootstrap
-      execute bootstrap_cmd do
-        user deploy[:user]
-        group deploy[:group]
-        cwd release_path
-        environment env
-        not_if "test -x #{::File.join(release_path, 'bin', 'buildout')}"
-        action :nothing
-      end
-
-      # Buildout run
-      execute build_cmd do
-        user deploy[:user]
-        group deploy[:group]
-        cwd release_path
-        environment env
-        action force_build ? :run : :nothing
-      end
-    end
-
     services = []
     # Add our anticipated services (or supervisor) to upstart or supervisor
     init_commands = Helpers.buildout_setting(deploy, 'init_commands', node)
@@ -181,7 +142,44 @@ define :buildout_configure do
       end
     end
 
-    if run_actions
+    env["PYTHON_EGG_CACHE"] = ::File.join(deploy[:deploy_to], 'shared', 'eggs')
+    if !run_actions
+      template ::File.join(release_path, config_file) do
+        source Helpers.buildout_setting(deploy,'config_template', node)
+        cookbook deploy["buildout_config_cookbook"] || 'opsworks_deploy_python'
+        owner deploy[:user]
+        group deploy[:group]
+        mode 0644
+
+        variables Hash.new
+        variables.update deploy # include any custom stuff in the deploy properties
+        variables.update :extends => Helpers.buildout_setting(deploy, 'extends', node), :debug => Helpers.buildout_setting(deploy, 'debug', node), :supervisor_part => Helpers.buildout_setting(deploy, 'supervisor_part', node), :inherit_parts => Helpers.buildout_setting(deploy, 'inherit_parts', node), :parts_to_include => Helpers.buildout_setting(deploy, 'parts_to_include', node), :additional_config => Helpers.buildout_setting(deploy, 'additional_config', node)
+
+        notifies :run, "execute[#{bootstrap_cmd}]", :immediately
+        notifies :run, "execute[#{build_cmd}]", :immediately
+      end
+
+      # We define our commands for bootstrap and buildout, but don't run
+      # them until we have a cfg change.
+      # Bootstrap
+      execute bootstrap_cmd do
+        user deploy[:user]
+        group deploy[:group]
+        cwd release_path
+        environment env
+        not_if "test -x #{::File.join(release_path, 'bin', 'buildout')}"
+        action :nothing
+      end
+
+      # Buildout run
+      execute build_cmd do
+        user deploy[:user]
+        group deploy[:group]
+        cwd release_path
+        environment env
+        action force_build ? :run : :nothing
+      end
+    else
       run_actions = [run_actions] if !run_actions.kind_of?(Array)
       run_actions.each do |a|
         services.each { |s| s.run_action(a)}
