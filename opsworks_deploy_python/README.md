@@ -88,8 +88,10 @@ The `django` recipe deploys django projects from an SCM repository.  It is based
 - settings_cookbook: The cookbook in which to find the template above
 - collect_static: A flag indicating whether the Django app collects static resources
 - requirements: The path to the requirements file for the app
-- database: A hash of the database connection info with the following attributes:
+- database: A hash of the database connection info with the following attributes as needed:
   - adapter
+  - host
+  - port
   - name
   - username
   - password
