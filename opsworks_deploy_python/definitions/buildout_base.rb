@@ -113,9 +113,9 @@ define :buildout_configure do
       end
       s = service "supervisor" do
         provider Chef::Provider::Service::Upstart
-        action :enable, :start
-        subscribes :restart, "template[/etc/init/supervisor.conf]", :delayed
-        subscribes :restart, "execute[#{build_cmd}]", :delayed
+        action :nothing
+        subscribes [:enable, :restart], "execute[#{build_cmd}]", :delayed
+        subscribes [:restart], "template[/etc/init/supervisor.conf]", :delayed
       end
       services.push(s)
     elsif init_commands.length
@@ -137,7 +137,7 @@ define :buildout_configure do
             environment env
             directory ::File.join(deploy[:deploy_to], "current")
             autostart true
-            action :enable
+            action :nothing
             if command['delay'] && command['delay'] != 0
               only_if do
                 Chef::Log.info("Delaying service #{service_name} by #{command['delay']} seconds")
@@ -145,7 +145,7 @@ define :buildout_configure do
                 true
               end
             end
-            subscribes :restart, "execute[#{build_cmd}]", :delayed
+            subscribes [:enable, :restart], "execute[#{build_cmd}]", :delayed
           end
           services.push(s)
         when 'upstart'
@@ -162,7 +162,7 @@ define :buildout_configure do
           end
           s = service service_name do
             provider Chef::Provider::Service::Upstart
-            action :enable
+            action :nothing
             if command['delay'] && command['delay'] != 0
               only_if do
                 Chef::Log.info("Delaying service #{service_name} by #{command['delay']} seconds")
@@ -170,8 +170,8 @@ define :buildout_configure do
                 true
               end
             end
-            subscribes :restart, "template[#{service_conf}]", :delayed
-            subscribes :restart, "execute[#{build_cmd}]", :delayed
+            subscribes [:enable, :restart], "execute[#{build_cmd}]", :delayed
+            subscribes [:restart], "template[#{service_conf}]", :delayed
           end
           services.push(s)
         end
