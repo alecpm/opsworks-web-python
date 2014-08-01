@@ -9,7 +9,7 @@ cookbook 'supervisor', github: 'poise/supervisor', ref: '2ebac961426eef394179c91
 # packages, except when testing
 cookbook 'varnish', '0.9.12'
 cookbook 'gunicorn', '1.1.2'
-cookbook 'supervisor', '0.4.8'
+#cookbook 'supervisor', '0.4.10'
 cookbook 'build-essential', '1.4.2'
 cookbook 'apt', '2.3.8'
 cookbook 'yum', '3.1.2'
