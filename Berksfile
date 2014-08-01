@@ -8,7 +8,7 @@ cookbook 'glusterfs', github: 'alecpm/glusterfs-cookbook', tag: '0.1.1'
 # packages, except when testing
 cookbook 'varnish', '0.9.12'
 cookbook 'gunicorn', '1.1.2'
-cookbook 'supervisor', '0.4.10'
+cookbook 'supervisor', '0.4.8'
 cookbook 'build-essential', '1.4.2'
 cookbook 'apt', '2.3.8'
 cookbook 'yum', '3.1.2'
