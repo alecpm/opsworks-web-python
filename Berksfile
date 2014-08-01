@@ -3,6 +3,7 @@
 
 cookbook 'redis', github: 'coderanger/chef-redis', tag: '1.0.4'
 cookbook 'glusterfs', github: 'alecpm/glusterfs-cookbook', tag: '0.1.1'
+cookbook 'supervisor', github: 'poise/supervisor', ref: '2ebac961426eef394179c91a6cc9f9165a0f5e31'
 
 # We want to be explicit, since we don't explicitly include our
 # packages, except when testing
