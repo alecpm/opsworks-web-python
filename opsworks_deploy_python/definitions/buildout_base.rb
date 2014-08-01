@@ -114,7 +114,8 @@ define :buildout_configure do
       s = service "supervisor" do
         provider Chef::Provider::Service::Upstart
         action :nothing
-        subscribes [:enable, :restart], "execute[#{build_cmd}]", :delayed
+        subscribes :enable, "execute[#{build_cmd}]", :immediate
+        subscribes :restart, "execute[#{build_cmd}]", :delayed
         subscribes [:restart], "template[/etc/init/supervisor.conf]", :delayed
       end
       services.push(s)
@@ -145,7 +146,8 @@ define :buildout_configure do
                 true
               end
             end
-            subscribes [:enable, :restart], "execute[#{build_cmd}]", :delayed
+            subscribes :enable, "execute[#{build_cmd}]", :immediate
+            subscribes :restart, "execute[#{build_cmd}]", :delayed
           end
           services.push(s)
         when 'upstart'
@@ -170,7 +172,8 @@ define :buildout_configure do
                 true
               end
             end
-            subscribes [:enable, :restart], "execute[#{build_cmd}]", :delayed
+            subscribes :enable, "execute[#{build_cmd}]", :immediate
+            subscribes :restart, "execute[#{build_cmd}]", :delayed
             subscribes [:restart], "template[#{service_conf}]", :delayed
           end
           services.push(s)
