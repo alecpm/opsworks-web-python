@@ -145,7 +145,7 @@ define :buildout_configure do
               # Only delay if the service is already running
               only_if do
                 status = Mixlib::ShellOut.new("supervisorctl status").run_command
-                match = result.stdout.match("(^#{service_name}(\\:\\S+)?\\s*)([A-Z]+)(.+)")
+                match = status.stdout.match("(^#{service_name}(\\:\\S+)?\\s*)([A-Z]+)(.+)")
                 Chef::Log.info("Service #{service_name} status: #{match && match[3]}")
                 if match && match[3] == 'RUNNING'
                   Chef::Log.info("Delaying service #{service_name} by #{command['delay']} seconds")
@@ -175,14 +175,12 @@ define :buildout_configure do
             if command['delay'] && command['delay'] != 0
               # Only delay if the service is already running
               only_if do
-                state = nil
                 command = "/sbin/status #{service_name}"
-                status = popen4(command) do |pid, stdin, stdout, stderr|
+                state = popen4(command) do |pid, stdin, stdout, stderr|
                   stdout.each_line do |line|
                     line =~ /\w+ \(?(\w+)\)?[\/ ](\w+)/
                     data = Regexp.last_match
-                    state = data[2]
-                    break
+                    return data[2]
                   end
                 end
                 Chef::Log.info("Service #{service_name} status: #{state}")
