@@ -144,7 +144,7 @@ define :buildout_configure do
             if command['delay'] && command['delay'] != 0
               # Only delay if the service is already running
               only_if do
-                this = resource("supervisor_service[#{service_name}]")
+                this = resources("supervisor_service[#{service_name}]")
                 if this.status == "RUNNING"
                   Chef::Log.info("Delaying service #{service_name} by #{command['delay']} seconds")
                   sleep command['delay']
@@ -173,7 +173,7 @@ define :buildout_configure do
             if command['delay'] && command['delay'] != 0
               # Only delay if the service is already running
               only_if do
-                this = resource("service[#{service_name}]")
+                this = resources("service[#{service_name}]")
                 if this.running
                   Chef::Log.info("Delaying service #{service_name} by #{command['delay']} seconds")
                   sleep command['delay']
