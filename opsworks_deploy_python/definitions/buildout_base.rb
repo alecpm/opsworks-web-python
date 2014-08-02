@@ -118,9 +118,9 @@ define :buildout_configure do
       end
       s = service "supervisor" do
         provider Chef::Provider::Service::Upstart
-        action :nothing
-        subscribes [:enable, :restart], "execute[#{build_cmd}]", :delayed
-        subscribes [:enable, :restart], "template[/etc/init/supervisor.conf]", :delayed
+        action :enable
+        subscribes :restart, "execute[#{build_cmd}]", :delayed
+        subscribes :restart, "template[/etc/init/supervisor.conf]", :delayed
       end
       services.push(s)
     elsif init_commands.length
@@ -142,19 +142,29 @@ define :buildout_configure do
             autostart true
             action :nothing
             if command['delay'] && command['delay'] != 0
-              # Only delay if the service is already running
+              # Only delay if the service is already running, only restart once
               only_if do
+                run_count = node["start_count_#{service_name}"] || 0
+                node.override["start_count_#{service_name}"] = run_count + 1
                 status = Mixlib::ShellOut.new("supervisorctl status").run_command
                 match = status.stdout.match("(^#{service_name}(\\:\\S+)?\\s*)([A-Z]+)(.+)")
                 Chef::Log.info("Service #{service_name} status: #{match && match[3]}")
-                if match && match[3] == 'RUNNING'
+                if match && match[3] == 'RUNNING' && run_count == 1
                   Chef::Log.info("Delaying service #{service_name} by #{command['delay']} seconds")
                   sleep command['delay']
+                  true
+                elsif !match && run_count == 0
+                  node.override["start_count_#{service_name}"] = 2
+                  true
+                elsif run_count <= 1
+                  true
+                else
+                  false
                 end
-                true
               end
             end
-            subscribes [:enable, :restart], "execute[#{build_cmd}]", :delayed
+            subscribes :enable, "execute[#{build_cmd}]", :delayed
+            subscribes :restart, "execute[#{build_cmd}]", :delayed
           end
           services.push(s)
         when 'upstart'
@@ -173,8 +183,10 @@ define :buildout_configure do
             provider Chef::Provider::Service::Upstart
             action :nothing
             if command['delay'] && command['delay'] != 0
-              # Only delay if the service is already running
+              # Only delay if the service is already running, only restart once
               only_if do
+                run_count = node["start_count_#{service_name}"] || 0
+                node.override["start_count_#{service_name}"] = run_count + 1
                 command = "/sbin/status #{service_name}"
                 state = popen4(command) do |pid, stdin, stdout, stderr|
                   stdout.each_line do |line|
@@ -184,15 +196,24 @@ define :buildout_configure do
                   end
                 end
                 Chef::Log.info("Service #{service_name} status: #{state}")
-                if state == 'running'
+                if state == 'running' && run_count == 1
                   Chef::Log.info("Delaying service #{service_name} by #{command['delay']} seconds")
                   sleep command['delay']
+                  true
+                elsif !match && run_count == 0
+                  node.override["start_count_#{service_name}"] = 2
+                  true
+                elsif run_count <= 1
+                  true
+                else
+                  false
                 end
-                true
               end
             end
-            subscribes [:enable, :restart], "execute[#{build_cmd}]", :delayed
-            subscribes [:enable, :restart], "template[#{service_conf}]", :delayed
+            subscribes :enable, "execute[#{build_cmd}]", :delayed
+            subscribes :restart, "execute[#{build_cmd}]", :delayed
+            subscribes :enable, "template[#{service_conf}]", :delayed
+            subscribes :restart, "template[#{service_conf}]", :delayed
           end
           services.push(s)
         end
