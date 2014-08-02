@@ -142,9 +142,13 @@ define :buildout_configure do
             autostart true
             action :enable
             if command['delay'] && command['delay'] != 0
+              # Only delay if the service is already running
               only_if do
-                Chef::Log.info("Delaying service #{service_name} by #{command['delay']} seconds")
-                sleep command['delay']
+                this = resource("supervisor_service[#{service_name}]")
+                if this.status == "RUNNING"
+                  Chef::Log.info("Delaying service #{service_name} by #{command['delay']} seconds")
+                  sleep command['delay']
+                end
                 true
               end
             end
@@ -167,9 +171,13 @@ define :buildout_configure do
             provider Chef::Provider::Service::Upstart
             action :enable
             if command['delay'] && command['delay'] != 0
+              # Only delay if the service is already running
               only_if do
-                Chef::Log.info("Delaying service #{service_name} by #{command['delay']} seconds")
-                sleep command['delay']
+                this = resource("service[#{service_name}]")
+                if this.running
+                  Chef::Log.info("Delaying service #{service_name} by #{command['delay']} seconds")
+                  sleep command['delay']
+                end
                 true
               end
             end
