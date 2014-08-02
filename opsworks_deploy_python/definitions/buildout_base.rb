@@ -59,87 +59,9 @@ define :buildout_configure do
     services = []
     # Add our anticipated services (or supervisor) to upstart or supervisor
     init_commands = Helpers.buildout_setting(deploy, 'init_commands', node)
-    # If the buildout has its own supervisor, just use that
-    supervisor_part = Helpers.buildout_setting(deploy, 'supervisor_part', node)
-    if supervisor_part
-      template "/etc/init/supervisor.conf" do
-        cookbook deploy["buildout_config_cookbook"] || 'opsworks_deploy_python'
-        source "supervisor_upstart.erb"
-        owner "root"
-        group "root"
-        mode 0755
-        variables Hash.new
-        variables.update deploy
-        variables.update :supervisord => ::File.join(release_path, "bin", supervisor_part + 'd')
-      end
-      s = service "supervisor" do
-        provider Chef::Provider::Service::Upstart
-        action :nothing
-        subscribes :enable, "execute[#{build_cmd}]", :immediate
-        subscribes :restart, "execute[#{build_cmd}]", :delayed
-        subscribes [:restart], "template[/etc/init/supervisor.conf]", :delayed
-      end
-      services.push(s)
-    elsif init_commands.length
-      init_type = Helpers.buildout_setting(deploy, 'init_type', node)
-      init_commands.each_with_index do |command, index|
-        if command["name"] == application
-          service_name = application
-        elsif command["name"]
-          service_name = "#{application}-#{command["name"]}"
-        else
-          service_name = "#{application}-#{index}"
-        end
-        case init_type.to_s
-        when 'supervisor'
-          include_recipe "supervisor"
-          s = supervisor_service service_name do
-            command "#{::File.join(deploy[:deploy_to], "current", command["cmd"])} #{command["args"]}"
-            user deploy[:user]
-            environment env
-            directory ::File.join(deploy[:deploy_to], "current")
-            autostart true
-            action :nothing
-            if command['delay'] && command['delay'] != 0
-              only_if do
-                Chef::Log.info("Delaying service #{service_name} by #{command['delay']} seconds")
-                sleep command['delay']
-                true
-              end
-            end
-            subscribes :enable, "execute[#{build_cmd}]", :immediate
-            subscribes :restart, "execute[#{build_cmd}]", :delayed
-          end
-          services.push(s)
-        when 'upstart'
-          service_conf = ::File.join("/etc/init", "#{service_name}.conf")
-          template service_conf do
-            cookbook deploy["buildout_config_cookbook"] || 'opsworks_deploy_python'
-            owner "root"
-            group "root"
-            mode 0644
-            source "upstart.conf.erb"
-            variables Hash.new
-            variables.update deploy
-            variables.update :name => service_name, :script => ::File.join(deploy[:deploy_to], "current", command["cmd"]), :args => command["args"]
-          end
-          s = service service_name do
-            provider Chef::Provider::Service::Upstart
-            action :nothing
-            if command['delay'] && command['delay'] != 0
-              only_if do
-                Chef::Log.info("Delaying service #{service_name} by #{command['delay']} seconds")
-                sleep command['delay']
-                true
-              end
-            end
-            subscribes :enable, "execute[#{build_cmd}]", :immediate
-            subscribes :restart, "execute[#{build_cmd}]", :delayed
-            subscribes [:restart], "template[#{service_conf}]", :delayed
-          end
-          services.push(s)
-        end
-      end
+    init_type = Helpers.buildout_setting(deploy, 'init_type', node)
+    if init_type == :supervisor
+      include_recipe "supervisor"
     end
 
     env["PYTHON_EGG_CACHE"] = ::File.join(deploy[:deploy_to], 'shared', 'eggs')
@@ -179,7 +101,87 @@ define :buildout_configure do
         environment env
         action force_build ? :run : :nothing
       end
-    else
+    end
+
+    # If the buildout has its own supervisor, just use that
+    supervisor_part = Helpers.buildout_setting(deploy, 'supervisor_part', node)
+    if supervisor_part
+      template "/etc/init/supervisor.conf" do
+        cookbook deploy["buildout_config_cookbook"] || 'opsworks_deploy_python'
+        source "supervisor_upstart.erb"
+        owner "root"
+        group "root"
+        mode 0755
+        variables Hash.new
+        variables.update deploy
+        variables.update :supervisord => ::File.join(release_path, "bin", supervisor_part + 'd')
+      end
+      s = service "supervisor" do
+        provider Chef::Provider::Service::Upstart
+        action :enable
+        subscribes :restart, "execute[#{build_cmd}]", :delayed
+        subscribes :restart, "template[/etc/init/supervisor.conf]", :delayed
+      end
+      services.push(s)
+    elsif init_commands.length
+      init_commands.each_with_index do |command, index|
+        if command["name"] == application
+          service_name = application
+        elsif command["name"]
+          service_name = "#{application}-#{command["name"]}"
+        else
+          service_name = "#{application}-#{index}"
+        end
+        case init_type.to_s
+        when 'supervisor'
+          s = supervisor_service service_name do
+            command "#{::File.join(deploy[:deploy_to], "current", command["cmd"])} #{command["args"]}"
+            user deploy[:user]
+            environment env
+            directory ::File.join(deploy[:deploy_to], "current")
+            autostart true
+            action :enable
+            if command['delay'] && command['delay'] != 0
+              only_if do
+                Chef::Log.info("Delaying service #{service_name} by #{command['delay']} seconds")
+                sleep command['delay']
+                true
+              end
+            end
+            subscribes :restart, "execute[#{build_cmd}]", :delayed
+          end
+          services.push(s)
+        when 'upstart'
+          service_conf = ::File.join("/etc/init", "#{service_name}.conf")
+          template service_conf do
+            cookbook deploy["buildout_config_cookbook"] || 'opsworks_deploy_python'
+            owner "root"
+            group "root"
+            mode 0644
+            source "upstart.conf.erb"
+            variables Hash.new
+            variables.update deploy
+            variables.update :name => service_name, :script => ::File.join(deploy[:deploy_to], "current", command["cmd"]), :args => command["args"]
+          end
+          s = service service_name do
+            provider Chef::Provider::Service::Upstart
+            action :enable
+            if command['delay'] && command['delay'] != 0
+              only_if do
+                Chef::Log.info("Delaying service #{service_name} by #{command['delay']} seconds")
+                sleep command['delay']
+                true
+              end
+            end
+            subscribes :restart, "execute[#{build_cmd}]", :delayed
+            subscribes :restart, "template[#{service_conf}]", :delayed
+          end
+          services.push(s)
+        end
+      end
+    end
+
+    if run_actions
       run_actions = [run_actions] if !run_actions.kind_of?(Array)
       run_actions.each do |a|
         services.each { |s| s.run_action(a)}
