@@ -129,6 +129,7 @@ environment = {"PYTHON_EGG_CACHE" => ::File.join(deploy[:deploy_to], "shared", "
 
 client_config = "\n[client1]"
 client_config << "\n" << "shared_blob = off" if !instance_data["shared_blobs"]
+client_config << "\n" << "blob-storage = #{instance_data['blob_dir']}" if instance_data["blob_dir"]
 client_config << "\n" << "zeo-client-client = zeoclient-1" if instance_data["persistent_cache"]
 client_config << "\n" << "zodb-cache-size = #{instance_data["zodb_cache_size"]}" if instance_data["zodb_cache_size"]
 client_config << "\n" << "zserver-threads = #{instance_data["zserver_threads"]}" if instance_data["zserver_threads"]
@@ -197,7 +198,7 @@ if instance_data["nfs_blobs"] || instance_data["gluster_blobs"]
     deploy_data deploy
     use_gluster instance_data["gluster_blobs"]
   end
-elsif instance_data["shared_blobs"] && node["plone_blobs"]["blob_dir"]
+elsif node["plone_blobs"]["blob_dir"]
   # Create the blob dir if it doesn't exist, and give it "safe" permissions
   directory node["plone_blobs"]["blob_dir"] do
     owner deploy[:user]
@@ -206,17 +207,21 @@ elsif instance_data["shared_blobs"] && node["plone_blobs"]["blob_dir"]
     recursive true
     action :create
   end
-  blob_location = ::File.join(deploy[:deploy_to], 'shared', 'var', 'blobstorage')
-  if node["plone_blobs"]["blob_dir"] != blob_location
-    directory ::File.join(deploy[:deploy_to], 'shared', 'var') do
-      owner deploy[:user]
-      group deploy[:group]
-      mode 0755
-      recursive true
-      action :create
-    end
-    link blob_location do
-      to node["plone_blobs"]["blob_dir"]
+  # Symlink the default blob location to the specified blob dir if
+  # shared blobs are enabled
+  if instance_data["shared_blobs"]
+    blob_location = ::File.join(deploy[:deploy_to], 'shared', 'var', 'blobstorage')
+    if node["plone_blobs"]["blob_dir"] != blob_location
+      directory ::File.join(deploy[:deploy_to], 'shared', 'var') do
+        owner deploy[:user]
+        group deploy[:group]
+        mode 0755
+        recursive true
+        action :create
+      end
+      link blob_location do
+        to node["plone_blobs"]["blob_dir"]
+      end
     end
   end
 end
