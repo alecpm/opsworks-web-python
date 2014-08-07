@@ -129,7 +129,7 @@ environment = {"PYTHON_EGG_CACHE" => ::File.join(deploy[:deploy_to], "shared", "
 
 client_config = "\n[client1]"
 client_config << "\n" << "shared_blob = off" if !instance_data["shared_blobs"]
-client_config << "\n" << "blob-storage = #{instance_data['blob_dir']}" if instance_data["blob_dir"]
+client_config << "\n" << "blob-storage = #{node['plone_blobs']['blob_dir']}" if node['plone_blobs']['blob_dir']
 client_config << "\n" << "zeo-client-client = zeoclient-1" if instance_data["persistent_cache"]
 client_config << "\n" << "zodb-cache-size = #{instance_data["zodb_cache_size"]}" if instance_data["zodb_cache_size"]
 client_config << "\n" << "zserver-threads = #{instance_data["zserver_threads"]}" if instance_data["zserver_threads"]
