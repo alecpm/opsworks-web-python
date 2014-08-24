@@ -12,8 +12,9 @@ client_body_buffer_size 32k;
 <%= node['nginx_plone']['additional_servers'] %>
 
 server {
-    listen *:80;
-    
+    listen *:80 default_server;
+    server_name _;
+
     # Show status information on /_main-status
     location = /_main_status_ {
         stub_status on;
