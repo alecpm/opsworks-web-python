@@ -9,7 +9,7 @@ template '/etc/rsyslog.d/haproxy-log.conf' do
   owner 'root'
   group 'root'
   mode 0644
-  notifies :restart, "service[rsyslog]", :delayed
+  notifies :restart, "service[rsyslog]", :immediate
 end
 
 package 'haproxy' do
@@ -24,7 +24,7 @@ template '/etc/haproxy/haproxy.cfg' do
   owner 'root'
   group 'root'
   mode 0644
-  notifies :restart, "service[haproxy]", :delayed
+  notifies :restart, "service[haproxy]", :immediate
 end
 
 service 'haproxy' do
