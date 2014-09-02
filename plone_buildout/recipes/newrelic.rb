@@ -65,8 +65,8 @@ if (node.recipe?('plone_buildout::varnish') || node.recipe?('varnish') ||
 
   # install bundler gem and run 'bundle install'
   bundle_install do
-    path node[:newrelic][:example][:plugin_path]
-    user node[:newrelic][:example][:user]
+    path node[:newrelic][:varnish][:plugin_path]
+    user node[:newrelic][:varnish][:user]
   end
 
   # install init.d script and start service
