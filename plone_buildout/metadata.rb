@@ -16,6 +16,13 @@ depends "nfs"
 depends "varnish"
 depends "nginx"
 depends "haproxy"
+depends "rsyslog"
 depends "glusterfs"
+depends "newrelic"
+depends "newrelic_meetme_plugin"
+depends "newrelic_plugins"
+depends "papertrail"
+depends "traceview"
+
 # GlusterFS is missing this one
 depends "apt"

@@ -36,11 +36,24 @@ need to modify the Berksfile when testing to explicitly pull in the
 OpsWorks cookbook dependencies, by uncommenting the commented section
 at the bottom.
 
-Because of incompatibilities between recent versions of Vagrant and
-the vagrant-berkshelf plugin, it is best to use Vagrant 1.4.3 with the
-vagrant-berkshelf plugin version 1.3.7:
+You will need to install the vagrant-berkshelf plugin which requires
+[ChefDK](http://getchef.com/downloads/chef-dk) to be installed, and
+the ChefDK path (/opt/chefdk/bin) must be added at the front of your
+PATH.  Then you must install the required vagrant ubuntu box and
+plugins:
+
+    export NOKOGIRI_USE_SYSTEM_LIBRARIES=true
+    vagrant plugin install vagrant-berkshelf
+    vagrant plugin install vagrant-vbguest
+
+Install an appropriate virtual box:
 
     vagrant box add precise64 http://files.vagrantup.com/precise64.box
-    vagrant plugin install vagrant-berkshelf --plugin-version '1.3.7'
-    vagrant plugin install vagrant-vbguest
+
+or
+
+    vagrant box add ubuntu/trusty64
+
+you will need to edit the Vagrantfile to point to the correct box.  Finally:
+
     vagrant up

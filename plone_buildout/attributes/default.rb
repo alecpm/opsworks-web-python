@@ -3,6 +3,8 @@ default["plone_zeoserver"]["enable_backup"] = true
 default["plone_zeoserver"]["blob_dir"] = nil
 default["plone_zeoserver"]["nfs_blobs"] = false
 default["plone_zeoserver"]["gluster_blobs"] = false
+default["plone_zeoserver"]["syslog_facility"] = nil
+default["plone_zeoserver"]["syslog_level"] = 'INFO'
 
 # NFS shared blobs should be assigned to their own layer
 default["plone_blobs"]["layer"] = "shared_blobs"
@@ -64,6 +66,18 @@ default["plone_instances"]["solr_enabled"] = false
 default["plone_instances"]["solr_layer"] = "solr"
 default["plone_instances"]["solr_host"] = nil
 
+# Metrics
+# Newrelic
+default["plone_instances"]["newrelic_tracing"] = false
+# number of clients to run tracing on, 0 for all
+default["plone_instances"]["newrelic_tracing_clients"] = 1
+# Tracelytics
+default["plone_instances"]["traceview_tracing"] = false
+default["plone_instances"]["traceview_sample_rate"] = 1.0
+# Papertrail
+default["plone_instances"]["syslog_facility"] = nil
+default["plone_instances"]["syslog_level"] = 'INFO'
+
 # Solr Instance
 default["plone_solr"]["app_name"] = "solr"
 
@@ -94,3 +108,9 @@ node.normal[:haproxy][:balance] = "leastconn"
 node.normal[:haproxy][:retries] = 3
 node.normal[:haproxy][:check_interval] = 10000
 node.normal[:haproxy][:server_timeout] = '900s'
+
+node.normal[:newrelic][:varnish][:version] = 'v0.0.5'
+node.normal[:newrelic][:varnish][:install_path] = "/opt/newrelic"
+node.normal[:newrelic][:varnish][:plugin_path] = "#{node[:newrelic][:varnish][:install_path]}/newrelic_varnish_plugin"
+node.normal[:newrelic][:varnish][:download_url] = "https://github.com/varnish/newrelic_varnish_plugin/archive/#{node[:newrelic][:varnish][:version]}.tar.gz"
+node.normal[:newrelic][:varnish][:user] = "root"

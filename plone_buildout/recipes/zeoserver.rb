@@ -14,14 +14,30 @@ node.normal[:deploy][app_name]["buildout_extends"] = ["cfg/base.cfg"].concat(dep
 extra_parts = extra_parts.concat(deploy["buildout_parts_to_include"] || [])
 node.normal[:deploy][app_name]["buildout_parts_to_include"] = extra_parts
 
+additional_config = ''
+
 # Allow for custom blob dir (perhaps NFS or an EBS mount at a different location)
 if node["plone_zeoserver"]["blob_dir"]
   blob_dir = node["plone_zeoserver"]["blob_dir"]
-  node.normal[:deploy][app_name]["buildout_additional_config"] = "\n[zeoserver]\nblob-storage = #{blob_dir}"
+  additional_config << "\n[zeoserver]\nblob-storage = #{blob_dir}"
 else
   # Set the value to the buildout default for use in optional NFS mounting below
   blob_dir = ::File.join(node[:deploy][app_name][:deploy_to], "shared", "var", "blobstorage")
 end
+# Add rsyslog logging if desired
+if node['plone_zeoserver']['syslog_facility'] && ::File.exists?('/dev/log')
+  additional_config << "\n[zeoserver]" if !additional_config.start_with?('[zeoserver]')
+  additional_config << "\nzeo-log-custom =\n    "
+  additional_config << "\n    <logfile>\n      "
+  additional_config << "path ${buildout:directory}/var/log/${:_buildout_section_name_}.log\n      level INFO\n    </logfile>\n    "
+  additional_config << "<syslog>\n      address /dev/log\n      "
+  additional_config << "facility #{node['plone_zeoserver']['syslog_facility']}\n      "
+  additional_config << "format ${:_buildout_section_name_}: %(message)s\n      "
+  additional_config << "level #{node['plone_zeoserver']['syslog_level']}\n    </syslog>\n"
+end
+
+node.normal[:deploy][app_name]["buildout_additional_config"] = additional_config + (node[:deploy][app_name]["buildout_additional_config"] || '')
+
 
 environment = {"PYTHON_EGG_CACHE" => ::File.join(node[:deploy][app_name][:deploy_to], "shared", "eggs")}
 

@@ -138,12 +138,57 @@ client_config << "\n" << "zserver-threads = #{instance_data["zserver_threads"]}"
 if not old_custom_py
     client_config << "\n" << "http-fast-listen = off"
 end
+if instance_data['traceview_tracing']
+  include_recipe "traceview::apt"
+  include_recipe "traceview::default"
+  additional_config << "\n" << "find-links += http://pypi.tracelytics.com/oboe"
+  client_config << "\n" << "eggs +=" << "\n    collective.traceview" << "\n    oboe"
+  environment.update({
+                       'TRACEVIEW_IGNORE_EXTENSIONS' => 'js;css;png;jpeg;jpg;gif;pjpeg;x-png;pdf',
+                       'TRACEVIEW_IGNORE_FOUR_OH_FOUR' => '1',
+                       'TRACEVIEW_PLONE_TRACING' => '1',
+                       'TRACEVIEW_SAMPLE_RATE' => instance_data["traceview_sample_rate"].to_s,
+                       'TRACEVIEW_TRACING_MODE' => 'always'
+                     })
+  Chef::Log.warn("Enabled Traceview on all clients")
+end
+trace_config = ''
+if instance_data['newrelic_tracing']
+  include_recipe "plone_buildout::newrelic"
+  trace_config << "\n" << "eggs += collective.newrelic" << "\n"
+  orig_env = deploy["environment"] || {}
+  environment.update({
+                       'NEW_RELIC_ENABLED' => 'true',
+                       'NEW_RELIC_CONFIG_FILE' => node['newrelic']['python_agent']['config_file'],
+                       'NEW_RELIC_ENVIRONMENT' => orig_env["DEPLOYMENT"] || 'STAGING'
+                     })
+  # Set for all clients if desired
+  if instance_data['newrelic_tracing_clients'] == 0 || instances == 1
+    if client_config.include? 'collective.traceview'
+      client_config << "\n    collective.newrelic"
+    else
+      client_config << trace_config
+    end
+  end
+  Chef::Log.warn("Enabled newrelic on all clients") if instance_data['newrelic_tracing_clients'] == 0
+end
 
-node.normal[:deploy][app_name]["environment"] = environment.update(deploy[:environment] || {})
+node.normal[:deploy][app_name]["environment"] = environment.update(deploy["environment"] || {})
 # Add environment variables to client config, enforce ordering
 client_config << "\n" << "environment-vars +="
 (node[:deploy][app_name]["environment"].sort_by { |key, value| key.to_s }).each { |item| client_config << "\n    #{item[0]} #{item[1]}" if !item[0].match(/^(TMP|TEMP|RUBY|RAILS|RACK)/) }
 Chef::Log.debug("Merged environment: #{node[:deploy][app_name]["environment"]}")
+
+# Add rsyslog logging if desired
+if node['plone_instances']['syslog_facility'] && ::File.exists?('/dev/log')
+  client_config << "\nevent-log-custom =\n    "
+  client_config << "\n    <logfile>\n      "
+  client_config << "path ${buildout:directory}/var/log/${:_buildout_section_name_}.log\n      level INFO\n    </logfile>\n    "
+  client_config << "<syslog>\n      address /dev/log\n      "
+  client_config << "facility #{node['plone_instances']['syslog_facility']}\n      "
+  client_config << "format ${:_buildout_section_name_}: %(message)s\n      "
+  client_config << "level #{node['plone_instances']['syslog_level']}\n    </syslog>\n"
+end
 
 # client1 is already defined in the base configs.  Add more parts
 # based on cpu count or explicit specification, and put them all in
@@ -158,6 +203,10 @@ Chef::Log.debug("Merged environment: #{node[:deploy][app_name]["environment"]}")
     # Hopefully we don't see port conflicts using this caclulation
     client_config << "\n" << "http-address = #{8080 + n}"
     client_config << "\n" << "zeo-client-client = zeoclient-#{n}" if instance_data["persistent_cache"]
+    if instance_data['newrelic_tracing'] && default["plone_instances"]["newrelic_tracing_clients"] >= (n - 1)
+      client_config << trace_config
+      Chef::Log.warn("Enabled newrelic on #{part}")
+    end
   end
 end
 
