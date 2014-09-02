@@ -203,7 +203,7 @@ end
     # Hopefully we don't see port conflicts using this caclulation
     client_config << "\n" << "http-address = #{8080 + n}"
     client_config << "\n" << "zeo-client-client = zeoclient-#{n}" if instance_data["persistent_cache"]
-    if instance_data['newrelic_tracing'] && default["plone_instances"]["newrelic_tracing_clients"] >= (n - 1)
+    if instance_data['newrelic_tracing'] && instance_data["newrelic_tracing_clients"] >= (n - 1)
       client_config << trace_config
       Chef::Log.warn("Enabled newrelic on #{part}")
     end
