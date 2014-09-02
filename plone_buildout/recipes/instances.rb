@@ -154,7 +154,6 @@ if instance_data['traceview_tracing']
 end
 trace_config = ''
 if instance_data['newrelic_tracing']
-  include_recipe "plone_buildout::newrelic"
   trace_config << "\n" << "eggs += collective.newrelic" << "\n"
   orig_env = deploy["environment"] || {}
   environment.update({

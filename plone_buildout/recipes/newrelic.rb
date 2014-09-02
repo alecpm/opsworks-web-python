@@ -12,7 +12,7 @@ if (node.recipes.include?('haproxy::default') ||
       'name' => host_id,
       'host' => 'localhost',
       'port' => 8080,
-      'path' => node[:haproxy][:stats_url],
+      'path' => node[:haproxy][:stats_url] + ';csv',
       'user' => node[:haproxy][:stats_user],
       'password' => node[:haproxy][:stats_password]
     }
@@ -40,7 +40,7 @@ if node.recipe?('redis::default') || node.recipe?('redis')
   services['redis'] = {
     'name' => host_id,
     'host' => 'localhost',
-    'port' => node['redis']['config']['listen_port']
+    'port' => node['redis']['config']['listen_port'].to_i
   }
 end
 
