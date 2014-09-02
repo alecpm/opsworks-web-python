@@ -61,6 +61,7 @@ if (node.recipe?('plone_buildout::varnish') || node.recipe?('varnish') ||
     action :create
     owner node[:newrelic][:varnish][:user]
     notifies :restart, 'service[newrelic-varnish-plugin]', :delayed
+    variables 'name' => host_id
   end
 
   # install bundler gem and run 'bundle install'
