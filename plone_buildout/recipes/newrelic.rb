@@ -13,7 +13,7 @@ if (node.recipes.include?('haproxy::default') ||
       'host' => 'localhost',
       'port' => 8080,
       'path' => node[:haproxy][:stats_url] + ';csv',
-      'user' => node[:haproxy][:stats_user],
+      'username' => node[:haproxy][:stats_user],
       'password' => node[:haproxy][:stats_password]
     }
 end
