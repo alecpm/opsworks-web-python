@@ -150,7 +150,7 @@ if instance_data['traceview_tracing']
                        'TRACEVIEW_SAMPLE_RATE' => instance_data["traceview_sample_rate"].to_s,
                        'TRACEVIEW_TRACING_MODE' => 'always'
                      })
-  Chef::Log.warn("Enabled Traceview on all clients")
+  Chef::Log.info("Enabled Traceview on all clients")
 end
 trace_config = ''
 if instance_data['newrelic_tracing']
@@ -170,7 +170,7 @@ if instance_data['newrelic_tracing']
       client_config << trace_config
     end
   end
-  Chef::Log.warn("Enabled newrelic on all clients") if instance_data['newrelic_tracing_clients'] == 0
+  Chef::Log.info("Enabled newrelic on all clients") if instance_data['newrelic_tracing_clients'] == 0
 end
 
 node.normal[:deploy][app_name]["environment"] = environment.update(deploy["environment"] || {})
@@ -205,7 +205,7 @@ end
     client_config << "\n" << "zeo-client-client = zeoclient-#{n}" if instance_data["persistent_cache"]
     if instance_data['newrelic_tracing'] && instance_data["newrelic_tracing_clients"] >= (n - 1)
       client_config << trace_config
-      Chef::Log.warn("Enabled newrelic on #{part}")
+      Chef::Log.info("Enabled newrelic on #{part}")
     end
   end
 end

@@ -18,7 +18,7 @@ if (node.recipes.include?('haproxy::default') ||
     }
 end
 
-if (node.recipe?('nginx::default') || 
+if (node.recipe?('nginx') || node.recipe?('nginx::default') ||
     node.recipe?('plone_buildout::nginx'))
   services['nginx'] = {
     'name' => host_id,
@@ -28,7 +28,7 @@ if (node.recipe?('nginx::default') ||
     }
 end
 
-if node.recipe?('memcached::service')
+if node.recipe?('memcached::default') || node.recipe?('memcached')
   services['memcached'] = {
     'name' => host_id,
     'host' => 'localhost',
@@ -36,7 +36,7 @@ if node.recipe?('memcached::service')
   }
 end
 
-if node.recipe?('redis::server')
+if node.recipe?('redis::default') || node.recipe?('redis')
   services['redis'] = {
     'name' => host_id,
     'host' => 'localhost',
@@ -44,7 +44,8 @@ if node.recipe?('redis::server')
   }
 end
 
-if (node.recipe?('varnish::default'))
+if (node.recipe?('plone_buildout::varnish') || node.recipe?('varnish') ||
+    node.recipe?('varnish::default'))
   # This one is a little trickier, since we can't use the meetme recipes
   install_plugin 'newrelic_varnish_plugin' do
     plugin_version   node[:newrelic][:varnish][:version]
@@ -89,7 +90,7 @@ if (node.recipe?('varnish::default'))
     action [:enable, :start]
     subscribes :restart, "template[/etc/init.d/newrelic-varnish-plugin]", :immediately
   end
-  Chef::Log.warn("Enabled newrelic varnish")
+  Chef::Log.info("Enabled newrelic varnish")
 
 end
 
@@ -105,9 +106,9 @@ if node.recipe?('plone_buildout::instances') && node['plone_instances']['newreli
     ::File.join(node[:deploy][node['plone_instances']['app_name']][:deploy_to],
                 'shared', 'env')
   include_recipe 'newrelic::python_agent'
-  Chef::Log.warn("Enabled newrelic python agent")
+  Chef::Log.info("Enabled newrelic python agent")
 end
 
 include_recipe 'newrelic_meetme_plugin' if node['newrelic_meetme_plugin']['services'].length
 
-Chef::Log.warn("Enabled newrelic plugins: #{node['newrelic_meetme_plugin']['services']}")
+Chef::Log.info("Enabled newrelic plugins: #{node['newrelic_meetme_plugin']['services']}")
