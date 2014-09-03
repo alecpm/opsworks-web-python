@@ -231,7 +231,7 @@ if instance_data["enable_celery"]
 
     if instance_data['newrelic_tracing']
       storage_config << "eggs += newrelic" << "\n"
-      storage_config << "additional_config +="
+      storage_config << "additional-config +="
       storage_config << "\n    import newrelic.agent"
       storage_config << "\n    import os"
       storage_config << "\n    config_file = os.environ.get('NEW_RELIC_CONFIG_FILE', None)"
