@@ -138,11 +138,14 @@ client_config << "\n" << "zserver-threads = #{instance_data["zserver_threads"]}"
 if not old_custom_py
     client_config << "\n" << "http-fast-listen = off"
 end
+
+trace_config = ''
+
 if instance_data['traceview_tracing']
   include_recipe "traceview::apt"
   include_recipe "traceview::default"
   additional_config << "\n" << "find-links += http://pypi.tracelytics.com/oboe"
-  client_config << "\n" << "eggs +=" << "\n    collective.traceview" << "\n    oboe"
+  trace_config << "\n" << "eggs +=" << "\n    collective.traceview" << "\n    oboe"
   environment.update({
                        'TRACEVIEW_IGNORE_EXTENSIONS' => 'js;css;png;jpeg;jpg;gif;pjpeg;x-png;pdf',
                        'TRACEVIEW_IGNORE_FOUR_OH_FOUR' => '1',
@@ -150,9 +153,8 @@ if instance_data['traceview_tracing']
                        'TRACEVIEW_SAMPLE_RATE' => instance_data["traceview_sample_rate"].to_s,
                        'TRACEVIEW_TRACING_MODE' => 'always'
                      })
-  Chef::Log.info("Enabled Traceview on all clients")
 end
-trace_config = ''
+
 if instance_data['newrelic_tracing']
   trace_config << "\n" << "eggs += collective.newrelic" << "\n"
   orig_env = deploy["environment"] || {}
@@ -161,15 +163,12 @@ if instance_data['newrelic_tracing']
                        'NEW_RELIC_CONFIG_FILE' => node['newrelic']['python_agent']['config_file'],
                        'NEW_RELIC_ENVIRONMENT' => orig_env["DEPLOYMENT"] || 'STAGING'
                      })
-  # Set for all clients if desired
-  if instance_data['newrelic_tracing_clients'] == 0 || instances == 1
-    if client_config.include? 'collective.traceview'
-      client_config << "\n    collective.newrelic"
-    else
-      client_config << trace_config
-    end
-  end
-  Chef::Log.info("Enabled newrelic on all clients") if instance_data['newrelic_tracing_clients'] == 0
+end
+
+if trace_config.length > 0 && (instance_data['tracing_clients'] == 0 ||
+                               instances == 1)
+  client_config << trace_config
+  Chef::Log.info("Enabled tracing on all clients")
 end
 
 node.normal[:deploy][app_name]["environment"] = environment.update(deploy["environment"] || {})
@@ -202,7 +201,7 @@ end
     # Hopefully we don't see port conflicts using this caclulation
     client_config << "\n" << "http-address = #{8080 + n}"
     client_config << "\n" << "zeo-client-client = zeoclient-#{n}" if instance_data["persistent_cache"]
-    if instance_data['newrelic_tracing'] && instance_data["newrelic_tracing_clients"] >= (n - 1)
+    if trace_config.length > 0 && instance_data["tracing_clients"] >= (n - 1)
       client_config << trace_config
       Chef::Log.info("Enabled newrelic on #{part}")
     end
@@ -229,9 +228,22 @@ if instance_data["enable_celery"]
     storage_config << "\n" << '[celery]' << "\n" << 'broker-host = ${celery-broker:host}'
     storage_config << "\n" << 'broker-port = ${celery-broker:port}'
     celery_cmd = 'worker'
-    init_commands.push({'name' => "celery", 'cmd' => 'bin/celery', 'args' => celery_cmd})
-    if instance_data['celerybeat']
-      init_commands.push({'name' => "celerybeat", 'cmd' => 'bin/celerybeat'})
+
+    if instance_data['newrelic_tracing']
+      storage_config << "\n" << "[newrelic-admin]"
+      storage_config << "\n" << "recipe = zc.recipe.egg:scripts" << "\n"
+      storage_config << "\n" << "eggs = newrelic" << "\n\n"
+      extra_parts.push("newrelic-admin")
+      init_commands.push({'name' => "celery", 'cmd' => 'bin/newrelic-admin', 'args' => "run-program bin/celery #{celery_cmd}"})
+
+      if instance_data['celerybeat']
+        init_commands.push({'name' => "celerybeat", 'cmd' => 'bin/newrelic-admin', 'args' => 'run-program bin/celerybeat'})
+      end
+    else
+      init_commands.push({'name' => "celery", 'cmd' => 'bin/celery', 'args' => celery_cmd})
+      if instance_data['celerybeat']
+        init_commands.push({'name' => "celerybeat", 'cmd' => 'bin/celerybeat'})
+      end
     end
   end
 end

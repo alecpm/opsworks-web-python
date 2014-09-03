@@ -69,11 +69,11 @@ default["plone_instances"]["solr_host"] = nil
 # Metrics
 # Newrelic
 default["plone_instances"]["newrelic_tracing"] = false
-# number of clients to run tracing on, 0 for all
-default["plone_instances"]["newrelic_tracing_clients"] = 1
 # Tracelytics
 default["plone_instances"]["traceview_tracing"] = false
 default["plone_instances"]["traceview_sample_rate"] = 1.0
+# number of clients to run tracing on, 0 for all
+default["plone_instances"]["tracing_clients"] = 1
 # Papertrail
 default["plone_instances"]["syslog_facility"] = nil
 default["plone_instances"]["syslog_level"] = 'INFO'

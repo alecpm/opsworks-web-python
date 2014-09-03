@@ -7,12 +7,12 @@ cookbook 'glusterfs', github: 'alecpm/glusterfs-cookbook', tag: '0.1.1'
 cookbook 'supervisor', github: 'poise/supervisor', ref: '2ebac961426eef394179c91a6cc9f9165a0f5e31'
 cookbook 'papertrail', github: 'librato/papertrail-cookbook', tag: '0.0.6'
 cookbook "traceview", github: 'Optaros/tracelytics-chef', ref: 'e0f1b2bd7b72956963626da2788c9cc6b2b90294'
+cookbook 'newrelic_meetme_plugin', github: 'alecm/newrelic_meetme_plugin'
 
 # We want to be explicit, since we don't explicitly include our
 # packages, except when testing
 cookbook 'varnish', '0.9.12'
 cookbook 'gunicorn', '1.1.2'
-#cookbook 'supervisor', '0.4.10'
 cookbook 'build-essential', '1.4.2'
 cookbook 'apt', '2.3.8'
 cookbook 'yum', '3.1.2'
@@ -26,7 +26,6 @@ cookbook 'python', '1.4.6'
 cookbook 'runit', '1.5.10'
 cookbook 'rsyslog'
 cookbook 'newrelic'
-cookbook 'newrelic_meetme_plugin'
 cookbook 'newrelic_plugins'
 
 # Uncomment the items below for testing deployments with Vagrant
