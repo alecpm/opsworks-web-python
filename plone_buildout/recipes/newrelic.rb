@@ -6,8 +6,8 @@ services = {}
 
 host_id = node[:opsworks][:stack][:name] + '--' + node[:opsworks][:instance][:hostname]
 
-if (node.recipes.include?('haproxy::default') || 
-    node.recipes.include?('plone_buildout::haproxy'))
+if (node.recipe?('haproxy::default') ||
+    node.recipe?('plone_buildout::haproxy'))
   services['haproxy'] = {
       'name' => host_id,
       'host' => 'localhost',
@@ -106,6 +106,9 @@ if node['plone_instances']['newrelic_tracing']
   node.normal['newrelic']['python_agent']['python_venv']  =
     ::File.join(node[:deploy][node['plone_instances']['app_name']][:deploy_to],
                 'shared', 'env')
+  # Append stack name to app name
+  node.normal['newrelic']["application_monitoring"]["app_name"] = (
+      node[:opsworks][:stack][:name] + ': ' + node['newrelic']["application_monitoring"]["app_name"])
   include_recipe 'newrelic::python_agent'
   Chef::Log.info("Enabled newrelic python agent")
 end

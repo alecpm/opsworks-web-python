@@ -5,7 +5,7 @@ if node.recipe?('supervisor::default')
     watch_files["/var/log/supervisor/supervisord.log"] = 'supervisor'
 end
 
-if node.recipe?('plone_buildout::instances')
+if node.recipe?('plone_buildout::instances-setup')
   app_name = node['plone_instances']['app_name']
 
   # celery related logs, this may be redundant if celery is configured
@@ -32,8 +32,8 @@ if node.recipe?('plone_buildout::instances')
   end
 end   
 
-# Solr logs, may be too much data, since it includes queries
-if node.recipe?('plone_buildout::solr')
+# Solr logs, may be too much data since it includes queries
+if node['plone_solr']['enable_papertrail'] && node.recipe?('plone_buildout::solr-setup')
   app_name = node['plone_solr']['app_name']
   solr_log = ::File.join(node[:deploy][app_name][:deploy_to], 
                          'current', 'log', 'solr.log')

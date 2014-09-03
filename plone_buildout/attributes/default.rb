@@ -85,6 +85,7 @@ default["plone_instances"]["syslog_level"] = 'INFO'
 
 # Solr Instance
 default["plone_solr"]["app_name"] = "solr"
+default["plone_solr"]["enable_papertrail"] = false
 
 # EBS Snapshot automation
 default["ebs_snapshots"]["keep"] = 15  # 15 snapshots per volume

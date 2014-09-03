@@ -165,7 +165,7 @@ if instance_data['newrelic_tracing']
   environment.update({
                        'NEW_RELIC_ENABLED' => 'true',
                        'NEW_RELIC_CONFIG_FILE' => node['newrelic']['python_agent']['config_file'],
-                       'NEW_RELIC_ENVIRONMENT' => orig_env["DEPLOYMENT"] || 'STAGING'
+                       'NEW_RELIC_ENVIRONMENT' => node[:opsworks][:stack][:name]
                      })
 end
 
