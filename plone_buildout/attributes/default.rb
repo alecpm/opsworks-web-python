@@ -72,6 +72,7 @@ default["plone_instances"]["newrelic_tracing"] = false
 default['newrelic']["application_monitoring"]["app_name"] = node['plone_instances']['app_name']
 default['newrelic']["application_monitoring"]["browser_monitoring"]["auto_instrument"] = true
 default['newrelic']["application_monitoring"]["transaction_tracer"]["slow_sql"] = false
+default['newrelic']["application_monitoring"]["transaction_tracer"]["record_sql"] = 'raw'
 
 # Tracelytics
 default["plone_instances"]["traceview_tracing"] = false
