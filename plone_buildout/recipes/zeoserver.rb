@@ -28,7 +28,7 @@ end
 if node['plone_zeoserver']['syslog_facility'] && ::File.exists?('/dev/log')
   additional_config << "\n[zeoserver]" if !additional_config.start_with?('[zeoserver]')
   additional_config << "\nzeo-log-custom =\n    "
-  additional_config << "\n    <logfile>\n      "
+  additional_config << "<logfile>\n      "
   additional_config << "path ${buildout:directory}/var/log/${:_buildout_section_name_}.log\n      level INFO\n    </logfile>\n    "
   additional_config << "<syslog>\n      address /dev/log\n      "
   additional_config << "facility #{node['plone_zeoserver']['syslog_facility']}\n      "

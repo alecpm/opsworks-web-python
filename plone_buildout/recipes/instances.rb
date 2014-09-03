@@ -67,9 +67,9 @@ if instance_data["enable_relstorage"]
       # We set a poll-interval if we are using caches
       storage_config << "\n" << "poll-interval = 60"
       # BBB
-      storage_config << "\n" << "cache-servers = ${memcached:servers}"
+      storage_config << "\n" << "cache-servers = ${memcached:servers}" << "\n"
       # The actual setting
-      storage_config << "\n" << '[memcached]' << "\n" << "servers = #{cache_servers}"
+      storage_config << "\n" << '[memcached]' << "\n" << "servers = #{cache_servers}" << "\n"
     end
   end
   # Packing to be enabled on only one instance
@@ -80,7 +80,7 @@ if instance_data["enable_relstorage"]
     else
       extra_parts.push("zodbpack")
     end
-    storage_config << "\n" << "[zodbpack]" << "\n" << "pack-days = #{storage["pack_days"]}"
+    storage_config << "\n" << "[zodbpack]" << "\n" << "pack-days = #{storage["pack_days"]}" << "\n"
   end
 else
   storage = instance_data["zeo"]
@@ -97,10 +97,10 @@ else
   end
   if address
     storage_config << "\n" << '[zeo-host]'
-    storage_config << "\n" << "address = #{address}"
+    storage_config << "\n" << "address = #{address}" << "\n"
     # BBB
     storage_config << "\n" << '[zeoserver]'
-    storage_config << "\n" << 'address = ${zeo-host:address}'
+    storage_config << "\n" << 'address = ${zeo-host:address}' << "\n"
   end
 end
 
@@ -108,13 +108,13 @@ if instance_data["solr_enabled"] && node[:opsworks]
   solr_layer = instance_data["solr_layer"]
   if instance_data["solr_host"]
     # Update solr environment
-    storage_config << "\n" << "[solr-host]" << "\n" << "host = #{instance_data["solr_host"]}"
+    storage_config << "\n" << "[solr-host]" << "\n" << "host = #{instance_data["solr_host"]}" << "\n"
   elsif  node[:opsworks] && node[:opsworks][:layers] && node[:opsworks][:layers][solr_layer] &&  node[:opsworks][:layers][solr_layer][:instances]
     instance_name, solr_instance = node[:opsworks][:layers][solr_layer][:instances].detect {
       |name, instance| instance[:status] == "online"
     }
     if solr_instance
-      storage_config << "\n" << "[solr-host]" << "\n" << "host = #{solr_instance[:public_dns_name] || solr_instance[:private_dns_name]}"
+      storage_config << "\n" << "[solr-host]" << "\n" << "host = #{solr_instance[:public_dns_name] || solr_instance[:private_dns_name]}" << "\n"
     end
   end
 end
@@ -180,7 +180,7 @@ Chef::Log.debug("Merged environment: #{node[:deploy][app_name]["environment"]}")
 # Add rsyslog logging if desired
 if node['plone_instances']['syslog_facility'] && ::File.exists?('/dev/log')
   client_config << "\nevent-log-custom =\n    "
-  client_config << "\n    <logfile>\n      "
+  client_config << "<logfile>\n      "
   client_config << "path ${buildout:directory}/var/log/${:_buildout_section_name_}.log\n      level INFO\n    </logfile>\n    "
   client_config << "<syslog>\n      address /dev/log\n      "
   client_config << "facility #{node['plone_instances']['syslog_facility']}\n      "
@@ -226,24 +226,22 @@ if instance_data["enable_celery"]
     storage_config << "\n" << "port = #{port}"
     # For BBB with existing deployments
     storage_config << "\n" << '[celery]' << "\n" << 'broker-host = ${celery-broker:host}'
-    storage_config << "\n" << 'broker-port = ${celery-broker:port}'
+    storage_config << "\n" << 'broker-port = ${celery-broker:port}' << "\n"
     celery_cmd = 'worker'
 
     if instance_data['newrelic_tracing']
-      storage_config << "\n" << "[newrelic-admin]"
-      storage_config << "\n" << "recipe = zc.recipe.egg:scripts" << "\n"
-      storage_config << "\n" << "eggs = newrelic" << "\n\n"
-      extra_parts.push("newrelic-admin")
-      init_commands.push({'name' => "celery", 'cmd' => 'bin/newrelic-admin', 'args' => "run-program bin/celery #{celery_cmd}"})
-
-      if instance_data['celerybeat']
-        init_commands.push({'name' => "celerybeat", 'cmd' => 'bin/newrelic-admin', 'args' => 'run-program bin/celerybeat'})
-      end
-    else
-      init_commands.push({'name' => "celery", 'cmd' => 'bin/celery', 'args' => celery_cmd})
-      if instance_data['celerybeat']
-        init_commands.push({'name' => "celerybeat", 'cmd' => 'bin/celerybeat'})
-      end
+      storage_config << "eggs += newrelic" << "\n"
+      storage_config << "additional_config +="
+      storage_config << "\n    import newrelic.agent"
+      storage_config << "\n    import os"
+      storage_config << "\n    config_file = os.environ.get('NEW_RELIC_CONFIG_FILE', None)"
+      storage_config << "\n    environment = os.environ.get('NEW_RELIC_ENVIRONMENT', None)"
+      storage_config << "\n    os.environ['NEW_RELIC_LICENSE_KEY'] = '#{node['newrelic']['license']}'"
+      storage_config << "\n    newrelic.agent.initialize(config_file, environment)" << "\n"
+    end
+    init_commands.push({'name' => "celery", 'cmd' => 'bin/celery', 'args' => celery_cmd})
+    if instance_data['celerybeat']
+      init_commands.push({'name' => "celerybeat", 'cmd' => 'bin/celerybeat'})
     end
   end
 end
