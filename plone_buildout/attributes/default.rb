@@ -69,6 +69,10 @@ default["plone_instances"]["solr_host"] = nil
 # Metrics
 # Newrelic
 default["plone_instances"]["newrelic_tracing"] = false
+default['newrelic']["application_monitoring"]["app_name"] = node['plone_instances']['app_name']
+default['newrelic']["application_monitoring"]["browser_monitoring"]["auto_instrument"] = true
+default['newrelic']["application_monitoring"]["transaction_tracer"]["slow_sql"] = false
+
 # Tracelytics
 default["plone_instances"]["traceview_tracing"] = false
 default["plone_instances"]["traceview_sample_rate"] = 1.0
