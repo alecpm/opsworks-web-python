@@ -156,7 +156,11 @@ if instance_data['traceview_tracing']
 end
 
 if instance_data['newrelic_tracing']
-  trace_config << "\n" << "eggs += collective.newrelic" << "\n"
+  if trace_config.include?('collective.traceview')
+    trace_config << "\n    collective.newrelic" << "\n"
+  else
+    trace_config << "\n" << "eggs += collective.newrelic" << "\n"
+  end
   orig_env = deploy["environment"] || {}
   environment.update({
                        'NEW_RELIC_ENABLED' => 'true',
