@@ -145,7 +145,7 @@ if instance_data['traceview_tracing']
   include_recipe "traceview::apt"
   include_recipe "traceview::default"
   additional_config << "\n" << "find-links += http://pypi.tracelytics.com/oboe"
-  trace_config << "\n" << "eggs +=" << "\n    collective.traceview" << "\n    oboe"
+  trace_config << "\n    collective.traceview" << "\n    oboe"
   environment.update({
                        'TRACEVIEW_IGNORE_EXTENSIONS' => 'js;css;png;jpeg;jpg;gif;pjpeg;x-png;pdf',
                        'TRACEVIEW_IGNORE_FOUR_OH_FOUR' => '1',
@@ -156,11 +156,7 @@ if instance_data['traceview_tracing']
 end
 
 if instance_data['newrelic_tracing']
-  if trace_config.include?('collective.traceview')
-    trace_config << "\n    collective.newrelic" << "\n"
-  else
-    trace_config << "\n" << "eggs += collective.newrelic" << "\n"
-  end
+  trace_config << "\n    collective.newrelic" << "\n"
   orig_env = deploy["environment"] || {}
   environment.update({
                        'NEW_RELIC_ENABLED' => 'true',
@@ -171,7 +167,7 @@ end
 
 if trace_config.length > 0 && (instance_data['tracing_clients'] == 0 ||
                                instances == 1)
-  client_config << trace_config
+  client_config << "\neggs +=" << trace_config
   Chef::Log.info("Enabled tracing on all clients")
 end
 
@@ -206,7 +202,7 @@ end
     client_config << "\n" << "http-address = #{8080 + n}"
     client_config << "\n" << "zeo-client-client = zeoclient-#{n}" if instance_data["persistent_cache"]
     if trace_config.length > 0 && instance_data["tracing_clients"] >= (n - 1)
-      client_config << trace_config
+      client_config << "\neggs =" << "\n    ${client1:eggs}" << trace_config
       Chef::Log.info("Enabled newrelic on #{part}")
     end
   end
