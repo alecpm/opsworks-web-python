@@ -101,7 +101,7 @@ node.normal['newrelic_meetme_plugin']['services'] = services
 
 include_recipe 'newrelic'
 
-if node['plone_instances']['newrelic_tracing']
+if node.recipe?('plone_buildout::instances-setup') && node['plone_instances']['newrelic_tracing']
   # install the python agent in the buildout venv
   node.normal['newrelic']['python_agent']['python_venv']  =
     ::File.join(node[:deploy][node['plone_instances']['app_name']][:deploy_to],
