@@ -101,6 +101,7 @@ default['nginx_plone']['additional_servers'] = nil
 default['nginx_plone']['additional_config'] = nil
 default['nginx_plone']['additional_ssl_config'] = nil
 default['nginx_plone']['proxy_port'] = 6081
+default['nginx_plone']['log_retention_days'] = 14
 
 # Varnish config options
 default['varnish_plone']['grace'] = 60

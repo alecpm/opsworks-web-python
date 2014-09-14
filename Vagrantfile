@@ -18,7 +18,6 @@ Vagrant.configure("2") do |config|
   # ruby, so we symlink manually.
   config.vm.provision :shell, :inline => 'if [[ `chef --version` != *11.10.* ]]; then apt-get update;  apt-get install python-software-properties --no-upgrade --yes; add-apt-repository ppa:brightbox/ruby-ng-experimental; apt-get update; apt-get install build-essential bash-completion ruby2.0 ruby2.0-dev --yes; update-alternatives --set ruby /usr/bin/ruby2.0 || ln -sf /usr/bin/ruby2.0 /usr/bin/ruby; update-alternatives --set gem /usr/bin/gem2.0 || ln -sf /usr/bin/gem2.0 /usr/bin/gem; gem install chef --version 11.10.4 --no-rdoc --no-ri --conservative; fi'
   config.vm.provision :chef_solo do |chef|
-    chef.cookbooks_path = "."
     chef.add_recipe("plone_buildout::example")
     chef.json = {}
   end
