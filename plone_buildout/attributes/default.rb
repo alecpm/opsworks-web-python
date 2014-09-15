@@ -76,7 +76,7 @@ default['newrelic']["application_monitoring"]["transaction_tracer"]["record_sql"
 
 # Tracelytics
 default["plone_instances"]["traceview_tracing"] = false
-default["plone_instances"]["traceview_sample_rate"] = 1.0
+default["plone_instances"]["traceview_sample_rate"] = 0.1
 # number of clients to run tracing on, 0 for all
 default["plone_instances"]["tracing_clients"] = 1
 # Papertrail
