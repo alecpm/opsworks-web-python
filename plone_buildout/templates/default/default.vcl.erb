@@ -130,6 +130,10 @@ sub vcl_fetch {
         set beresp.http.X-Varnish-Action = "FETCH (pass - not cacheable)";
         return(hit_for_pass);
     }
+    if (!req.http.X-Anonymous && beresp.http.ETag ~ "^|") {
+        set beresp.http.X-Varnish-Action = "FETCH (override - cache as anon)";
+        set req.http.X-Anonymous = "True";
+    }
     return(deliver);
 }
 
