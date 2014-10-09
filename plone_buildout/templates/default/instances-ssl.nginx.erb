@@ -14,8 +14,28 @@ server {
 
     <%= node['nginx_plone']['additional_ssl_config'] %>
 
+    if ($request_filename ~* ^.*?/([^/]*?)$) {
+        set $filename $1;
+    }
+    if ($filename ~* ^.*?\.(eot)|(ttf)|(woff)$) {
+        set $is_font 1;
+    }
+
     # Rewrite Plone URLs and proxy everything to Varnish
     location / {
+        # Avoid duplicate entries in search engines due to trailing slashes
+        if ( $http_user_agent ~* ^(Googlebot|msnbot|Bingbot|BingPreview|Yahoo|Baiduspider) ) {
+            rewrite ^/(.*)/$ /$1 permanent;
+        }
+        # Remove trailing /
+        rewrite ^/(.*)/$ /$1;
+
+        # IE needs CORS headers on all fonts
+        if ($is_font) {
+            add_header Access-Control-Allow-Origin *;
+            add_header Access-Control-Allow-Methods GET,OPTIONS,HEAD;
+        }
+
         rewrite ^/(.*)$ /VirtualHostBase/$scheme/$http_host:$server_port/<%= node["plone_instances"]["site_id"]%>/VirtualHostRoot/$1 break;
         proxy_pass http://cache;
         proxy_connect_timeout 75;

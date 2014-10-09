@@ -28,6 +28,12 @@ server {
     location = <%= node[:haproxy][:stats_url] %> {
         proxy_pass http://balancer;
     }
+    if ($request_filename ~* ^.*?/([^/]*?)$) {
+        set $filename $1;
+    }
+    if ($filename ~* ^.*?\.(eot)|(ttf)|(woff)$) {
+        set $is_font 1;
+    }
     
     # Rewrite Plone URLs and proxy everything to Varnish
     location / {
@@ -37,6 +43,12 @@ server {
         }
         # Remove trailing /
         rewrite ^/(.*)/$ /$1;
+
+        # IE needs CORS headers on all fonts
+        if ($is_font) {
+            add_header Access-Control-Allow-Origin *;
+            add_header Access-Control-Allow-Methods GET,OPTIONS,HEAD;
+        }
 
         rewrite ^/(.*)$ /VirtualHostBase/$scheme/$host:$server_port/<%= node["plone_instances"]["site_id"]%>/VirtualHostRoot/$1 break;
         proxy_pass http://cache;
