@@ -2,6 +2,7 @@ server {
     listen  443;
 
     ssl on;
+    ssl_protocols TLSv1.2 TLSv1.1 TLSv1;
     ssl_certificate /etc/nginx/ssl/<%= @application[:domains].first %>.crt;
     ssl_certificate_key /etc/nginx/ssl/<%= @application[:domains].first %>.key;
     <% if @application[:ssl_certificate_ca] -%>
