@@ -2,7 +2,8 @@ define :blob_mounts do
   deploy = params[:deploy_data]
   use_gluster = params[:use_gluster]
 
-  base_dir = ::File.join(deploy[:deploy_to], "shared")
+  ephemeral = node[:opsworks_initial_setup] && node[:opsworks_initial_setup][:ephemeral_mount_point] || '/'
+  base_dir = ::File.join(ephemeral, deploy[:deploy_to], "shared")
   mount_dir = ::File.join(base_dir, "exports")
   blob_dir = ::File.join(base_dir, "var", "blobstorage")
   blob_mount_dir = File.join(mount_dir, "blobstorage")

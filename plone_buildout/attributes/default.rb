@@ -1,3 +1,5 @@
+ephemeral = node[:opsworks_initial_setup] && node[:opsworks_initial_setup][:ephemeral_mount_point] || '/'
+
 default["plone_zeoserver"]["app_name"] = "zeoserver"
 default["plone_zeoserver"]["enable_backup"] = true
 default["plone_zeoserver"]["blob_dir"] = nil
@@ -7,7 +9,7 @@ default["plone_zeoserver"]["gluster_blobs"] = false
 # NFS shared blobs should be assigned to their own layer
 default["plone_blobs"]["layer"] = "shared_blobs"
 default["plone_blobs"]["nfs_export_dir"] = '/srv/exports'
-default["plone_blobs"]["gluster_export_dir"] = '/mnt/gluster-exports'
+default["plone_blobs"]["gluster_export_dir"] = ::File.join(ephemeral, 'gluster-exports')
 default["plone_blobs"]["network"] = nil
 default["plone_blobs"]["host"] = nil
 default["plone_blobs"]["servers"] = nil
@@ -88,8 +90,8 @@ default['varnish_plone']['default_ttl'] = 300
 
 # Change default configs for other packages
 node.normal["redis"]["config"]["listen_addr"] = "0.0.0.0"
-node.normal["redis"]["config"]["dir"] = "/mnt/redis"
-node.normal["redis"]["config"]['vm'][:vm_swap_file] = "/mnt/redis/redis.swap"
+node.normal["redis"]["config"]["dir"] = ::File.join(ephemeral, 'redis')
+node.normal["redis"]["config"]["vm"][:vm_swap_file] = ::File.join(ephemeral, 'redis/redis.swap')
 node.normal[:haproxy][:balance] = "leastconn"
 node.normal[:haproxy][:retries] = 3
 node.normal[:haproxy][:check_interval] = 10000

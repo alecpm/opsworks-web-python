@@ -1,7 +1,9 @@
 node.normal[:nginx][:client_max_body_size] = '128m'
 
+ephemeral = node[:opsworks_initial_setup] && node[:opsworks_initial_setup][:ephemeral_mount_point] || '/'
+log_dir = ::File.join(ephemeral, '/var/log/nginx')
 # Store logs on large fast instance storage
-directory '/mnt/var/log/nginx' do
+directory log_dir do
   recursive true
   action :create
 end
@@ -11,7 +13,7 @@ directory '/var/log/nginx' do
 end
 
 mount '/var/log/nginx' do
-  device '/mnt/var/log/nginx'
+  device log_dir
   fstype 'none'
   options "bind,rw"
   action [:mount, :enable]

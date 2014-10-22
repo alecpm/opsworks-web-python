@@ -11,13 +11,14 @@ mount '/var/lib/varnish' do
   action [:mount, :enable]
 end
 
-# The storage on /mnt is quite a bit faster than on / for our cache file
-directory '/mnt/varnish' do
+ephemeral = node[:opsworks_initial_setup] && node[:opsworks_initial_setup][:ephemeral_mount_point] || '/'
+# The ephemeral storage is quite a bit faster than root for our cache file
+directory ::File.join(ephemeral, '/varnish') do
   recursive true
   action :create
 end
 
 node.normal["varnish"]["vcl_cookbook"] = "plone_buildout"
-node.normal['varnish']['storage_file'] = "/mnt/varnish/varnish_storage.bin"
+node.normal['varnish']['storage_file'] = ::File.join(ephemeral, 'varnish/varnish_storage.bin')
 
 include_recipe "varnish"
