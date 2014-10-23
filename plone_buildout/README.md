@@ -653,8 +653,8 @@ which provides detailed application profiling of Plone using the
 collective.traceview addon.  This functionality is somewhat redundant with New
 Relic tracing support, but can provide python profiles with a bit more detail.
 To enable traceview tracing add the `plone_buildout::traceview` recipe to the
-setup action for your Plone Instance layer.  It is based on the [tracelytics-
-chef cookbook](https://github.com/Optaros/tracelytics-chef) and supports the
+setup action for your Plone Instance layer.  It is based on the [tracelytics-chef
+cookbook](https://github.com/Optaros/tracelytics-chef) and supports the
 configuration defined in that recipe.  The most essential settings are:
 
   * `traceview["access_key"]`: Your Traceview account access key
