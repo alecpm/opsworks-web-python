@@ -141,6 +141,8 @@ define :buildout_configure do
             directory ::File.join(deploy[:deploy_to], "current")
             autostart true
             action :nothing
+            stdout_logfile "/var/log/supervisor/#{service_name}-stdout.log"
+            stderr_logfile "/var/log/supervisor/#{service_name}-stderr.log"
             if command['delay'] && command['delay'] != 0
               # Only delay if the service is already running, only restart once
               only_if do

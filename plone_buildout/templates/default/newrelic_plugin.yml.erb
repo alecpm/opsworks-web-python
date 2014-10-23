@@ -1,0 +1,29 @@
+newrelic:
+
+  license_key: '<%= node[:newrelic][:license] %>'
+  #
+  # Set to '1' for verbose output, remove for normal output.
+  # All output goes to stdout/stderr.
+  #
+  # verbose: 1
+
+  # Proxy configuration:
+  #proxy:
+  #  address: localhost
+  #  port: 8080
+  #  user: nil
+  #  password: nil
+
+  # All plugin data goes to collector.newrelic.com
+  # host: "collector.newrelic.com"
+
+#
+# Agent Configuration:
+#
+agents:
+  varnish:
+    # Define one or more agents for each varnish instance
+    -
+      name: "Varnish <%= @name %>"
+      # -n argument for Varnish
+      vname:

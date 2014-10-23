@@ -111,7 +111,7 @@ The `django` recipe deploys django projects from an SCM repository.  It is based
 
   All of these attributes are set globally in node[:deploy_django], but they also can be read on an application specific basis prefixed by `buildout_` as `node[:deploy][application_name]['django_#{attribute}']`.
 
-The following are genera deploy related attributes to be set on `node[:deploy][application_name]` without a prefix:
+The following are general deploy related attributes to be set on `node[:deploy][application_name]` without a prefix:
 
 - migrate: A boolean indicating whether migrations should be run
 - migration_command: a command to be executed for database migrations

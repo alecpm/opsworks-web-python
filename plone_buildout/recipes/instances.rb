@@ -67,9 +67,9 @@ if instance_data["enable_relstorage"]
       # We set a poll-interval if we are using caches
       storage_config << "\n" << "poll-interval = 60"
       # BBB
-      storage_config << "\n" << "cache-servers = ${memcached:servers}"
+      storage_config << "\n" << "cache-servers = ${memcached:servers}" << "\n"
       # The actual setting
-      storage_config << "\n" << '[memcached]' << "\n" << "servers = #{cache_servers}"
+      storage_config << "\n" << '[memcached]' << "\n" << "servers = #{cache_servers}" << "\n"
     end
   end
   # Packing to be enabled on only one instance
@@ -80,7 +80,7 @@ if instance_data["enable_relstorage"]
     else
       extra_parts.push("zodbpack")
     end
-    storage_config << "\n" << "[zodbpack]" << "\n" << "pack-days = #{storage["pack_days"]}"
+    storage_config << "\n" << "[zodbpack]" << "\n" << "pack-days = #{storage["pack_days"]}" << "\n"
   end
 else
   storage = instance_data["zeo"]
@@ -97,10 +97,10 @@ else
   end
   if address
     storage_config << "\n" << '[zeo-host]'
-    storage_config << "\n" << "address = #{address}"
+    storage_config << "\n" << "address = #{address}" << "\n"
     # BBB
     storage_config << "\n" << '[zeoserver]'
-    storage_config << "\n" << 'address = ${zeo-host:address}'
+    storage_config << "\n" << 'address = ${zeo-host:address}' << "\n"
   end
 end
 
@@ -108,13 +108,13 @@ if instance_data["solr_enabled"] && node[:opsworks]
   solr_layer = instance_data["solr_layer"]
   if instance_data["solr_host"]
     # Update solr environment
-    storage_config << "\n" << "[solr-host]" << "\n" << "host = #{instance_data["solr_host"]}"
+    storage_config << "\n" << "[solr-host]" << "\n" << "host = #{instance_data["solr_host"]}" << "\n"
   elsif  node[:opsworks] && node[:opsworks][:layers] && node[:opsworks][:layers][solr_layer] &&  node[:opsworks][:layers][solr_layer][:instances]
     instance_name, solr_instance = node[:opsworks][:layers][solr_layer][:instances].detect {
       |name, instance| instance[:status] == "online"
     }
     if solr_instance
-      storage_config << "\n" << "[solr-host]" << "\n" << "host = #{solr_instance[:public_dns_name] || solr_instance[:private_dns_name]}"
+      storage_config << "\n" << "[solr-host]" << "\n" << "host = #{solr_instance[:public_dns_name] || solr_instance[:private_dns_name]}" << "\n"
     end
   end
 end
@@ -139,11 +139,54 @@ if not old_custom_py
     client_config << "\n" << "http-fast-listen = off"
 end
 
-node.normal[:deploy][app_name]["environment"] = environment.update(deploy[:environment] || {})
+trace_config = ''
+
+if instance_data['traceview_tracing']
+  include_recipe "traceview::apt"
+  include_recipe "traceview::default"
+  additional_config << "\n" << "find-links += http://pypi.tracelytics.com/oboe"
+  trace_config << "\n    collective.traceview" << "\n    oboe"
+  environment.update({
+                       'TRACEVIEW_IGNORE_EXTENSIONS' => 'js;css;png;jpeg;jpg;gif;pjpeg;x-png;pdf',
+                       'TRACEVIEW_IGNORE_FOUR_OH_FOUR' => '1',
+                       'TRACEVIEW_PLONE_TRACING' => '1',
+                       'TRACEVIEW_SAMPLE_RATE' => instance_data["traceview_sample_rate"].to_s,
+                       'TRACEVIEW_TRACING_MODE' => 'always'
+                     })
+end
+
+if instance_data['newrelic_tracing']
+  trace_config << "\n    collective.newrelic" << "\n"
+  orig_env = deploy["environment"] || {}
+  environment.update({
+                       'NEW_RELIC_ENABLED' => 'true',
+                       'NEW_RELIC_CONFIG_FILE' => node['newrelic']['python_agent']['config_file'],
+                       'NEW_RELIC_ENVIRONMENT' => node[:opsworks][:stack][:name]
+                     })
+end
+
+if trace_config.length > 0 && (instance_data['tracing_clients'] == 0 ||
+                               instances == 1)
+  client_config << "\neggs +=" << trace_config
+  Chef::Log.info("Enabled tracing on all clients")
+end
+
+node.normal[:deploy][app_name]["environment"] = environment.update(deploy["environment"] || {})
 # Add environment variables to client config, enforce ordering
 client_config << "\n" << "environment-vars +="
 (node[:deploy][app_name]["environment"].sort_by { |key, value| key.to_s }).each { |item| client_config << "\n    #{item[0]} #{item[1]}" if !item[0].match(/^(TMP|TEMP|RUBY|RAILS|RACK)/) }
 Chef::Log.debug("Merged environment: #{node[:deploy][app_name]["environment"]}")
+
+# Add rsyslog logging if desired
+if node['plone_instances']['syslog_facility'] && ::File.exists?('/dev/log')
+  client_config << "\nevent-log-custom =\n    "
+  client_config << "<logfile>\n      "
+  client_config << "path ${buildout:directory}/var/log/${:_buildout_section_name_}.log\n      level INFO\n    </logfile>\n    "
+  client_config << "<syslog>\n      address /dev/log\n      "
+  client_config << "facility #{node['plone_instances']['syslog_facility']}\n      "
+  client_config << "format ${:_buildout_section_name_}: %(message)s\n      "
+  client_config << "level #{node['plone_instances']['syslog_level']}\n    </syslog>\n"
+end
 
 # client1 is already defined in the base configs.  Add more parts
 # based on cpu count or explicit specification, and put them all in
@@ -158,6 +201,10 @@ Chef::Log.debug("Merged environment: #{node[:deploy][app_name]["environment"]}")
     # Hopefully we don't see port conflicts using this caclulation
     client_config << "\n" << "http-address = #{8080 + n}"
     client_config << "\n" << "zeo-client-client = zeoclient-#{n}" if instance_data["persistent_cache"]
+    if trace_config.length > 0 && instance_data["tracing_clients"] >= (n - 1)
+      client_config << "\neggs =" << "\n    ${client1:eggs}" << trace_config
+      Chef::Log.info("Enabled newrelic on #{part}")
+    end
   end
 end
 
@@ -179,8 +226,19 @@ if instance_data["enable_celery"]
     storage_config << "\n" << "port = #{port}"
     # For BBB with existing deployments
     storage_config << "\n" << '[celery]' << "\n" << 'broker-host = ${celery-broker:host}'
-    storage_config << "\n" << 'broker-port = ${celery-broker:port}'
+    storage_config << "\n" << 'broker-port = ${celery-broker:port}' << "\n"
     celery_cmd = 'worker'
+
+    if instance_data['newrelic_tracing']
+      storage_config << "eggs += newrelic" << "\n"
+      storage_config << "additional-config +="
+      storage_config << "\n    import newrelic.agent"
+      storage_config << "\n    import os"
+      storage_config << "\n    config_file = os.environ.get('NEW_RELIC_CONFIG_FILE', None)"
+      storage_config << "\n    environment = os.environ.get('NEW_RELIC_ENVIRONMENT', None)"
+      storage_config << "\n    os.environ['NEW_RELIC_LICENSE_KEY'] = '#{node['newrelic']['license']}'"
+      storage_config << "\n    newrelic.agent.initialize(config_file, environment)" << "\n"
+    end
     init_commands.push({'name' => "celery", 'cmd' => 'bin/celery', 'args' => celery_cmd})
     if instance_data['celerybeat']
       init_commands.push({'name' => "celerybeat", 'cmd' => 'bin/celerybeat'})

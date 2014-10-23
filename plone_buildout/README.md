@@ -592,6 +592,85 @@ This cookbook also includes a couple simple helper recipes:
   * instances-develop-up: Re-runs `bin/develop up` on all plone_instances layers, does not restart instances.  Useful for quick deployment of resource/template changes when developing.
 
 
+## Server/Application Monitoring
+
+OpsWorks provides a nice panel with graphs of server utilization, and
+CloudWatch provides configurable alerting.  However, there are a few essential
+things that can't be easily monitored via CloudWatch, including disk space
+remaining and HTTP service checking.  Fortunately there are 3rd party services
+which offer a combination of server and application monitoring.  This cookbook
+includes a few optional monitoring service integrations.
+
+
+### New Relic
+
+[New Relic](http://newrelic.com) offers full stack server amd application
+monitoring, including application performance profiling.  For each layer on
+which you wish to implement monitoring, add the `plone_buildout::newrelic`
+recipe to the setup action. The newrelic recipe has support for monitoring the
+Plone application (using `collective.newrelic`), Nginx, HAProxy, Varnish,
+Memcached and Redis.  It is based on the [newrelic
+cookbook](https://github.com /escapestudios-cookbooks/newrelic) and supports
+the configuration options from that cookbook.  The following settings are the
+most essential:
+
+  * `newrelic["license"]`: Your New Relic license key (sign up for a free
+account at http://newrelic.com/aws)
+  * `plone_instances["newrelic_tracing"]`: Boolean to enable New Relic
+application monitoring for Plone
+  * `plone_instances["tracing_clients"]`: How many Zeo clients to enable
+monitoring on (0 for all)
+  * `new_relic["browser_monitoring"]["auto_instrument"]`: Boolean to enable
+template transform to inject client side monitoring code
+
+I recommend pulling in the chameleon-support branch of collective.newrelic
+into your buildout to get the most up to date Plone New Relic integration.
+
+
+### Papertrail
+
+[Papertrail](http://papertrailapp.com) is a syslog service which provides
+centralized monitoring and searching of server logs.  The recipe currently
+supports sending all syslog logs, including HAProxy, Zeoserver and Zeo
+clients, as well as additional support for supervisor, solr, nginx (errors)
+and redis logs. For each layer on which you wish to implement Papertrail
+monitoring, add the `plone_buildout::papertrail` recipe to the setup action.
+It is is based on the [papertrail-cookbook](https://github.com/librato/papertrail-cookbook)
+and supports te configuration options from that cookbook.  The essential
+settings are:
+
+  * `papertrail["remote_host"]`: Remote log host provided by Papertrail
+  * `papertrail["remote_port"`: Remote log port provided by Papertrail
+  * `plone_instances["syslog_level"]`: Log level to include (e.g. INFO) for
+instance logs
+  * `plone_zeoserver["syslog_level"]`: Log level to include (e.g. INFO) for
+zeoserver logs
+
+
+### Traceview
+
+[AppNeta Traceview](http://www.appneta.com/products/traceview/) is a service
+which provides detailed application profiling of Plone using the
+`collective.traceview` addon.  This functionality is somewhat redundant with New
+Relic tracing support, but can provide python profiles with a bit more detail.
+To enable traceview tracing add the `plone_buildout::traceview` recipe to the
+setup action for your Plone Instance layer.  It is based on the [tracelytics-chef
+cookbook](https://github.com/Optaros/tracelytics-chef) and supports the
+configuration defined in that recipe.  The most essential settings are:
+
+  * `traceview["access_key"]`: Your Traceview account access key
+  * `plone_instances["traceview_tracing"]`: Boolean to enable traceview tracing for
+Plone
+  * `plone_instances["tracing_clients"]`: How many Zeo clients to enable
+monitoring on (0 for all)
+  * `plone_instances["traceview_sample_rate"]`: What percentage of requests to
+profile (1.0 is all requests)
+
+Traceview support is experimental and not recommended for use in production.
+Specifically, the deb package installed automatically modifies the nginx
+config in a manner that can break responses containing HTML fragments.
+
+
 ## Motivation
 
 After reading this, it still may not be clear why so many stack layers

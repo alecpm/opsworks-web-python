@@ -14,6 +14,7 @@ client_body_buffer_size 32k;
 server {
     listen *:80 default_server;
     server_name _;
+    gzip_types application/x-javascript application/xhtml+xml application/xml application/xml+rss text/css text/javascript text/plain text/xml application/json text/json;
 
     # Show status information on /_main-status
     location = /_main_status_ {
@@ -27,6 +28,12 @@ server {
     location = <%= node[:haproxy][:stats_url] %> {
         proxy_pass http://balancer;
     }
+    if ($request_filename ~* ^.*?/([^/]*?)$) {
+        set $filename $1;
+    }
+    if ($filename ~* ^.*?\.(eot)|(ttf)|(woff)$) {
+        set $is_font 1;
+    }
     
     # Rewrite Plone URLs and proxy everything to Varnish
     location / {
@@ -34,9 +41,14 @@ server {
         if ( $http_user_agent ~* ^(Googlebot|msnbot|Bingbot|BingPreview|Yahoo|Baiduspider) ) {
             rewrite ^/(.*)/$ /$1 permanent;
         }
-
         # Remove trailing /
         rewrite ^/(.*)/$ /$1;
+
+        # IE needs CORS headers on all fonts
+        if ($is_font) {
+            add_header Access-Control-Allow-Origin *;
+            add_header Access-Control-Allow-Methods GET,OPTIONS,HEAD;
+        }
 
         rewrite ^/(.*)$ /VirtualHostBase/$scheme/$host:$server_port/<%= node["plone_instances"]["site_id"]%>/VirtualHostRoot/$1 break;
         proxy_pass http://cache;
