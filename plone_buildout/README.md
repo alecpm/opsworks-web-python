@@ -604,14 +604,15 @@ includes a few optional monitoring service integrations.
 
 ### New Relic
 
-[New Relic](http://newrelic.com) offers full stack application monitoring,
-including application performance monitoring.  For each layer on which you
-wish to implement monitoring, add the `plone_buildout::newrelic` recipe to the
-setup action. The newrelic recipe has support for monitoring the Plone
-application (using collective.newrelic), Nginx, HAProxy, Varnish, Memcached
-and Redis.  It is based on the [newrelic cookbook](https://github.com
-/escapestudios-cookbooks/newrelic) and supports the configuration options from
-that cookbook.  The following settings are the most essential:
+[New Relic](http://newrelic.com) offers full stack server amd application
+monitoring, including application performance profiling.  For each layer on
+which you wish to implement monitoring, add the `plone_buildout::newrelic`
+recipe to the setup action. The newrelic recipe has support for monitoring the
+Plone application (using `collective.newrelic`), Nginx, HAProxy, Varnish,
+Memcached and Redis.  It is based on the [newrelic
+cookbook](https://github.com /escapestudios-cookbooks/newrelic) and supports
+the configuration options from that cookbook.  The following settings are the
+most essential:
 
   * `newrelic["license"]`: Your New Relic license key (sign up for a free
 account at http://newrelic.com/aws)
@@ -650,7 +651,7 @@ zeoserver logs
 
 [AppNeta Traceview](http://www.appneta.com/products/traceview/) is a service
 which provides detailed application profiling of Plone using the
-collective.traceview addon.  This functionality is somewhat redundant with New
+`collective.traceview` addon.  This functionality is somewhat redundant with New
 Relic tracing support, but can provide python profiles with a bit more detail.
 To enable traceview tracing add the `plone_buildout::traceview` recipe to the
 setup action for your Plone Instance layer.  It is based on the [tracelytics-chef
