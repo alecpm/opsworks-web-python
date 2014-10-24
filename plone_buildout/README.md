@@ -620,8 +620,8 @@ account at http://newrelic.com/aws)
 application monitoring for Plone
   * `plone_instances["tracing_clients"]`: How many Zeo clients to enable
 monitoring on (0 for all)
-  * `new_relic["browser_monitoring"]["auto_instrument"]`: Boolean to enable
-template transform to inject client side monitoring code
+  * `new_relic["application_monitoring"]["browser_monitoring"]["auto_instrument"]`: Boolean
+to enable template transform to inject client side monitoring code
 
 I recommend pulling in the chameleon-support branch of collective.newrelic
 into your buildout to get the most up to date Plone New Relic integration.
