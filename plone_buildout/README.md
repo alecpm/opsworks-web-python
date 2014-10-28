@@ -204,7 +204,7 @@ storage under the `plone_blobs` key.  See `attributes/defaults.rb` for
 details.  If you would like to simply use a shared blob dir on a
 single instance, you may remove this layer, and set the "plone_blobs":
 "blob_dir" attribute to the desired location (generally
-`/srv/www/zeoserver/shared/var/blobstorage`).
+`/mnt/shared/blobstorage`).
 
 ##### Notes on using GlusterFS (EXPERIMENTAL)
 
@@ -286,9 +286,7 @@ The ZEO server layer is a custom application server layer named
 functionality to an existing layer by setting the `"plone_instances":
 "zeo_layer"` attribute in the Stack Custom JSON to the layer short
 name).  You'll probably want to use an EBS Optimized instance here,
-and setup an initial EBS mount on `/srv/www/zeoserver/shared/var` (or
-perhaps just `var/filestorage` and another on `var/blobstorage` if you
-aren't mounting a shared blob directory).
+and setup an initial EBS mount on `/mnt/shared/filestorage`.
 
 This layer is assigned the following recipes:
 
@@ -441,7 +439,7 @@ attribute in the Stack Custom JSON to the layer short name), as well
 as another App (named `solr` by default) with the repository
 information for the buildout.  Because it needs a persistent data
 store, it should use EBS Optimized instances with an EBS volume
-mounted at `/srv/www/solr/shared/var`.
+mounted at `/mnt/shared/solr`.
 
 It should have the following recipes assigned:
 
@@ -716,8 +714,8 @@ Also, assign it the custom recipes from [Plone Instances
 Layer](#plone-instances-layer) and those from the [EBS Snapshots
 Layer](#ebs-snapshots-layer).  Set the layer to use EBS Optimized
 instances (you will only ever be using one instance), and assign two
-EBS volumes at '/srv/www/plone_instance/shared/var/blobstorage' and
-'/srv/www/plone_instances/shared/var/filestorage'.
+EBS volumes at '/mnt/shared/blobstorage' and
+'/mnt/shared/filestorage'.
 
 You can mount additional EBS volumes for repozo backups if you want
 those to persist across server failures and instance stop/starts
@@ -744,6 +742,7 @@ Configure your Stack Custom JSON as follows:
             "buildout_extends" : [...],
             "buildout_init_commands" : [{"name" : "zeoserver", "cmd" : "bin/zeoserver", "args" : "console"}]
         },
+        "plone_blobs" : {"blob_dir" : "/mnt/shared/blobstorage"},
         "ebs_snapshots" : {
          "aws_key" : "***** AWS KEY FOR SNAPSHOTTING (IAM USER) *****",
          "aws_secret" : "***** AWS SECRET FOR SNAPSHOTTING (IAM USER) *****"

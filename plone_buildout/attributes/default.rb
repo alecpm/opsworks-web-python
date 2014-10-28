@@ -22,7 +22,7 @@ default["plone_blobs"]["gluster_mount_options"] = "auto,rw,direct-io-mode=disabl
 # real configuration locaton.  This is unnecessary if your instance is
 # EBS backed, but is useful on a VPS instance with a fixed IP
 default["plone_blobs"]["gluster_store_config_in_exports"] = false
-default["plone_blobs"]["blob_dir"] = nil # Use if using shared blobs, but not NFS/Gluster, will symlink into zeoserver and instances
+default["plone_blobs"]["blob_dir"] = nil # Use if using shared blobs, will symlink into zeoserver and instances
 
 default["plone_instances"]["base_config"] = "cfg/base.cfg"  # This must be set
 default["plone_instances"]["app_name"] = "plone_instances"  # This must be set
@@ -88,6 +88,7 @@ default["plone_instances"]["syslog_level"] = 'INFO'
 # Solr Instance
 default["plone_solr"]["app_name"] = "solr"
 default["plone_solr"]["enable_papertrail"] = false
+default["plone_solr"]["data_dir"] = ::File.join(ephemeral, 'shared', 'solr')
 
 # EBS Snapshot automation
 default["ebs_snapshots"]["keep"] = 15  # 15 snapshots per volume

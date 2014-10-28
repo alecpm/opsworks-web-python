@@ -284,13 +284,29 @@ elsif node["plone_blobs"]["blob_dir"]
   end
 end
 
+# If we're including a zeoserver link the filestorage if set
+json_parts = deploy["buildout_parts_to_include"] || []
+if node["plone_zeoserver"]["filestorage_dir"] && json_parts.include?('zeoserver')
+  fs_dir = node["plone_zeoserver"]["filestorage_dir"]
+  directory fs_dir do
+    owner deploy[:user]
+    group deploy[:group]
+    mode 0700
+    recursive true
+    action :create
+  end
+  link ::File.join(deploy[:deploy_to], 'shared', 'var', 'filestorage') do
+    to fs_dir
+  end
+end
+
 orig_config = deploy["buildout_additional_config"] || ""
 
 additional_config << orig_config << storage_config << client_config
 
 node.normal[:deploy][app_name]["buildout_extends"] = extends.concat(deploy["buildout_extends"] || [])
 Chef::Log.debug("Merged extends: #{node[:deploy][app_name]["buildout_extends"]}")
-node.normal[:deploy][app_name]["buildout_parts_to_include"] = extra_parts.concat(deploy["buildout_parts_to_include"] || [])
+node.normal[:deploy][app_name]["buildout_parts_to_include"] = extra_parts.concat(json_parts)
 Chef::Log.debug("Merged extra_parts: #{node[:deploy][app_name]["buildout_parts_to_include"]}")
 node.normal[:deploy][app_name]["buildout_additional_config"] = additional_config
 Chef::Log.debug("Merged additional_config: #{node[:deploy][app_name]["buildout_additional_config"]}")

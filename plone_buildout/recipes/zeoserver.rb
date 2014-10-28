@@ -17,12 +17,9 @@ node.normal[:deploy][app_name]["buildout_parts_to_include"] = extra_parts
 additional_config = ''
 
 # Allow for custom blob dir (perhaps NFS or an EBS mount at a different location)
-if node["plone_zeoserver"]["blob_dir"]
-  blob_dir = node["plone_zeoserver"]["blob_dir"]
+if node["plone_blobs"]["blob_dir"]
+  blob_dir = node["plone_blobs"]["blob_dir"]
   additional_config << "\n[zeoserver]\nblob-storage = #{blob_dir}"
-else
-  # Set the value to the buildout default for use in optional NFS mounting below
-  blob_dir = ::File.join(node[:deploy][app_name][:deploy_to], "shared", "var", "blobstorage")
 end
 # Add rsyslog logging if desired
 if node['plone_zeoserver']['syslog_facility'] && ::File.exists?('/dev/log')
@@ -72,6 +69,20 @@ elsif node["plone_blobs"]["blob_dir"]
     link blob_location do
       to node["plone_blobs"]["blob_dir"]
     end
+  end
+end
+
+if node["plone_zeoserver"]["filestorage_dir"]
+  fs_dir = node["plone_zeoserver"]["filestorage_dir"]
+  directory fs_dir do
+    owner deploy[:user]
+    group deploy[:group]
+    mode 0700
+    recursive true
+    action :create
+  end
+  link ::File.join(deploy[:deploy_to], 'shared', 'var', 'filestorage') do
+    to fs_dir
   end
 end
 

@@ -63,7 +63,7 @@ node.default["plone_instances"]["per_cpu"] = 1
 node.default["plone_instances"]["enable_celery"] = true
 node.default["plone_instances"]["celerybeat"] = true
 node.default["plone_instances"]["broker_layer"] = 'plone_instances'
-node.default["plone_blobs"]["blob_dir"] = "/srv/zeoserver/shared/var/blobstorage"
+node.default["plone_blobs"]["blob_dir"] = "/mnt/shared/blobstorage"
 
 node.default["plone_instances"]["syslog_facility"] = 'local3'
 node.default["plone_zeoserver"]["syslog_facility"] = 'local4'

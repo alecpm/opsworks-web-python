@@ -3,9 +3,9 @@ define :blob_mounts do
   use_gluster = params[:use_gluster]
 
   ephemeral = node[:opsworks_initial_setup] && node[:opsworks_initial_setup][:ephemeral_mount_point] || '/'
-  base_dir = ::File.join(ephemeral, deploy[:deploy_to], "shared")
-  mount_dir = ::File.join(base_dir, "exports")
-  blob_dir = ::File.join(base_dir, "var", "blobstorage")
+  base_dir = ::File.join(deploy[:deploy_to], "shared")
+  mount_dir = ::File.join(ephemeral, "shared")
+  blob_dir = node['plone_blobs']['blob_dir'] || ::File.join(base_dir, "var", "blobstorage")
   blob_mount_dir = File.join(mount_dir, "blobstorage")
 
   # Create the blob dir and link early, and ensure they have the

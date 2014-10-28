@@ -76,7 +76,7 @@
                     "Deploy": ["plone_buildout::zeoserver-deploy"]
                 },
                 "VolumeConfigurations": [{
-                    "MountPoint": "/srv/www/zeoserver/shared/var",
+                    "MountPoint": "/mnt/shared/filestorage",
                     "Size": 10,
                     "NumberOfDisks": 1
                 }]

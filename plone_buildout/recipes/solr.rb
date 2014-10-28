@@ -8,6 +8,16 @@ node.default[:deploy][app_name] = {} if !node[:deploy][app_name]
 deploy = node[:deploy][app_name]
 
 if deploy && deploy[:deploy_to]
+  directory ::File.join(deploy[:deploy_to], "shared") do
+    action :create
+    owner deploy[:user]
+    group deploy[:group]
+    mode 0755
+    recursive true
+  end
+  link ::File.join(deploy[:deploy_to], "shared", "var") do
+    to node["plone_solr"]["data_dir"]
+  end
   directory ::File.join(deploy[:deploy_to], "shared", "parts", "solr-download") do
     recursive true
     action :delete
