@@ -4,11 +4,15 @@ return if !app_name
 # Replace deploy if nil
 node.default[:deploy][app_name] = {} if !node[:deploy][app_name]
 deploy = node[:deploy][app_name]
-extra_parts = ["zeoserver"]
+extra_parts = ["zeoserver", "backup"]
 
 if node["plone_zeoserver"]["enable_backup"]
-  extra_parts.concat(["backup", "backupcronjob", "packcronjob"])
+  extra_parts.concat(["backupcronjob"])
 end
+if node["plone_zeoserver"]["enable_pack"]
+  extra_parts.concat(["packcronjob"])
+end
+
 # Override here
 node.normal[:deploy][app_name]["buildout_extends"] = ["cfg/base.cfg"].concat(deploy["buildout_extends"] || [])
 extra_parts = extra_parts.concat(deploy["buildout_parts_to_include"] || [])

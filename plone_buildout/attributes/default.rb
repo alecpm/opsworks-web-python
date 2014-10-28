@@ -1,8 +1,9 @@
 ephemeral = node[:opsworks_initial_setup] && node[:opsworks_initial_setup][:ephemeral_mount_point] || '/'
 
 default["plone_zeoserver"]["app_name"] = "zeoserver"
-default["plone_zeoserver"]["enable_backup"] = true
-default["plone_zeoserver"]["blob_dir"] = nil
+default["plone_zeoserver"]["enable_backup"] = false
+default["plone_zeoserver"]["enable_pack"] = true
+default["plone_zeoserver"]["filestorage_dir"] = ::File.join(ephemeral, 'shared', 'filestorage')
 default["plone_zeoserver"]["nfs_blobs"] = false
 default["plone_zeoserver"]["gluster_blobs"] = false
 default["plone_zeoserver"]["syslog_facility"] = nil
