@@ -2,10 +2,10 @@ define :blob_mounts do
   deploy = params[:deploy_data]
   use_gluster = params[:use_gluster]
 
-  ephemeral = node[:opsworks_initial_setup] && node[:opsworks_initial_setup][:ephemeral_mount_point] || '/'
+  ephemeral = node[:opsworks_initial_setup] && node[:opsworks_initial_setup][:ephemeral_mount_point] || '/mnt'
   base_dir = ::File.join(deploy[:deploy_to], "shared")
-  mount_dir = ::File.join(ephemeral, "shared")
-  blob_dir = node['plone_blobs']['blob_dir'] || ::File.join(base_dir, "var", "blobstorage")
+  mount_dir = ::File.join(ephemeral, "shared", "blobs")
+  blob_dir = ::File.join(base_dir, "var", "blobstorage")
   blob_mount_dir = File.join(mount_dir, "blobstorage")
 
   # Create the blob dir and link early, and ensure they have the
@@ -21,6 +21,7 @@ define :blob_mounts do
     owner deploy[:user]
     group deploy[:group]
     mode 0755
+    recursive true
     action :create
   end
   directory blob_mount_dir do

@@ -714,8 +714,8 @@ Also, assign it the custom recipes from [Plone Instances
 Layer](#plone-instances-layer) and those from the [EBS Snapshots
 Layer](#ebs-snapshots-layer).  Set the layer to use EBS Optimized
 instances (you will only ever be using one instance), and assign two
-EBS volumes at '/mnt/shared/blobstorage' and
-'/mnt/shared/filestorage'.
+EBS volumes at '/mnt/shared/blobs/blobstorage' and
+'/mnt/shared/zodb/filestorage'.
 
 You can mount additional EBS volumes for repozo backups if you want
 those to persist across server failures and instance stop/starts
