@@ -55,6 +55,9 @@ node.default[:opsworks][:layers] = {
   },
   "plone_instances" => {
     :instances => {'instance1' => {:private_dns_name => 'localhost.localdomain', :status => "online", :backends => 8, :hostname => "instance", :private_ip => '127.0.0.1', :public_ip => '127.0.0.2'}}
+  },
+  "shared_blobs" => {
+    :instances => {'instance1' => {:private_dns_name => 'localhost.localdomain', :status => "online", :backends => 8, :hostname => "instance", :private_ip => '127.0.0.1', :public_ip => '127.0.0.2'}}
   }
 }
 
@@ -63,7 +66,6 @@ node.default["plone_instances"]["per_cpu"] = 1
 node.default["plone_instances"]["enable_celery"] = true
 node.default["plone_instances"]["celerybeat"] = true
 node.default["plone_instances"]["broker_layer"] = 'plone_instances'
-node.default["plone_blobs"]["blob_dir"] = "/mnt/shared/blobstorage"
 
 node.default["plone_instances"]["syslog_facility"] = 'local3'
 node.default["plone_zeoserver"]["syslog_facility"] = 'local4'
@@ -96,11 +98,31 @@ node.normal['papertrail']['remote_port'] = 12345 # Your papertrail port
 # Traceview settings
 node.normal['traceview']['access_key'] = 'YOUR LICENSE HERE'
 
+# Egg cache
+node.normal['plone_instances']["buildout_cache_archives"] = [{"url" => "https://eggs-bucket.s3.amazonaws.com/kcrw-plone-eggs.tgz", "path" => "shared"}]
+
+# NFS
+node.normal['plone_instances']['nfs_blobs'] = true
+node.normal['plone_zeoserver']['nfs_blobs'] = true
+
 # These Recipes as run on an opsworks launch
+# Upstart job depends on the /srv/www mountpoint
+directory '/srv/www' do
+  recursive true
+  action :create
+end
+
+mount '/srv/www' do
+  device '/srv'
+  fstype 'none'
+  options 'bind,rw'
+  action [:mount, :enable]
+end
 
 # Setup
 # Chef::Log.debug('************************** Running Setup Steps *****************************')
 include_recipe "redis::server"
+include_recipe "plone_buildout::nfs_blobs"
 include_recipe "plone_buildout::nginx"
 include_recipe "plone_buildout::varnish"
 include_recipe "plone_buildout::haproxy"
@@ -120,4 +142,4 @@ include_recipe "plone_buildout::instances-celerybeat"
 include_recipe "plone_buildout::zeoserver-configure"
 include_recipe "plone_buildout::instances-configure"
 
-include_recipe "plone_buildout::papertrail"
+# include_recipe "plone_buildout::papertrail"

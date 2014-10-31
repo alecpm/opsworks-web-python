@@ -742,7 +742,7 @@ Configure your Stack Custom JSON as follows:
             "buildout_extends" : [...],
             "buildout_init_commands" : [{"name" : "zeoserver", "cmd" : "bin/zeoserver", "args" : "console"}]
         },
-        "plone_blobs" : {"blob_dir" : "/mnt/shared/blobstorage"},
+        "plone_blobs" : {"blob_dir" : "/mnt/shared/blobs/blobstorage"},
         "ebs_snapshots" : {
          "aws_key" : "***** AWS KEY FOR SNAPSHOTTING (IAM USER) *****",
          "aws_secret" : "***** AWS SECRET FOR SNAPSHOTTING (IAM USER) *****"
