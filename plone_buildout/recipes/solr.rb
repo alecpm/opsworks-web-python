@@ -15,8 +15,10 @@ if deploy && deploy[:deploy_to]
     mode 0755
     recursive true
   end
-  link ::File.join(deploy[:deploy_to], "shared", "var") do
-    to node["plone_solr"]["data_dir"]
+  if ::File.exists?(node["plone_solr"]["data_dir"]) && node["plone_solr"]["data_dir"] != ::File.join(deploy[:deploy_to], "shared", "var")
+    link ::File.join(deploy[:deploy_to], "shared", "var") do
+      to node["plone_solr"]["data_dir"]
+    end
   end
   directory ::File.join(deploy[:deploy_to], "shared", "parts", "solr-download") do
     recursive true
