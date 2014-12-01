@@ -45,8 +45,8 @@ node.normal[:deploy][app_name]["buildout_extends"] = ["cfg/base.cfg"].concat(dep
 extra_parts = extra_parts.concat(deploy["buildout_parts_to_include"] || [])
 node.normal[:deploy][app_name]["buildout_parts_to_include"] = extra_parts
 
-# Setup upstart job
-node.normal[:deploy][app_name]["buildout_init_type"] = :upstart
+# Setup supervisor job
+node.default[:deploy][app_name]["buildout_init_type"] = :supervisor
 node.normal[:deploy][app_name]["buildout_init_commands"] = [{'name' => 'solr', 'cmd' => 'bin/solr-instance', 'args' => 'fg'}]
 
 node.normal[:deploy][app_name]["environment"] = {"PYTHON_EGG_CACHE" => ::File.join(deploy[:deploy_to], "shared", "eggs")}.update(deploy["environment"] || {})
