@@ -42,8 +42,8 @@ node.normal[:deploy][app_name]["buildout_additional_config"] = additional_config
 
 environment = {"PYTHON_EGG_CACHE" => ::File.join(node[:deploy][app_name][:deploy_to], "shared", "eggs")}
 
-node.normal[:deploy][app_name]["buildout_init_type"] = :upstart if !deploy["buildout_init_type"]
-# Setup upstart job
+node.normal[:deploy][app_name]["buildout_init_type"] = :supervisor if !deploy["buildout_init_type"]
+# Setup supervisor job
 node.normal[:deploy][app_name]["buildout_init_commands"] = [{'name' => 'zeoserver', 'cmd' => 'bin/zeoserver', 'args' => 'fg'}]
 
 # Maybe you want to mount your zeoserver's blob dir via NFS (why?)
