@@ -12,3 +12,5 @@ if node[:opsworks][:instance][:instance_type].start_with?('r3.')
         command "mount -a"
     end
 end
+
+include_recipe "opsworks_initial_setup"
