@@ -14,5 +14,6 @@ if node[:opsworks][:instance][:instance_type].start_with?('r3.')
 end
 
 # Re-run base setup recipes
-run_context.instance_variable_get(:@loaded_recipes).delete('opsworks_initial_setup::default')
-include_recipe "opsworks_initial_setup"
+loaded_recipes = run_context.instance_variable_get(:@loaded_recipes)
+loaded_recipes.delete('opsworks_initial_setup::bind_mounts')
+include_recipe "opsworks_initial_setup::bind_mounts"
