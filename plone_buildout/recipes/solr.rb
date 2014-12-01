@@ -20,6 +20,7 @@ if deploy && deploy[:deploy_to]
     # Delete the directory if it was already created
     directory ::File.join(deploy[:deploy_to], "shared", "var") do
       action :delete
+      ignore_failure true
     end
 
     link ::File.join(deploy[:deploy_to], "shared", "var") do
