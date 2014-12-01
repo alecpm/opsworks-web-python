@@ -16,9 +16,17 @@ if deploy && deploy[:deploy_to]
     recursive true
   end
   if ::File.exists?(node["plone_solr"]["data_dir"]) && node["plone_solr"]["data_dir"] != ::File.join(deploy[:deploy_to], "shared", "var")
+
+    # Delete the directory if it was already created
+    directory ::File.join(deploy[:deploy_to], "shared", "var") do
+      recursive true
+      action :delete
+    end
+
     link ::File.join(deploy[:deploy_to], "shared", "var") do
       to node["plone_solr"]["data_dir"]
     end
+
   end
   directory ::File.join(deploy[:deploy_to], "shared", "parts", "solr-download") do
     recursive true
