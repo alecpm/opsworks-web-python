@@ -14,6 +14,7 @@ depends "gunicorn"
 depends "supervisor"
 depends "scm_helper"
 depends "apt"
+depends "opsworks_initial_setup"
 
 recipe "opsworks_deploy_python", "Install and setup a python application in a virtualenv"
 recipe "opsworks_deploy_python::buildout", "Install and setup a buildout based python application"
