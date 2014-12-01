@@ -127,6 +127,22 @@ The following are general deploy related attributes to be set on `node[:deploy][
 - django-stop: Stop the service if enabled
 
 
+Bugfix for R3 Instances
+-----------------------
+
+OpsWorks currently has a bug that affects r3 class instances, where the
+ephemeral instance storage is not formatted or mounted on initial load.  This
+causes reboots to fail, since the volume is listed in fstab, and also results
+in reduced space available on ``/mnt``.
+
+To workaround this issue, this package contains a custom recipe that formats
+and mounts the default ephemeral volume on r3 instances.  To enable the
+recipe, add the ``opsworks_deploy_python::r3-mount-patch`` recipe to the start
+of the setup section of any layers that might run on an r3 instance.
+
+[More info here](https://forums.aws.amazon.com/thread.jspa?threadID=156342).
+
+
 Usage
 -----
 A sample application application that builds the Plone 5.0 coredev buildout
