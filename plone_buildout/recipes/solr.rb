@@ -19,7 +19,6 @@ if deploy && deploy[:deploy_to]
 
     # Delete the directory if it was already created
     directory ::File.join(deploy[:deploy_to], "shared", "var") do
-      recursive true
       action :delete
     end
 
