@@ -286,7 +286,10 @@ end
 
 # If we're including a zeoserver link the filestorage if set
 json_parts = deploy["buildout_parts_to_include"] || []
-if node["plone_zeoserver"]["filestorage_dir"] && json_parts.include?('zeoserver')
+if (node["plone_zeoserver"]["filestorage_dir"] &&
+    json_parts.include?('zeoserver') &&
+    node["plone_zeoserver"]["filestorage_dir"] !=
+    ::File.join(deploy[:deploy_to], 'shared', 'var', 'filestorage'))
   fs_dir = node["plone_zeoserver"]["filestorage_dir"]
   directory fs_dir do
     owner deploy[:user]

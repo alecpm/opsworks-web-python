@@ -76,7 +76,10 @@ elsif node["plone_blobs"]["blob_dir"]
   end
 end
 
-if node["plone_zeoserver"]["filestorage_dir"]
+if (node["plone_zeoserver"]["filestorage_dir"]
+    node["plone_zeoserver"]["filestorage_dir"] !=
+    ::File.join(deploy[:deploy_to], 'shared', 'var', 'filestorage'))
+
   fs_dir = node["plone_zeoserver"]["filestorage_dir"]
   directory fs_dir do
     owner deploy[:user]
