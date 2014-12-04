@@ -50,6 +50,7 @@ The `buildout` recipe sets up, deploys and configures a zc.buildout project from
   - password
   - path (path relative to the deploy location where the archive should be extracted)
   - purge (whether to remove the data and fetch it anew on every deploy or retain it)
+- buildout_version: The buildout version to use for the initial bootstrap command. Defaults to an empty string, which means no version is specified and the bootstrap step will get the latest available version.
 - config: the name of the buildout config file to run.  Defaults to `deploy.cfg`
 - config_template: the name template used to generate the config above.
 - config_cookbook: the cookbook from which to lookup the above template
