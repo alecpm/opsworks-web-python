@@ -12,6 +12,7 @@ default["deploy_buildout"]["symlink_before_migrate"] = {
 }
 default["deploy_buildout"]["purge_before_symlink"] = ['var', 'eggs', 'downloads', 'extends', 'parts']
 default["deploy_buildout"]["create_dirs_before_symlink"] = ['var', 'eggs', 'downloads', 'extends', 'parts']
+default["deploy_buildout"]["buildout_version"] = ""
 default["deploy_buildout"]["config"] = "deploy.cfg"
 default["deploy_buildout"]["config_template"] = "deploy.cfg.erb"
 default["deploy_buildout"]["extends"] = ['buildout.cfg']

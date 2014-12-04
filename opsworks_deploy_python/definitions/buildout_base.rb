@@ -53,9 +53,13 @@ define :buildout_configure do
     release_path = ::File.join(deploy[:deploy_to], 'current')
     config_file = Helpers.buildout_setting(deploy,'config', node)
     bootstrap_cmd = "#{::File.join(deploy[:deploy_to], "shared", "env", "bin", "python")} #{::File.join(".", "bootstrap.py")} -c #{config_file}"
+
     buildout_cmd = ::File.join(release_path, "bin", "buildout")
     build_cmd = "#{buildout_cmd} -c #{config_file} #{Helpers.buildout_setting(deploy, 'flags', node)}"
-
+    buildout_version = Helpers.buildout_setting(deploy,'buildout_version', node)
+    if !(buildout_version.nil? || buildout_version.empty?)
+      bootstrap_cmd = "#{bootstrap_cmd} -v #{buildout_version}"
+    end
     services = []
     # Add our anticipated services (or supervisor) to upstart or supervisor
     init_commands = Helpers.buildout_setting(deploy, 'init_commands', node)
