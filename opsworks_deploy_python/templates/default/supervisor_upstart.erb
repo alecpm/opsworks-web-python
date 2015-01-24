@@ -8,7 +8,7 @@ setuid <%= @user %>
 setgid <%= @group %>
 <% if @environment %>
 <% @environment.each do |key,val| %>
-<%= key %>=<%= val %>
+env <%= key %>=<%= val %>
 <% end %>
 <% end %>
 
