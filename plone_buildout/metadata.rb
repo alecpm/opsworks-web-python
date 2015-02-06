@@ -22,6 +22,7 @@ depends "glusterfs"
 depends "newrelic"
 depends "newrelic_meetme_plugin"
 depends "newrelic_plugins"
+depends "openssh"
 depends "papertrail"
 depends "traceview"
 

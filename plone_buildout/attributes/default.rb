@@ -111,6 +111,12 @@ default['nginx_plone']['log_retention_days'] = 14
 default['varnish_plone']['grace'] = 60
 default['varnish_plone']['default_ttl'] = 300
 
+# SFTP user
+default['sftp']['user'] = nil
+default['sftp']['password'] = nil
+default['sftp']['remote_addr'] = nil
+
+
 # Change default configs for other packages
 node.normal["redis"]["config"]["listen_addr"] = "0.0.0.0"
 node.normal["redis"]["config"]["dir"] = ::File.join(ephemeral, 'redis')
@@ -125,3 +131,10 @@ node.normal[:newrelic][:varnish][:install_path] = "/opt/newrelic"
 node.normal[:newrelic][:varnish][:plugin_path] = "#{node[:newrelic][:varnish][:install_path]}/newrelic_varnish_plugin"
 node.normal[:newrelic][:varnish][:download_url] = "https://github.com/varnish/newrelic_varnish_plugin/archive/#{node[:newrelic][:varnish][:version]}.tar.gz"
 node.normal[:newrelic][:varnish][:user] = "root"
+
+node.normal['openssh']['server']['match'] = {
+	"Group sftp" => {
+		"force_command" => 'internal-sftp'
+	}
+}
+node.normal['openssh']['server']['subsystem'] = 'sftp internal-sftp'
