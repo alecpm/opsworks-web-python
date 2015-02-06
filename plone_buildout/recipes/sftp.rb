@@ -12,6 +12,10 @@ if node["sftp"]["user"]
 	homedir = "/home/#{node["sftp"]["user"]}"
 	mntdir = "/mnt/srv/www/#{node["sftp"]["user"]}"
 
+	chef_gem "ruby-shadow" do
+		action :install
+	end
+
 	user node["sftp"]["user"] do
 		shell "/bin/false"
 		gid "sftp"
