@@ -126,4 +126,4 @@ node.normal[:newrelic][:varnish][:plugin_path] = "#{node[:newrelic][:varnish][:i
 node.normal[:newrelic][:varnish][:download_url] = "https://github.com/varnish/newrelic_varnish_plugin/archive/#{node[:newrelic][:varnish][:version]}.tar.gz"
 node.normal[:newrelic][:varnish][:user] = "root"
 
-node['newrelic']['python_agent']['python_version'] = '2.40.0.34'
+node.normal['newrelic']['python_agent']['python_version'] = '2.40.0.34'
