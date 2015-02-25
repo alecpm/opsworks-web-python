@@ -1,5 +1,5 @@
 app_name = node["plone_zeoserver"]["app_name"]
-return if !app_name
+return if app_name.nil? || app_name.empty?
 
 # Replace deploy if nil
 node.default[:deploy][app_name] = {} if !node[:deploy][app_name]
