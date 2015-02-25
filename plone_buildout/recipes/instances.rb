@@ -11,8 +11,8 @@ old_custom_py = py_version && py_version == "2.4"
 
 instance_data = node["plone_instances"]
 # Backend factor is 1/8 of standard CPU it appears
-instances = (node[:opsworks][:instance][:backends].to_i * instance_data["per_cpu"].to_f/8).ceil if node[:opsworks][:instance][:backends]
-instances = (node[:cpu][:total].to_i * instance_data["per_cpu"].to_f).ceil if (node[:opsworks][:instance][:backends].nil? || node[:opsworks][:instance][:backends].empty?)
+instances = (node[:opsworks][:instance][:backends].to_i * instance_data["per_cpu"].to_f/8).ceil if (!node[:opsworks][:instance][:backends].nil? && !node[:opsworks][:instance][:backends].zero?)
+instances = (node[:cpu][:total].to_i * instance_data["per_cpu"].to_f).ceil if (node[:opsworks][:instance][:backends].nil? || node[:opsworks][:instance][:backends].zero?)
 instances = 1 if instances < 1 || !instances
 Chef::Log.info("Calculated instance count #{instances}.  Based on Backends: #{node[:opsworks][:instance][:backends]} CPUs: #{node[:cpu][:total]} and per_cpu config: #{instance_data["per_cpu"]}")
 extra_parts = Array.new
