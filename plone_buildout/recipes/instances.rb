@@ -1,9 +1,9 @@
 app_name =  node["plone_instances"]["app_name"]
 Chef::Log.info("Running instances for #{app_name}")
-return if !app_name
+return if app_name.nil? || app_name.empty?
 
 # Replace deploy if nil
-node.default[:deploy][app_name] = {} if !node[:deploy][app_name]
+node.default[:deploy][app_name] = {} if node[:deploy][app_name].nil?
 deploy = node[:deploy][app_name]
 
 py_version = deploy["python_major_version"]
@@ -12,7 +12,7 @@ old_custom_py = py_version && py_version == "2.4"
 instance_data = node["plone_instances"]
 # Backend factor is 1/8 of standard CPU it appears
 instances = (node[:opsworks][:instance][:backends].to_i * instance_data["per_cpu"].to_f/8).ceil if node[:opsworks][:instance][:backends]
-instances = (node[:cpu][:total].to_i * instance_data["per_cpu"].to_f).ceil if !node[:opsworks][:instance][:backends]
+instances = (node[:cpu][:total].to_i * instance_data["per_cpu"].to_f).ceil if (node[:opsworks][:instance][:backends].nil? || node[:opsworks][:instance][:backends].empty?)
 instances = 1 if instances < 1 || !instances
 Chef::Log.info("Calculated instance count #{instances}.  Based on Backends: #{node[:opsworks][:instance][:backends]} CPUs: #{node[:cpu][:total]} and per_cpu config: #{instance_data["per_cpu"]}")
 extra_parts = Array.new
@@ -212,7 +212,7 @@ if instance_data["enable_celery"]
   broker_layer = instance_data["broker_layer"]
   port = instance_data['broker']['port']
   host = instance_data["broker"]["host"] if instance_data["broker"]["host"]
-  if !host && node[:opsworks] && node[:opsworks][:layers] && node[:opsworks][:layers][broker_layer] &&  node[:opsworks][:layers][broker_layer][:instances]
+  if (host.nil? || host.empty?) && node[:opsworks] && node[:opsworks][:layers] && node[:opsworks][:layers][broker_layer] &&  node[:opsworks][:layers][broker_layer][:instances]
     instance_name, broker_instance = node[:opsworks][:layers][broker_layer][:instances].detect {
       |name, instance| instance[:status] == "online"
     }
@@ -247,7 +247,7 @@ if instance_data["enable_celery"]
 end
 
 node.normal[:deploy][app_name]["buildout_init_commands"] = init_commands
-node.normal[:deploy][app_name]["buildout_init_type"] = :supervisor if !deploy["buildout_init_type"]
+node.normal[:deploy][app_name]["buildout_init_type"] = :supervisor if (deploy["buildout_init_type"].nil? || deploy["buildout_init_type"].empty?)
 Chef::Log.debug("Merged supervisor init_commands: #{node[:deploy][app_name]["buildout_init_commands"]}")
 
 # This is really a setup step, but setup may be to early to find the mount, in which case it is skipped and run again later during configure.

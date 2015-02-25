@@ -1,9 +1,9 @@
 instance_data = node["plone_instances"]
 app_name = instance_data["app_name"]
-return if !app_name
+return if app_name.nil? || app_name.empty?
 
 # Replace deploy if nil
-node.default[:deploy][app_name] = {} if !node[:deploy][app_name]
+node.default[:deploy][app_name] = {} if node[:deploy][app_name].nil?
 deploy = node[:deploy][app_name]
 
 os_packages = ['libjpeg-dev', 'libpng-dev', 'libxml2-dev', 'libxslt-dev']
