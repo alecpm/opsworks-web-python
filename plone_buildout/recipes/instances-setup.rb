@@ -31,3 +31,11 @@ buildout_setup do
   deploy_data deploy
   app_name app_name
 end
+
+template "/etc/logrotate.d/supervisor" do
+  backup false
+  source "supervisor-logrotate.erb"
+  owner "root"
+  group "root"
+  mode 0644
+end
