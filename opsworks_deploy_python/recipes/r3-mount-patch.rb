@@ -15,7 +15,10 @@ if node[:opsworks][:instance][:instance_type].start_with?('r3.')
     execute "mount all" do
         command "mount -a"
         ignore_failure true
-        only_if sleep 5
+        only_if do
+            sleep 5
+            true
+        end
     end
     # Re-run base setup recipes
     loaded_recipes = run_context.instance_variable_get(:@loaded_recipes)
