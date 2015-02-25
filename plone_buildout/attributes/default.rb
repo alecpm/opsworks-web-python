@@ -125,3 +125,5 @@ node.normal[:newrelic][:varnish][:install_path] = "/opt/newrelic"
 node.normal[:newrelic][:varnish][:plugin_path] = "#{node[:newrelic][:varnish][:install_path]}/newrelic_varnish_plugin"
 node.normal[:newrelic][:varnish][:download_url] = "https://github.com/varnish/newrelic_varnish_plugin/archive/#{node[:newrelic][:varnish][:version]}.tar.gz"
 node.normal[:newrelic][:varnish][:user] = "root"
+
+node['newrelic']['python_agent']['python_version'] = '2.40.0.34'
