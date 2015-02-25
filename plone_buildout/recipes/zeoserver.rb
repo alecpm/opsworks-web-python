@@ -2,7 +2,7 @@ app_name = node["plone_zeoserver"]["app_name"]
 return if app_name.nil? || app_name.empty?
 
 # Replace deploy if nil
-node.default[:deploy][app_name] = {} if !node[:deploy][app_name]
+node.default[:deploy][app_name] = {} if (node[:deploy][app_name].nil? || node[:deploy][app_name].empty?)
 deploy = node[:deploy][app_name]
 extra_parts = ["zeoserver", "backup"]
 
@@ -42,7 +42,7 @@ node.normal[:deploy][app_name]["buildout_additional_config"] = additional_config
 
 environment = {"PYTHON_EGG_CACHE" => ::File.join(node[:deploy][app_name][:deploy_to], "shared", "eggs")}
 
-node.normal[:deploy][app_name]["buildout_init_type"] = :supervisor if !deploy["buildout_init_type"]
+node.normal[:deploy][app_name]["buildout_init_type"] = :supervisor if (deploy["buildout_init_type"].nil? || deploy["buildout_init_type"].empty?)
 # Setup supervisor job
 node.normal[:deploy][app_name]["buildout_init_commands"] = [{'name' => 'zeoserver', 'cmd' => 'bin/zeoserver', 'args' => 'fg'}]
 

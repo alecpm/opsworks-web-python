@@ -4,7 +4,7 @@ app_name = node["plone_solr"]["app_name"]
 return if app_name.nil? || app_name.empty?
 
 # Replace deploy if nil
-node.default[:deploy][app_name] = {} if !node[:deploy][app_name]
+node.default[:deploy][app_name] = {} if (node[:deploy][app_name].nil? || node[:deploy][app_name].empty?)
 deploy = node[:deploy][app_name]
 
 if deploy && deploy[:deploy_to]

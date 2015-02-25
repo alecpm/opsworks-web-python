@@ -4,7 +4,7 @@ return if app_name.nil? || app_name.empty?
 deploy = node[:deploy][app_name]
 
 # Replace deploy if nil
-node.default[:deploy][app_name] = {} if !node[:deploy][app_name]
+node.default[:deploy][app_name] = {} if (node[:deploy][app_name].nil? || node[:deploy][app_name].empty?)
 deploy = node[:deploy][app_name]
 
 os_packages = ['libjpeg-dev', 'libpng-dev', 'libxml2-dev', 'libxslt-dev']
