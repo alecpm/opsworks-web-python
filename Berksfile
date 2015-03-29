@@ -25,9 +25,9 @@ cookbook 'line', '~> 0.5.1'
 cookbook 'postfix', '3.1.8'
 cookbook 'python', '1.4.6'
 cookbook 'runit', '1.5.10'
-cookbook 'rsyslog'
-cookbook 'newrelic'
-cookbook 'newrelic_plugins'
+cookbook 'rsyslog', '1.12.2'
+cookbook 'newrelic', '2.3.0'
+cookbook 'newrelic_plugins', '1.1.0'
 
 # Uncomment the items below for testing deployments with Vagrant
 
