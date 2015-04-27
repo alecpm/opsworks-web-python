@@ -119,6 +119,7 @@ node.normal[:haproxy][:balance] = "leastconn"
 node.normal[:haproxy][:retries] = 3
 node.normal[:haproxy][:check_interval] = 10000
 node.normal[:haproxy][:server_timeout] = '900s'
+node.normal[:haproxy][:sticky_sessions] = false
 
 node.normal[:newrelic][:varnish][:version] = 'v0.0.5'
 node.normal[:newrelic][:varnish][:install_path] = "/opt/newrelic"
