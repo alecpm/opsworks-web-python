@@ -7,7 +7,7 @@ return if app_name.nil? || app_name.empty?
 node.default[:deploy][app_name] = {} if (node[:deploy][app_name].nil? || node[:deploy][app_name].empty?)
 deploy = node[:deploy][app_name]
 
-if deploy && !(deploy[:deploy_to].nil? || deploy[:deploy_to].empty?)
+if deploy && !(deploy[:scm].nil? || deploy[:scm].empty?)
   directory ::File.join(deploy[:deploy_to], "shared") do
     action :create
     owner deploy[:user]
