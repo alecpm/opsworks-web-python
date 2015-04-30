@@ -46,6 +46,7 @@ node.normal[:deploy][app_name]["buildout_init_type"] = :supervisor if (deploy["b
 # Setup supervisor job
 node.normal[:deploy][app_name]["buildout_init_commands"] = [{'name' => 'zeoserver', 'cmd' => 'bin/zeoserver', 'args' => 'fg'}]
 
+# This is really a setup step, but setup may be to early to find the mount, in which case it is skipped and run again later during configure.
 # Maybe you want to mount your zeoserver's blob dir via NFS (why?)
 if node["plone_zeoserver"]["nfs_blobs"] || node["plone_zeoserver"]["gluster_blobs"]
   blob_mounts do
@@ -77,8 +78,8 @@ elsif node["plone_blobs"]["blob_dir"]
 end
 
 if (node["plone_zeoserver"]["filestorage_dir"]
-    node["plone_zeoserver"]["filestorage_dir"] !=
-    ::File.join(deploy[:deploy_to], 'shared', 'var', 'filestorage'))
+  node["plone_zeoserver"]["filestorage_dir"] !=
+  ::File.join(deploy[:deploy_to], 'shared', 'var', 'filestorage'))
 
   fs_dir = node["plone_zeoserver"]["filestorage_dir"]
   directory fs_dir do
