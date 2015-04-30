@@ -7,7 +7,7 @@ return if app_name.nil? || app_name.empty?
 node.default[:deploy][app_name] = {} if (node[:deploy][app_name].nil? || node[:deploy][app_name].empty?)
 deploy = node[:deploy][app_name]
 
-if deploy && deploy[:deploy_to]
+if deploy && !(deploy[:deploy_to].nil? || deploy[:deploy_to].empty?)
   directory ::File.join(deploy[:deploy_to], "shared") do
     action :create
     owner deploy[:user]
@@ -32,24 +32,24 @@ if deploy && deploy[:deploy_to]
     recursive true
     action :delete
   end
+
+  additional_config =""
+
+  additional_config << (deploy["buildout_additional_config"] || "")
+  additional_config << "[solr-host]" << "\n" << "host = #{node[:opsworks][:instance][:public_dns_name] || node[:opsworks][:instance][:private_dns_name]}"
+  node.normal[:deploy][app_name]["buildout_additional_config"] = additional_config
+
+  extra_parts = ["solr-download", "solr-instance"]
+  node.normal[:deploy][app_name]["buildout_extends"] = ["cfg/base.cfg"].concat(deploy["buildout_extends"] || [])
+  extra_parts = extra_parts.concat(deploy["buildout_parts_to_include"] || [])
+  node.normal[:deploy][app_name]["buildout_parts_to_include"] = extra_parts
+
+  # Setup supervisor job
+  node.default[:deploy][app_name]["buildout_init_type"] = :supervisor
+  node.normal[:deploy][app_name]["buildout_init_commands"] = [{'name' => 'solr', 'cmd' => 'bin/solr-instance', 'args' => 'fg'}]
+
+  node.normal[:deploy][app_name]["environment"] = {"PYTHON_EGG_CACHE" => ::File.join(deploy[:deploy_to], "shared", "eggs")}.update(deploy["environment"] || {})
+
+  # Enable recipe
+  node.normal[:deploy][app_name]["custom_type"] = "buildout"
 end
-
-additional_config =""
-
-additional_config << (deploy["buildout_additional_config"] || "")
-additional_config << "[solr-host]" << "\n" << "host = #{node[:opsworks][:instance][:public_dns_name] || node[:opsworks][:instance][:private_dns_name]}"
-node.normal[:deploy][app_name]["buildout_additional_config"] = additional_config
-
-extra_parts = ["solr-download", "solr-instance"]
-node.normal[:deploy][app_name]["buildout_extends"] = ["cfg/base.cfg"].concat(deploy["buildout_extends"] || [])
-extra_parts = extra_parts.concat(deploy["buildout_parts_to_include"] || [])
-node.normal[:deploy][app_name]["buildout_parts_to_include"] = extra_parts
-
-# Setup supervisor job
-node.default[:deploy][app_name]["buildout_init_type"] = :supervisor
-node.normal[:deploy][app_name]["buildout_init_commands"] = [{'name' => 'solr', 'cmd' => 'bin/solr-instance', 'args' => 'fg'}]
-
-node.normal[:deploy][app_name]["environment"] = {"PYTHON_EGG_CACHE" => ::File.join(deploy[:deploy_to], "shared", "eggs")}.update(deploy["environment"] || {})
-
-# Enable recipe
-node.normal[:deploy][app_name]["custom_type"] = "buildout"
