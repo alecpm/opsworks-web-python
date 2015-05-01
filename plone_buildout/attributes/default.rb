@@ -120,8 +120,8 @@ node.normal[:haproxy][:retries] = 3
 node.normal[:haproxy][:check_interval] = 10000
 node.normal[:haproxy][:server_timeout] = '900s'
 node.normal[:haproxy][:sticky_sessions] = false
-node.normal[:haproxy][:rise] = 1
-node.normal[:haproxy][:fall] = 5
+node.default[:haproxy][:rise] = 1
+node.default[:haproxy][:fall] = 5
 
 node.normal[:newrelic][:varnish][:version] = 'v0.0.5'
 node.normal[:newrelic][:varnish][:install_path] = "/opt/newrelic"
