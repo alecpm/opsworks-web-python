@@ -112,21 +112,25 @@ default['varnish_plone']['grace'] = 60
 default['varnish_plone']['default_ttl'] = 300
 
 # Change default configs for other packages
-node.normal["redis"]["config"]["listen_addr"] = "0.0.0.0"
-node.normal["redis"]["config"]["dir"] = ::File.join(ephemeral, 'redis')
-node.normal["redis"]["config"]["vm"][:vm_swap_file] = ::File.join(ephemeral, 'redis/redis.swap')
-node.normal[:haproxy][:balance] = "leastconn"
-node.normal[:haproxy][:retries] = 3
-node.normal[:haproxy][:check_interval] = 10000
-node.normal[:haproxy][:server_timeout] = '900s'
-node.normal[:haproxy][:sticky_sessions] = false
+include_attribute "redis"
+node.default["redis"]["config"]["listen_addr"] = "0.0.0.0"
+node.default["redis"]["config"]["dir"] = ::File.join(ephemeral, 'redis')
+node.default["redis"]["config"]["vm"][:vm_swap_file] = ::File.join(ephemeral, 'redis/redis.swap')
+
+include_attribute "haproxy"
+node.default[:haproxy][:balance] = "leastconn"
+node.default[:haproxy][:retries] = 3
+node.default[:haproxy][:check_interval] = 10000
+node.default[:haproxy][:server_timeout] = '900s'
+node.default[:haproxy][:sticky_sessions] = false
 node.default[:haproxy][:rise] = 1
 node.default[:haproxy][:fall] = 5
 
-node.normal[:newrelic][:varnish][:version] = 'v0.0.5'
-node.normal[:newrelic][:varnish][:install_path] = "/opt/newrelic"
-node.normal[:newrelic][:varnish][:plugin_path] = "#{node[:newrelic][:varnish][:install_path]}/newrelic_varnish_plugin"
-node.normal[:newrelic][:varnish][:download_url] = "https://github.com/varnish/newrelic_varnish_plugin/archive/#{node[:newrelic][:varnish][:version]}.tar.gz"
-node.normal[:newrelic][:varnish][:user] = "root"
+include_attribute "newrelic"
+node.default[:newrelic][:varnish][:version] = 'v0.0.5'
+node.default[:newrelic][:varnish][:install_path] = "/opt/newrelic"
+node.default[:newrelic][:varnish][:plugin_path] = "#{node[:newrelic][:varnish][:install_path]}/newrelic_varnish_plugin"
+node.default[:newrelic][:varnish][:download_url] = "https://github.com/varnish/newrelic_varnish_plugin/archive/#{node[:newrelic][:varnish][:version]}.tar.gz"
+node.default[:newrelic][:varnish][:user] = "root"
 
-node.normal['newrelic']['python_agent']['python_version'] = '2.40.0.34'
+node.default['newrelic']['python_agent']['python_version'] = '2.40.0.34'
