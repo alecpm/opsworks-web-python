@@ -16,7 +16,7 @@ if node[:opsworks][:instance][:instance_type].start_with?('r3.')
         command "mount /mnt"
         ignore_failure true
     end
-    for dir in [node["plone_zeoserver"]["filestorage_dir"], node["plone_blobs"]["blob_dir"], node["plone_solr"]["data_dir"], "/mnt/srv/www"]
+    for dir in ["/mnt/srv/www", node["plone_zeoserver"]["filestorage_dir"], node["plone_blobs"]["blob_dir"], node["plone_solr"]["data_dir"]]
         if !dir.nil? && !dir.empty? && !::File.exists?(dir)
             directory dir do
                 user 'deploy'
@@ -24,6 +24,7 @@ if node[:opsworks][:instance][:instance_type].start_with?('r3.')
                 mode 0700
                 recursive true
                 action :create
+                ignore_failure true
             end
         end
     end
