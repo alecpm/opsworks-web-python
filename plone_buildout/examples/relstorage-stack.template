@@ -22,13 +22,17 @@
                     "Version": "11.10",
                     "Name": "Chef"
                 },
+                "ChefConfiguration": {
+                    "BerkshelfVersion": "3.0.1",
+                    "ManageBerkshelf": true
+                },
                 "UseCustomCookbooks": true,
                 "CustomCookbooksSource": {
                     "Url": "https://github.com/alecpm/opsworks-web-python.git",
                     "Type": "git",
                     "Revision": "master"
                 },
-                "DefaultOs": "Ubuntu 12.04 LTS"
+                "DefaultOs": "Ubuntu 14.04 LTS"
             }
         },
         
@@ -47,7 +51,7 @@
                 "Packages": [],
                 "CustomRecipes": {
                     "Undeploy": ["plone_buildout::instances-undeploy"],
-                    "Setup": ["plone_buildout::instances-setup"],
+                    "Setup": ["opsworks_deploy_python::r3-mount-patch", "plone_buildout::instances-setup"],
                     "Configure": ["plone_buildout::instances-configure"],
                     "Shutdown": ["plone_buildout::instances-stop"],
                     "Deploy": ["plone_buildout::instances-deploy"]
@@ -65,7 +69,7 @@
                 "Name": "Shared Blobs",
                 "CustomRecipes": {
                     "Undeploy": [],
-                    "Setup": ["plone_buildout::nfs_blobs"],
+                    "Setup": ["opsworks_deploy_python::r3-mount-patch", "plone_buildout::nfs_blobs"],
                     "Configure": ["plone_buildout::nfs_blobs"],
                     "Shutdown": [],
                     "Deploy": []
@@ -114,7 +118,7 @@
                 "Name": "EBS Snapshotting",
                 "CustomRecipes": {
                     "Undeploy": [],
-                    "Setup": [],
+                    "Setup": ["opsworks_deploy_python::r3-mount-patch"],
                     "Configure": ["plone_buildout::ebs_snapshots"],
                     "Shutdown": [],
                     "Deploy": []
@@ -138,7 +142,8 @@
                     "Undeploy": [],
                     "Setup": [
                     "plone_buildout::haproxy",
-                    "plone_buildout::varnish"
+                    "plone_buildout::varnish",
+                    "plone_buildout::nginx"
                     ],
                     "Configure": [
                     "plone_buildout::haproxy",
@@ -153,7 +158,7 @@
                 "Attributes": {
                     "HaproxyHealthCheckUrl": "/misc_/CMFPlone/plone_icon",
                     "HaproxyHealthCheckMethod": "HEAD",
-                    "HaproxyStatsPassword": "STATS PASSWORD",
+                    "HaproxyStatsPassword": "STATSPASSWORD",
                     "HaproxyStatsUrl": "/balancer/stats",
                     "HaproxyStatsUser": "stats"
                 },

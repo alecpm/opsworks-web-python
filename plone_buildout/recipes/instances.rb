@@ -23,6 +23,15 @@ if instance_data["enable_relstorage"]
   storage = instance_data["relstorage"]
   extends.push(storage['config'])
   db = storage["db"]
+  if db["name"].nil? && !(deploy[:database].nil? || deploy[:database].empty?)
+    node.normal["plone_instances"]["relstorage"]["db"]["name"] = deploy[:database]["database"]
+    node.normal["plone_instances"]["relstorage"]["db"]["host"] = deploy[:database]["host"]
+    node.normal["plone_instances"]["relstorage"]["db"]["user"] = deploy[:database]["username"]
+    node.normal["plone_instances"]["relstorage"]["db"]["password"] = deploy[:database]["password"]
+    db = node["plone_instances"]["relstorage"]
+    db = storage["db"]
+  end
+
   storage_config = "\n[relstorage]"
   if db["dsn"]
     # If we have an explicit DSN, then use it along with the db type
@@ -32,25 +41,31 @@ if instance_data["enable_relstorage"]
     storage_config << "\n" << "dbname = #{db["name"]}" << "\n" << "host = #{db["host"]}" 
     storage_config << "\n" << "user = #{db["user"]}" << "\n" << "password = #{db["password"]}"
   end
+
+  # Setup DB driver
+  case db["type"]
+  when nil || 'postgres'
+    driver = 'psycopg2'
+  when 'mysql'
+    driver = 'MySQL-python'
+  when 'oracle'
+    # This one needs libs not available through standard means,
+    # you're on your own with that setup
+    driver = 'cx_Oracle'
+  else
+    driver = nil
+  end
+  if driver || storage["enable_cache"]
+    additional_config << "\n" << "eggs +="
+  end
+  if driver
+    additional_config << "\n" << "    #{driver}"
+  end
+
   # Memcached cache config
   if storage["enable_cache"]
     cache_servers = nil
-    additional_config << "\n" << "eggs +="<< "\n" << "    pylibmc"
-    case db["type"]
-    when nil || 'postgres'
-      driver = 'psycopg2'
-    when 'mysql'
-      driver = 'MySQL-python'
-    when 'oracle'
-      # This one needs libs not available through standard means,
-      # you're on your own with that setup
-      driver = 'cx_Oracle'
-    else
-      driver = nil
-    end
-    if driver
-      additional_config << "\n" << "    #{driver}"
-    end
+    additional_config << "\n" << "    pylibmc"
     if storage["cache_servers"]
       cache_servers = storage["cache_servers"]
     elsif node[:opsworks] && node[:opsworks][:layers] && node[:opsworks][:layers]["memcached"] && node[:opsworks][:layers]["memcached"][:instances]

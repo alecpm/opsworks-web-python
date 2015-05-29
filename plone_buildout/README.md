@@ -53,26 +53,31 @@ the simplest Custom JSON is the following:
         }
     }}
 
-For a relstorage stack, the simplest Custom JSON is the following:
+For a relstorage stack assign a Postgresql Database to the app, and use the
+following Custom JSON:
 
     {"plone_instances" : {
         "app_name" : "plone_instances", "nfs_blobs" : true,
-        "enable_relstorage": true,
-        "relstorage" : {
-            "db" : {
-                "name" : "YOUR_DB_NAME",
-                "host" : "YOUR_DB_HOST",
-                "user" : "YOUR_DB_USER",
-                "password" : "YOUR_DB_PASSWORD"
-            },
-            "enable_cache" : true
-        }
+        "enable_relstorage": true
     },
     "deploy" : {
         "plone_instances" : {
             "shallow_clone" : true
         },
     }}
+
+To store blobs in your Relstorage DB:
+
+    {"plone_instances" : {
+        "app_name" : "plone_instances", "shared_blobs": false,
+        "enable_relstorage": true
+    },
+    "deploy" : {
+        "plone_instances" : {
+            "shallow_clone" : true
+        },
+    }}
+
 
 Additionally, you may also want to enable EBS Optimized instances for
 any layers which have mounted EBS volumes (Shared Blobs, Zeoserver,

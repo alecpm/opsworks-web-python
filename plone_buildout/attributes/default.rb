@@ -43,9 +43,15 @@ default["plone_instances"]["restart_delay"] = 0
 # Relstorage stuff
 default["plone_instances"]["enable_relstorage"] = false
 default["plone_instances"]["relstorage"] = {}
-default["plone_instances"]["relstorage"]["db"] = {"type" => "postgres", "dsn" => nil,"name" => nil, "host" => nil,
-  "user" => nil, "password" => nil}
-default["plone_instances"]["relstorage"]["enable_cache"] = false
+default["plone_instances"]["relstorage"]["db"] = {
+    "type" => "postgres",
+    "dsn" => nil,
+    "name" => nil,
+    "host" => nil,
+    "user" => nil,
+    "password" => nil
+}
+default["plone_instances"]["relstorage"]["enable_cache"] = true
 default["plone_instances"]["relstorage"]["config"] = 'cfg/relstorage.cfg'
 default["plone_instances"]["relstorage"]["cache_servers"] = nil # host:port strings will be automatically set
 default["plone_instances"]["relstorage"]["enable_pack"] = false # set to true on one instance deployment
