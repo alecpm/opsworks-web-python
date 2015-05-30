@@ -24,7 +24,7 @@ if instance_data["enable_relstorage"]
   extends.push(storage['config'])
   db = storage["db"]
   if db["name"].nil? && !(deploy[:database].nil? || deploy[:database].empty?)
-    Chef::Log.debug("Updating DB info from App config #{node[:deploy][app_name][:database]}")
+    Chef::Log.info("Updating DB info from App config #{node[:deploy][app_name][:database]}")
     node.normal["plone_instances"]["relstorage"]["db"]["host"] = deploy[:database]["host"]
     node.normal["plone_instances"]["relstorage"]["db"]["port"] = deploy[:database]["port"]
     node.normal["plone_instances"]["relstorage"]["db"]["type"] = deploy[:database]["type"]
@@ -34,7 +34,7 @@ if instance_data["enable_relstorage"]
     db = node["plone_instances"]["relstorage"]
     db = storage["db"]
   else
-    Chef::Log.debug("Did not update DB info from App #{node[:deploy][app_name][:database]}")
+    Chef::Log.info("Did not update DB info from App #{node[:deploy][app_name][:database]}")
   end
 
   storage_config = "\n[relstorage]"
