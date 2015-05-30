@@ -22,13 +22,17 @@
                     "Version": "11.10",
                     "Name": "Chef"
                 },
+                "ChefConfiguration": {
+                    "BerkshelfVersion": "3.1.3",
+                    "ManageBerkshelf": true
+                },
                 "UseCustomCookbooks": true,
                 "CustomCookbooksSource": {
                     "Url": "https://github.com/alecpm/opsworks-web-python.git",
                     "Type": "git",
                     "Revision": "master"
                 },
-                "DefaultOs": "Ubuntu 12.04 LTS"
+                "DefaultOs": "Ubuntu 14.04 LTS"
             }
         },
         
@@ -43,11 +47,16 @@
                 "Shortname": "plone_instances",
                 "EnableAutoHealing": "true",
                 "AutoAssignElasticIps": "false",
-                "AutoAssignPublicIps": "true",
-                "Packages": [],
+                "AutoAssignPublicIps": "false",
+                "Packages": [
+                    "libjpeg8-dev", "libfreetype6-dev", "liblcms1-dev",
+                    "zlib1g-dev", "libwebp-dev", "webp", "mime-support",
+                    "libxml2-dev", "wv", "poppler-utils", "libxslt1-dev",
+                    "libtiff4-dev", "autoconf", "automake"
+                ],
                 "CustomRecipes": {
                     "Undeploy": ["plone_buildout::instances-undeploy"],
-                    "Setup": ["plone_buildout::instances-setup"],
+                    "Setup": ["opsworks_deploy_python::r3-mount-patch", "plone_buildout::instances-setup"],
                     "Configure": ["plone_buildout::instances-configure"],
                     "Shutdown": ["plone_buildout::instances-stop"],
                     "Deploy": ["plone_buildout::instances-deploy"]
@@ -67,10 +76,10 @@
                 "EnableAutoHealing": "true",
                 "AutoAssignElasticIps": "false",
                 "AutoAssignPublicIps": "true",
-                "Packages": [],
+                "Packages": ["autoconf", "automake"],
                 "CustomRecipes": {
                     "Undeploy": ["plone_buildout::zeoserver-undeploy"],
-                    "Setup": ["plone_buildout::zeoserver-setup"],
+                    "Setup": ["opsworks_deploy_python::r3-mount-patch", "plone_buildout::zeoserver-setup"],
                     "Configure": ["plone_buildout::zeoserver-configure"],
                     "Shutdown": ["plone_buildout::zeoserver-stop"],
                     "Deploy": ["plone_buildout::zeoserver-deploy"]
@@ -90,15 +99,15 @@
                     "Ref": "PloneStack"
                 },
                 "Type": "custom",
-                "Name": "NFS Shared Blobs",
+                "Name": "Shared Blobs",
                 "CustomRecipes": {
                     "Undeploy": [],
-                    "Setup": ["plone_buildout::nfs_blobs"],
+                    "Setup": ["opsworks_deploy_python::r3-mount-patch", "plone_buildout::nfs_blobs"],
                     "Configure": ["plone_buildout::nfs_blobs"],
                     "Shutdown": [],
                     "Deploy": []
                 },
-                "AutoAssignPublicIps": true,
+                "AutoAssignPublicIps": false,
                 "EnableAutoHealing": true,
                 "Shortname": "shared_blobs",
                 "AutoAssignElasticIps": false,
@@ -106,7 +115,9 @@
                     "MountPoint": "/srv/exports",
                     "Size": 200,
                     "NumberOfDisks": 1
-                }]
+                }],
+                "CustomSecurityGroupIds": ["default"],
+                "Packages": ["autoconf", "automake"]
             }
         },
         
@@ -120,12 +131,12 @@
                 "Name": "EBS Snapshotting",
                 "CustomRecipes": {
                     "Undeploy": [],
-                    "Setup": [],
+                    "Setup": ["opsworks_deploy_python::r3-mount-patch"],
                     "Configure": ["plone_buildout::ebs_snapshots"],
                     "Shutdown": [],
                     "Deploy": []
                 },
-                "AutoAssignPublicIps": true,
+                "AutoAssignPublicIps": false,
                 "EnableAutoHealing": true,
                 "Shortname": "ebs_snapshots",
                 "AutoAssignElasticIps": false
@@ -144,7 +155,8 @@
                     "Undeploy": [],
                     "Setup": [
                     "plone_buildout::haproxy",
-                    "plone_buildout::varnish"
+                    "plone_buildout::varnish",
+                    "plone_buildout::nginx"
                     ],
                     "Configure": [
                     "plone_buildout::haproxy",
@@ -154,17 +166,19 @@
                     "Shutdown": [],
                     "Deploy": ["plone_buildout::haproxy"]
                 },
-                "AutoAssignPublicIps": true,
+                "Packages": ["autoconf", "automake"],
+                "AutoAssignPublicIps": false,
+                "AutoAssignElasticIps": true,
                 "EnableAutoHealing": true,
                 "Attributes": {
                     "HaproxyHealthCheckUrl": "/misc_/CMFPlone/plone_icon",
                     "HaproxyHealthCheckMethod": "HEAD",
-                    "HaproxyStatsPassword": "STATS PASSWORD",
+                    "HaproxyStatsPassword": "STATSPASSWORD",
                     "HaproxyStatsUrl": "/balancer/stats",
                     "HaproxyStatsUser": "stats"
                 },
                 "Shortname": "lb",
-                "AutoAssignElasticIps": true
+                "CustomSecurityGroupIds": ["default"]
             }
         },
 

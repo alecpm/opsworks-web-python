@@ -38,45 +38,41 @@ Berkshelf` to pull in cookbook dependencies.  Go to `Stack Settings`
 -> `Edit` to set these.  For a Zeo deployment with NFS shared blobs,
 the simplest Custom JSON is the following:
 
-    {"plone_instances" : {
+    {
+      "plone_instances" : {
         "app_name" : "plone_instances", "nfs_blobs" : true
-    },
-    "zeoserver" : {
+      },
+      "zeoserver" : {
         "nfs_blobs" : true
-    },
-    "deploy" : {
-        "plone_instances" : {
-            "shallow_clone" : true
-        },
-        "zeoserver" : {
-            "shallow_clone" : true
-        }
-    }}
+      },
+      "deploy" : {
+        "plone_instances" : {},
+        "zeoserver" : {}
+      }
+    }
 
 For a relstorage stack assign a Postgresql Database to the app, and use the
 following Custom JSON:
 
-    {"plone_instances" : {
-        "app_name" : "plone_instances", "nfs_blobs" : true,
+    {
+      "plone_instances" : {
+        "app_name" : "plone_instances",
+        "nfs_blobs" : true,
         "enable_relstorage": true
-    },
-    "deploy" : {
-        "plone_instances" : {
-            "shallow_clone" : true
-        },
-    }}
+      },
+      "deploy" : {"plone_instances" : {}}
+    }
 
 To store blobs in your Relstorage DB:
 
-    {"plone_instances" : {
-        "app_name" : "plone_instances", "shared_blobs": false,
+    {
+      "plone_instances" : {
+        "app_name" : "plone_instances",
+        "shared_blobs": false,
         "enable_relstorage": true
-    },
-    "deploy" : {
-        "plone_instances" : {
-            "shallow_clone" : true
-        },
-    }}
+      },
+      "deploy" : {"plone_instances" : {}}
+    }
 
 
 Additionally, you may also want to enable EBS Optimized instances for
