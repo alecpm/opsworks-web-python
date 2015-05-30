@@ -4,7 +4,7 @@
     "Description" : "AWS CloudFormation Plone OpsWorks Template: Launches OpsWorks stack, layer, instances and associated resources to run a Plone CMS.",
     
     "Resources": {
-        
+
         "PloneStack": {
             "Type": "AWS::OpsWorks::Stack",
             "Properties": {
@@ -56,7 +56,7 @@
                 ],
                 "CustomRecipes": {
                     "Undeploy": ["plone_buildout::instances-undeploy"],
-                    "Setup": ["opsworks_deploy_python::r3-mount-patch", "plone_buildout::instances-setup"],
+                    "Setup": ["opsworks_deploy_python::r3-mount-patch", "plone_buildout::instances-setup", "apt::unattended-upgrades"],
                     "Configure": ["plone_buildout::instances-configure"],
                     "Shutdown": ["plone_buildout::instances-stop"],
                     "Deploy": ["plone_buildout::instances-deploy"]
@@ -79,7 +79,7 @@
                 "Packages": ["autoconf", "automake"],
                 "CustomRecipes": {
                     "Undeploy": ["plone_buildout::zeoserver-undeploy"],
-                    "Setup": ["opsworks_deploy_python::r3-mount-patch", "plone_buildout::zeoserver-setup"],
+                    "Setup": ["opsworks_deploy_python::r3-mount-patch", "plone_buildout::zeoserver-setup", "apt::unattended-upgrades"],
                     "Configure": ["plone_buildout::zeoserver-configure"],
                     "Shutdown": ["plone_buildout::zeoserver-stop"],
                     "Deploy": ["plone_buildout::zeoserver-deploy"]
@@ -102,7 +102,7 @@
                 "Name": "Shared Blobs",
                 "CustomRecipes": {
                     "Undeploy": [],
-                    "Setup": ["opsworks_deploy_python::r3-mount-patch", "plone_buildout::nfs_blobs"],
+                    "Setup": ["opsworks_deploy_python::r3-mount-patch", "plone_buildout::nfs_blobs", "apt::unattended-upgrades"],
                     "Configure": ["plone_buildout::nfs_blobs"],
                     "Shutdown": [],
                     "Deploy": []
@@ -153,9 +153,11 @@
                 "CustomRecipes": {
                     "Undeploy": [],
                     "Setup": [
+                    "opsworks_deploy_python::r3-mount-patch",
                     "plone_buildout::haproxy",
                     "plone_buildout::varnish",
-                    "plone_buildout::nginx"
+                    "plone_buildout::nginx", 
+                    "apt::unattended-upgrades"
                     ],
                     "Configure": [
                     "plone_buildout::haproxy",

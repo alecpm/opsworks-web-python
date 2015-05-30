@@ -141,3 +141,4 @@ node.default[:newrelic][:varnish][:download_url] = "https://github.com/varnish/n
 node.default[:newrelic][:varnish][:user] = "root"
 
 node.default['newrelic']['python_agent']['python_version'] = '2.40.0.34'
+node.default["apt"]["unattended_upgrades"]["package_blacklist"] = ["newrelic-sysmond"],
