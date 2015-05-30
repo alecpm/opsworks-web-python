@@ -22,7 +22,7 @@ extends = [instance_data["base_config"]]
 if instance_data["enable_relstorage"]
   storage = instance_data["relstorage"]
   extends.push(storage['config'])
-  db = {"dsn" => storage["db"]["dsn"]}
+  db = {"dsn" => storage["db"]["dsn"], "type" => storage["db"]["type"]}
   if storage["db"]["name"].nil? && !(deploy[:database].nil? || deploy[:database].empty?)
     Chef::Log.info("Updating DB info from App config #{node[:deploy][app_name][:database]}")
     db["host"] = deploy[:database]["host"]
@@ -35,7 +35,6 @@ if instance_data["enable_relstorage"]
     Chef::Log.info("Did not update DB info from App #{node[:deploy][app_name][:database]}")
     db["host"] = storage["db"]["host"]
     db["port"] = storage["db"]["port"]
-    db["type"] = storage["db"]["type"]
     db["user"] = storage["db"]["username"]
     db["password"] = storage["db"]["password"]
     db["name"] = storage["db"]["database"]
@@ -53,7 +52,7 @@ if instance_data["enable_relstorage"]
 
   # Setup DB driver
   case db["type"] && db["type"].downcase
-  when nil || 'postgres' || 'postgresql'
+  when 'postgres', 'postgresql', nil
     driver = 'psycopg2'
   when 'mysql'
     driver = 'MySQL-python'
