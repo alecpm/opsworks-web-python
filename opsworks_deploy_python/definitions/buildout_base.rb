@@ -78,7 +78,7 @@ define :buildout_configure do
         cookbook deploy["buildout_config_cookbook"] || 'opsworks_deploy_python'
         owner deploy[:user]
         group deploy[:group]
-        mode 0644
+        mode 0600
 
         variables Hash.new
         variables.update deploy # include any custom stuff in the deploy properties
@@ -118,7 +118,7 @@ define :buildout_configure do
         source "supervisor_upstart.erb"
         owner "root"
         group "root"
-        mode 0755
+        mode 0700
         variables Hash.new
         variables.update deploy
         variables.update :supervisord => ::File.join(release_path, "bin", supervisor_part + 'd')
@@ -182,7 +182,7 @@ define :buildout_configure do
             cookbook deploy["buildout_config_cookbook"] || 'opsworks_deploy_python'
             owner "root"
             group "root"
-            mode 0644
+            mode 0600
             source "upstart.conf.erb"
             variables Hash.new
             variables.update deploy

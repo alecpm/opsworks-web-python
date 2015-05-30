@@ -116,7 +116,6 @@
                     "Size": 200,
                     "NumberOfDisks": 1
                 }],
-                "CustomSecurityGroupIds": ["default"],
                 "Packages": ["autoconf", "automake"]
             }
         },
@@ -177,8 +176,7 @@
                     "HaproxyStatsUrl": "/balancer/stats",
                     "HaproxyStatsUser": "stats"
                 },
-                "Shortname": "lb",
-                "CustomSecurityGroupIds": ["default"]
+                "Shortname": "lb"
             }
         },
 

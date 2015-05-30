@@ -24,10 +24,12 @@ if instance_data["enable_relstorage"]
   extends.push(storage['config'])
   db = storage["db"]
   if db["name"].nil? && !(deploy[:database].nil? || deploy[:database].empty?)
-    node.normal["plone_instances"]["relstorage"]["db"]["name"] = deploy[:database]["database"]
-    node.normal["plone_instances"]["relstorage"]["db"]["host"] = deploy[:database]["host"]
-    node.normal["plone_instances"]["relstorage"]["db"]["user"] = deploy[:database]["username"]
-    node.normal["plone_instances"]["relstorage"]["db"]["password"] = deploy[:database]["password"]
+    node.normal["plone_instances"]["relstorage"]["db"]["host"] = deploy["database"]["host"]
+    node.normal["plone_instances"]["relstorage"]["db"]["port"] = deploy["database"]["port"]
+    node.normal["plone_instances"]["relstorage"]["db"]["type"] = deploy["database"]["type"]
+    node.normal["plone_instances"]["relstorage"]["db"]["user"] = deploy["database"]["username"]
+    node.normal["plone_instances"]["relstorage"]["db"]["password"] = deploy["database"]["password"]
+    node.normal["plone_instances"]["relstorage"]["db"]["name"] = deploy["database"]["database"]
     db = node["plone_instances"]["relstorage"]
     db = storage["db"]
   end
@@ -43,8 +45,8 @@ if instance_data["enable_relstorage"]
   end
 
   # Setup DB driver
-  case db["type"]
-  when nil || 'postgres'
+  case db["type"] && db["type"].downcase
+  when nil || 'postgres' || 'postgresql'
     driver = 'psycopg2'
   when 'mysql'
     driver = 'MySQL-python'
@@ -65,7 +67,7 @@ if instance_data["enable_relstorage"]
   # Memcached cache config
   if storage["enable_cache"]
     cache_servers = nil
-    additional_config << "\n" << "    pylibmc"
+    additional_config << "\n" << "    pylibmc" << "\n"
     if storage["cache_servers"]
       cache_servers = storage["cache_servers"]
     elsif node[:opsworks] && node[:opsworks][:layers] && node[:opsworks][:layers]["memcached"] && node[:opsworks][:layers]["memcached"][:instances]
