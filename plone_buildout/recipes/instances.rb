@@ -24,14 +24,17 @@ if instance_data["enable_relstorage"]
   extends.push(storage['config'])
   db = storage["db"]
   if db["name"].nil? && !(deploy[:database].nil? || deploy[:database].empty?)
-    node.normal["plone_instances"]["relstorage"]["db"]["host"] = deploy["database"]["host"]
-    node.normal["plone_instances"]["relstorage"]["db"]["port"] = deploy["database"]["port"]
-    node.normal["plone_instances"]["relstorage"]["db"]["type"] = deploy["database"]["type"]
-    node.normal["plone_instances"]["relstorage"]["db"]["user"] = deploy["database"]["username"]
-    node.normal["plone_instances"]["relstorage"]["db"]["password"] = deploy["database"]["password"]
-    node.normal["plone_instances"]["relstorage"]["db"]["name"] = deploy["database"]["database"]
+    Chef::Log.debug("Updating DB info from App config #{node[:deploy][app_name][:database]}")
+    node.normal["plone_instances"]["relstorage"]["db"]["host"] = deploy[:database]["host"]
+    node.normal["plone_instances"]["relstorage"]["db"]["port"] = deploy[:database]["port"]
+    node.normal["plone_instances"]["relstorage"]["db"]["type"] = deploy[:database]["type"]
+    node.normal["plone_instances"]["relstorage"]["db"]["user"] = deploy[:database]["username"]
+    node.normal["plone_instances"]["relstorage"]["db"]["password"] = deploy[:database]["password"]
+    node.normal["plone_instances"]["relstorage"]["db"]["name"] = deploy[:database]["database"]
     db = node["plone_instances"]["relstorage"]
     db = storage["db"]
+  else
+    Chef::Log.debug("Did not update DB info from App #{node[:deploy][app_name][:database]}")
   end
 
   storage_config = "\n[relstorage]"
