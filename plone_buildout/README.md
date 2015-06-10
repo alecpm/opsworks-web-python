@@ -75,38 +75,37 @@ To store blobs in your Relstorage DB:
     }
 
 
-Additionally, you may also want to enable EBS Optimized instances for
-any layers which have mounted EBS volumes (Shared Blobs, Zeoserver,
-...).  You can do this by editing the EBS Volumes tab of the desired
-layer.
+Additionally, you may also want to enable EBS Optimized instances for any
+layers which have mounted EBS volumes (Shared Blobs, Zeoserver, ...).  You can
+do this by editing the EBS Volumes tab of the desired layer.
 
-It is recommended that RelStorage based stacks use Amazon RDS with
-Multi-AZ to provide high avaialability.  If you create and RDS to
-server your database , be sure that its security group allows access
-to the `AWS-OpsWorks-Custom-Server` EC2 Security Group that your
-zope instances will run under.
+Finally, if you intend to use separate servers for various services, you will
+want to update the security groups for layers which provide internal services
+within the layers.  The easiest way to do this is to add the `default`
+security group (for your region or current VPC) to the security groups for
+those layers (generally the HAProxy/LB, Shared Blobs, Solr, and Plone
+Instances layers).  Alternatively, you can create custom security groups to
+limit connectivity to the specific ports required by those services.
 
-You'll generally want to update the Stack's Apps to set the
-application repository parameters to your buildout (see
-[Applications](#applications)).  Then you'll want to configure and
-start some instances (see [Instances](#instances)).  Initially, you'll
-probably want to start by adding all layers to a single instance, but
-you can have multiple instances per layer and multiple layers per
-instance in whatever configuration makes sense for your application.
+It is recommended that RelStorage based stacks use Amazon RDS with Multi-AZ to
+provide high avaialability.  If you create and RDS to server your database ,
+be sure that its security group allows access to the `AWS-OpsWorks-Custom-
+Server` EC2 Security Group that your zope instances will run under (or add the
+`default` security group for the `Plone Instances` layer as above and either
+add the RDS to that security group or modify the RDS security group to allow
+access from the `default` group).
+
+You'll generally want to update the Stack's Apps to set the application
+repository parameters to your buildout (see [Applications](#applications)).
+Then you'll want to configure and start some instances (see
+[Instances](#instances)).  Initially, you'll probably want to start by adding
+all layers to a single instance, but you can have multiple instances per layer
+and multiple layers per instance in whatever configuration makes sense for
+your application.
 
 The layers automatically created by CloudFormation can be customized
-extensively, and details are provided below regarding the
-functionality and configuration of each layer.
-
-Note: Your Zope instances will be running and the plone site (default
-/Plone) will be server on on Port 80 via Nginx/Varnish/HAProxy, but
-you will not be able to directly access the instances unless you
-change the security group permissions to allow you access to ports
-8081, etc.  You can do this by modifying allowed Inbound rules for the
-`AWS-OpsWorks-Custom-Server` security group in the EC2 Security Groups
-configuration to allow access from specific IP addresses.  You will
-need to do this to initially create your Plone site if you haven't
-already created one.
+extensively, and details are provided below regarding the functionality and
+configuration of each layer.
 
 
 Under the Hood of a Scalable Stack Structure
@@ -330,6 +329,7 @@ You'll probably want to customize the stats username and password.
 The front end layer uses the following recipes:
 
   * Setup: `plone_buildout::haproxy` `plone_buildout::varnish`
+  `plone_buildout::nginx`
   * Configure: `plone_buildout::haproxy` `plone_buildout::varnish` `plone_buildout::nginx`
   * Deploy: `plone_buildout::haproxy`
 
@@ -505,7 +505,7 @@ include:
   * `environment`: A mapping of environment variables to include in the buildout and supervisor
   * `buildout_cache_archives`: An array with tgz archives to be fetched and expanded at a specific path (e.g. a cache of eggs or downloads, to speedup the initial build).  Example: `[{"url" : "https://url.to/plone-5.0-eggs.tgz", "path" : "shared/eggs", "user": "me", "password": "secret"}]`
   * `always_build_on_deploy`: Always run buildout on a deploy action, even if neither the buildout repo nor the config file has changed.  This is necessary to update packages when  you use mr.developer in your buildout.  Otherwise the deploy will not re-run the buildout unless the buildout repository has changed.
-  * `symlink_before_migrate`: A mapping of directories to link from the shared directory to the buildout directory in the deployment so their contents persist across deployments.  If you use `mr.developer` you'll probably want to use `{"src" : "src"}`.
+  * `symlink_before_migrate`: A mapping of directories to link from the shared directory to the buildout directory in the deployment so their contents persist across deployments.  If you use `mr.developer` to manage everything in `src` you'll probably want to use `{"src" : "src"}`.
   * `purge_before_symlink`: An array of directories in the buildout to remove before creating symlinks to shared.  For `mr.developer` based buildouts, you'll want `['src']`.
   * `create_dirs_before_symlink`: An array of directories in the shared directory to create before symlinking.  For `mr.developer` based buildouts, you'll also want `['src']`.
 
@@ -670,6 +670,32 @@ Specifically, the deb package installed automatically modifies the nginx
 config in a manner that can break responses containing HTML fragments.
 
 
+### Additional configuration
+
+There is a known issue with volume mounting on r3.large and r3.extralarge
+instances.  These cookbooks include a workaround recipe that should be added
+to the `Setup` recipes of any layer of primary functionality that might be
+assigned to such an instance.  The recipe is:
+
+  * `opsworks_deploy_python::r3-mount-patch`
+
+If you would like to have automatic system and security updates applied to
+your instances, you should include and configure the apt unattended upgrades
+recipe in the `Setup` recipes for any primary layer:
+
+  * `apt::unattended-upgrades`
+
+This recipe has a number of
+[configuration options](https://github.com/opscode-cookbooks/apt#unattended-upgrades-1),
+which can be set in the stack Custom JSON.  For example:
+
+  "apt": {
+    "unattended_upgrades": {
+      "package_blacklist": ["newrelic-sysmond"],
+      "mail": "you@example.com"
+    }
+  }
+
 ## Motivation
 
 After reading this, it still may not be clear why so many stack layers
@@ -800,7 +826,7 @@ advantages in exchange for a little extra up-front effort.
 
 With thanks to Jazkarta, Inc. and KCRW Radio
 ```text
-Copyright 2014, Alec Mitchell
+Copyright 2015, Alec Mitchell
 
 Licensed under the BSD License.
 ```
