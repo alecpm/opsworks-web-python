@@ -22,7 +22,24 @@ extends = [instance_data["base_config"]]
 if instance_data["enable_relstorage"]
   storage = instance_data["relstorage"]
   extends.push(storage['config'])
-  db = storage["db"]
+  db = {"dsn" => storage["db"]["dsn"], "type" => storage["db"]["type"]}
+  if storage["db"]["name"].nil? && !(deploy[:database].nil? || deploy[:database].empty?)
+    Chef::Log.info("Updating DB info from App config #{node[:deploy][app_name][:database]}")
+    db["host"] = deploy[:database]["host"]
+    db["port"] = deploy[:database]["port"]
+    db["type"] = deploy[:database]["type"]
+    db["user"] = deploy[:database]["username"]
+    db["password"] = deploy[:database]["password"]
+    db["name"] = deploy[:database]["database"]
+  else
+    Chef::Log.info("Did not update DB info from App #{node[:deploy][app_name][:database]}")
+    db["host"] = storage["db"]["host"]
+    db["port"] = storage["db"]["port"]
+    db["user"] = storage["db"]["username"]
+    db["password"] = storage["db"]["password"]
+    db["name"] = storage["db"]["database"]
+  end
+
   storage_config = "\n[relstorage]"
   if db["dsn"]
     # If we have an explicit DSN, then use it along with the db type
@@ -32,25 +49,31 @@ if instance_data["enable_relstorage"]
     storage_config << "\n" << "dbname = #{db["name"]}" << "\n" << "host = #{db["host"]}" 
     storage_config << "\n" << "user = #{db["user"]}" << "\n" << "password = #{db["password"]}"
   end
+
+  # Setup DB driver
+  case db["type"] && db["type"].downcase
+  when 'postgres', 'postgresql', nil
+    driver = 'psycopg2'
+  when 'mysql'
+    driver = 'MySQL-python'
+  when 'oracle'
+    # This one needs libs not available through standard means,
+    # you're on your own with that setup
+    driver = 'cx_Oracle'
+  else
+    driver = nil
+  end
+  if driver || storage["enable_cache"]
+    additional_config << "\n" << "eggs +="
+  end
+  if driver
+    additional_config << "\n" << "    #{driver}"
+  end
+
   # Memcached cache config
   if storage["enable_cache"]
     cache_servers = nil
-    additional_config << "\n" << "eggs +="<< "\n" << "    pylibmc"
-    case db["type"]
-    when nil || 'postgres'
-      driver = 'psycopg2'
-    when 'mysql'
-      driver = 'MySQL-python'
-    when 'oracle'
-      # This one needs libs not available through standard means,
-      # you're on your own with that setup
-      driver = 'cx_Oracle'
-    else
-      driver = nil
-    end
-    if driver
-      additional_config << "\n" << "    #{driver}"
-    end
+    additional_config << "\n" << "    pylibmc" << "\n"
     if storage["cache_servers"]
       cache_servers = storage["cache_servers"]
     elsif node[:opsworks] && node[:opsworks][:layers] && node[:opsworks][:layers]["memcached"] && node[:opsworks][:layers]["memcached"][:instances]
