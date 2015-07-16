@@ -41,7 +41,7 @@ if instance_data["enable_relstorage"]
   end
 
   storage_config = "\n[relstorage]"
-  if db["dsn"]
+  if !db["dsn"].nil? && !db["dsn"].empty?
     # If we have an explicit DSN, then use it along with the db type
     storage_config << "\n" << "db-type = #{db["type"]}" << "\n" << "dsn = #{db["dsn"]}"
   else
