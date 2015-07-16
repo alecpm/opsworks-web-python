@@ -35,9 +35,9 @@ if instance_data["enable_relstorage"]
     Chef::Log.info("Did not update DB info from App #{node[:deploy][app_name][:database]}")
     db["host"] = storage["db"]["host"]
     db["port"] = storage["db"]["port"]
-    db["user"] = storage["db"]["username"]
+    db["user"] = storage["db"]["user"]
     db["password"] = storage["db"]["password"]
-    db["name"] = storage["db"]["database"]
+    db["name"] = storage["db"]["name"]
   end
 
   storage_config = "\n[relstorage]"
