@@ -25,12 +25,12 @@ if instance_data["enable_relstorage"]
   db = {"dsn" => storage["db"]["dsn"], "type" => storage["db"]["type"]}
   if storage["db"]["name"].nil? && !(deploy[:database].nil? || deploy[:database][:database].nil? || deploy[:database][:database].empty?)
     Chef::Log.info("Updating DB info from App config #{node[:deploy][app_name][:database]}")
-    db["host"] = node[:deploy][app_name][:database][:host]
-    db["port"] = node[:deploy][app_name][:database][:port]
-    db["type"] = node[:deploy][app_name][:database][:adapter]
-    db["user"] = node[:deploy][app_name][:database][:username]
-    db["password"] = node[:deploy][app_name][:database][:password]
-    db["name"] = node[:deploy][app_name][:database][:database]
+    db["host"] = node[:deploy][app_name][:database]["host"]
+    db["port"] = node[:deploy][app_name][:database]["port"]
+    db["type"] = node[:deploy][app_name][:database]["adapter"]
+    db["user"] = node[:deploy][app_name][:database]["username"]
+    db["password"] = node[:deploy][app_name][:database]["password"]
+    db["name"] = node[:deploy][app_name][:database]["database"]
   else
     Chef::Log.info("Did not update DB info from App #{node[:deploy][app_name][:database]}")
     db["host"] = storage["db"]["host"]
@@ -43,7 +43,7 @@ if instance_data["enable_relstorage"]
   storage_config = "\n[relstorage]"
   if !db["dsn"].nil? && !db["dsn"].empty?
     # If we have an explicit DSN, then use it along with the db type
-    storage_config << "\n" << "db-type = #{db["type"]}" << "\n" << "dsn = #{db["dsn"]}"
+    storage_config << "\n" << "db-type = #{db['type']}" << "\n" << "dsn = #{db['dsn']}"
   else
     # Otherwise we use the default DB (Postgres) and DSN
     Chef::Log.info("Updating db paramaters: #{db}")
