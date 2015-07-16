@@ -23,14 +23,14 @@ if instance_data["enable_relstorage"]
   storage = instance_data["relstorage"]
   extends.push(storage['config'])
   db = {"dsn" => storage["db"]["dsn"], "type" => storage["db"]["type"]}
-  if storage["db"]["name"].nil? && !(deploy[:database].nil? || deploy[:database].empty?)
+  if storage["db"]["name"].nil? && !(deploy[:database].nil? || deploy[:database][:database].nil? || deploy[:database][:database].empty?)
     Chef::Log.info("Updating DB info from App config #{node[:deploy][app_name][:database]}")
-    db["host"] = deploy[:database]["host"]
-    db["port"] = deploy[:database]["port"]
-    db["type"] = deploy[:database]["type"]
-    db["user"] = deploy[:database]["username"]
-    db["password"] = deploy[:database]["password"]
-    db["name"] = deploy[:database]["database"]
+    db["host"] = deploy[:database][:host]
+    db["port"] = deploy[:database][:port]
+    db["type"] = deploy[:database][:adapter]
+    db["user"] = deploy[:database][:username]
+    db["password"] = deploy[:database][:password]
+    db["name"] = deploy[:database][:database]
   else
     Chef::Log.info("Did not update DB info from App #{node[:deploy][app_name][:database]}")
     db["host"] = storage["db"]["host"]
