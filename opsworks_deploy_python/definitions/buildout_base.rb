@@ -152,6 +152,8 @@ define :buildout_configure do
             action :nothing
             if command['eventlistener']
               eventlistener true
+              # need write permission to supervisor.sock
+              user 'root'
             end
             if command['eventlistener_events']
               eventlistener_events command['eventlistener_events']
