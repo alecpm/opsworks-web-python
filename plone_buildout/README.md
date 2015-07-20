@@ -501,7 +501,7 @@ include:
   * `os_packages`: Any required packages to be installed via apt
   * `buildout_extends`: An array of additional extends files to use (e.g. `["cfg/sources.cfg"]`)
   * `buildout_parts_to_include`: An array of additional parts to include (e.g. `["mycustompart"]`)
-  * `buildout_init_commands`: An array of additional (non-instance) commands for supervisor to control (e.g. `[{"name": "mydaemon", "cmd": "bin/mydaemon", "args": "console"}]`)
+  * `buildout_init_commands`: An array of additional (non-instance) commands for supervisor to control (e.g. `[{"name": "mydaemon", "cmd": "bin/mydaemon", "args": "console"}]`).  To use supervisor event listeners like Superlance's `memmon` (you'll need to add a zc.recipe.egg:scripts part to your buildout to build the console scripts in that case), use the `eventlistener` key. (e.g., `[{ "name": "memmon", "init_type": "supervisor", "cmd":  "bin/memmon", "args": "-a 1GB -m foo@baz.com --name='Production memmon'", "eventlistener": true, "eventlistener_events": ["TICK_60"]}]`)
   * `environment`: A mapping of environment variables to include in the buildout and supervisor
   * `buildout_cache_archives`: An array with tgz archives to be fetched and expanded at a specific path (e.g. a cache of eggs or downloads, to speedup the initial build).  Example: `[{"url" : "https://url.to/plone-5.0-eggs.tgz", "path" : "shared/eggs", "user": "me", "password": "secret"}]`
   * `always_build_on_deploy`: Always run buildout on a deploy action, even if neither the buildout repo nor the config file has changed.  This is necessary to update packages when  you use mr.developer in your buildout.  Otherwise the deploy will not re-run the buildout unless the buildout repository has changed.
