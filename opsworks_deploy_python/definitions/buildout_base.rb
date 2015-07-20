@@ -131,7 +131,9 @@ define :buildout_configure do
       end
       services.push(s)
     elsif init_commands.length
+      Chef::Log.info("init_commands: #{init_commands}")
       init_commands.each_with_index do |command, index|
+        Chef::Log.info("init_command: #{command}")
         if command["name"] == application
           service_name = application
         elsif command["name"]
@@ -148,6 +150,14 @@ define :buildout_configure do
             directory ::File.join(deploy[:deploy_to], "current")
             autostart true
             action :nothing
+            if command['eventlistener']
+              eventlistener true
+              # need write permission to supervisor.sock
+              user 'root'
+            end
+            if command['eventlistener_events']
+              eventlistener_events command['eventlistener_events']
+            end
             stdout_logfile "/var/log/supervisor/#{service_name}-stdout.log"
             stderr_logfile "/var/log/supervisor/#{service_name}-stderr.log"
             if command['delay'] && command['delay'] != 0
