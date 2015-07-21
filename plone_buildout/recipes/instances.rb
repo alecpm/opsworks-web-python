@@ -288,6 +288,7 @@ elsif node["plone_blobs"]["blob_dir"]
     mode 0700
     recursive true
     action :create
+    ignore_failure true
   end
   # Symlink the default blob location to the specified blob dir if
   # shared blobs are enabled
@@ -300,6 +301,7 @@ elsif node["plone_blobs"]["blob_dir"]
         mode 0755
         recursive true
         action :create
+        ignore_failure true
       end
       link blob_location do
         to node["plone_blobs"]["blob_dir"]
@@ -321,6 +323,7 @@ if (node["plone_zeoserver"]["filestorage_dir"] &&
     mode 0700
     recursive true
     action :create
+    ignore_failure true
   end
   link ::File.join(deploy[:deploy_to], 'shared', 'var', 'filestorage') do
     to fs_dir

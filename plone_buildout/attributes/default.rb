@@ -142,3 +142,9 @@ node.default[:newrelic][:varnish][:user] = "root"
 
 node.default['newrelic']['python_agent']['python_version'] = '2.40.0.34'
 node.default["apt"]["unattended_upgrades"]["package_blacklist"] = ["newrelic-sysmond"]
+
+# Version update
+node.default[:s3fs_fuse][:version] = '1.74'
+
+# Ubuntu install seems to put the bluepill binary in another location
+node.default["bluepill"]["bin"] = "/usr/local/bin/bluepill"
