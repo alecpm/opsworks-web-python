@@ -39,3 +39,14 @@ template "/etc/logrotate.d/supervisor" do
   group "root"
   mode 0644
 end
+
+if !node["plone_blobs"]["blob_dir"].nil?
+  directory node["plone_blobs"]["blob_dir"] do
+    owner deploy[:user]
+    group deploy[:group]
+    mode 0700
+    recursive true
+    action :create
+    ignore_failure true
+  end
+end

@@ -61,6 +61,7 @@ elsif node["plone_blobs"]["blob_dir"]
     mode 0700
     recursive true
     action :create
+    ignore_failure true
   end
   blob_location = ::File.join(deploy[:deploy_to], 'shared', 'var', 'blobstorage')
   if node["plone_blobs"]["blob_dir"] != blob_location
@@ -70,6 +71,7 @@ elsif node["plone_blobs"]["blob_dir"]
       mode 0755
       recursive true
       action :create
+      ignore_failure true
     end
     link blob_location do
       to node["plone_blobs"]["blob_dir"]
@@ -88,6 +90,15 @@ if (node["plone_zeoserver"]["filestorage_dir"]
     mode 0700
     recursive true
     action :create
+    ignore_failure true
+  end
+  directory ::File.join(deploy[:deploy_to], 'shared', 'var') do
+    owner deploy[:user]
+    group deploy[:group]
+    mode 0700
+    recursive true
+    action :create
+    ignore_failure true
   end
   link ::File.join(deploy[:deploy_to], 'shared', 'var', 'filestorage') do
     to fs_dir

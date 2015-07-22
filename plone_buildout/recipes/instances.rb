@@ -23,31 +23,32 @@ if instance_data["enable_relstorage"]
   storage = instance_data["relstorage"]
   extends.push(storage['config'])
   db = {"dsn" => storage["db"]["dsn"], "type" => storage["db"]["type"]}
-  if storage["db"]["name"].nil? && !(deploy[:database].nil? || deploy[:database].empty?)
+  if storage["db"]["name"].nil? && !(deploy[:database].nil? || deploy[:database][:database].nil? || deploy[:database][:database].empty?)
     Chef::Log.info("Updating DB info from App config #{node[:deploy][app_name][:database]}")
-    db["host"] = deploy[:database]["host"]
-    db["port"] = deploy[:database]["port"]
-    db["type"] = deploy[:database]["type"]
-    db["user"] = deploy[:database]["username"]
-    db["password"] = deploy[:database]["password"]
-    db["name"] = deploy[:database]["database"]
+    db["host"] = node[:deploy][app_name][:database]["host"]
+    db["port"] = node[:deploy][app_name][:database]["port"]
+    db["type"] = node[:deploy][app_name][:database]["adapter"]
+    db["user"] = node[:deploy][app_name][:database]["username"]
+    db["password"] = node[:deploy][app_name][:database]["password"]
+    db["name"] = node[:deploy][app_name][:database]["database"]
   else
     Chef::Log.info("Did not update DB info from App #{node[:deploy][app_name][:database]}")
     db["host"] = storage["db"]["host"]
     db["port"] = storage["db"]["port"]
-    db["user"] = storage["db"]["username"]
+    db["user"] = storage["db"]["user"]
     db["password"] = storage["db"]["password"]
-    db["name"] = storage["db"]["database"]
+    db["name"] = storage["db"]["name"]
   end
 
   storage_config = "\n[relstorage]"
-  if db["dsn"]
+  if !db["dsn"].nil? && !db["dsn"].empty?
     # If we have an explicit DSN, then use it along with the db type
-    storage_config << "\n" << "db-type = #{db["type"]}" << "\n" << "dsn = #{db["dsn"]}"
+    storage_config << "\n" << "db-type = #{db['type']}" << "\n" << "dsn = #{db['dsn']}"
   else
     # Otherwise we use the default DB (Postgres) and DSN
-    storage_config << "\n" << "dbname = #{db["name"]}" << "\n" << "host = #{db["host"]}" 
-    storage_config << "\n" << "user = #{db["user"]}" << "\n" << "password = #{db["password"]}"
+    Chef::Log.info("Updating db paramaters: #{db}")
+    storage_config << "\n" << "dbname = #{db['name']}" << "\n" << "host = #{db['host']}"
+    storage_config << "\n" << "user = #{db['user']}" << "\n" << "password = #{db['password']}"
   end
 
   # Setup DB driver
@@ -287,6 +288,7 @@ elsif node["plone_blobs"]["blob_dir"]
     mode 0700
     recursive true
     action :create
+    ignore_failure true
   end
   # Symlink the default blob location to the specified blob dir if
   # shared blobs are enabled
@@ -299,6 +301,7 @@ elsif node["plone_blobs"]["blob_dir"]
         mode 0755
         recursive true
         action :create
+        ignore_failure true
       end
       link blob_location do
         to node["plone_blobs"]["blob_dir"]
@@ -320,6 +323,7 @@ if (node["plone_zeoserver"]["filestorage_dir"] &&
     mode 0700
     recursive true
     action :create
+    ignore_failure true
   end
   link ::File.join(deploy[:deploy_to], 'shared', 'var', 'filestorage') do
     to fs_dir

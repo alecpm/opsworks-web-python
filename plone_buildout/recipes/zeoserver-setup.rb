@@ -16,3 +16,25 @@ buildout_setup do
   deploy_data deploy
   app_name app_name
 end
+
+if node["plone_zeoserver"]["filestorage_dir"]
+  directory node["plone_zeoserver"]["filestorage_dir"] do
+    owner deploy[:user]
+    group deploy[:group]
+    mode 0700
+    recursive true
+    action :create
+    ignore_failure true
+  end
+end
+if node["plone_blobs"]["blob_dir"]
+  # Create the blob dir if it doesn't exist, and give it "safe" permissions
+  directory node["plone_blobs"]["blob_dir"] do
+    owner deploy[:user]
+    group deploy[:group]
+    mode 0700
+    recursive true
+    action :create
+    ignore_failure true
+  end
+end

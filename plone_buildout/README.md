@@ -279,6 +279,33 @@ current generation instances), to speed replication and reads for
 those servers which connect to that peer.
 
 
+#### Notes on using S3 for blob storage (s3fs-fuse)
+
+You can store blobs in S3 using a mounting a bucket as a user-space filesystem
+and using that for shared blob storage or as the backing store for a ZEO
+server serving blobs.  To do so you just need to include the `s3fs-fuse`
+recipe early in the `setup` stage of the layers you want to attach the storage
+to (either instances and/or zeoserver).  The configuration would look like the
+following for shared blobs:
+
+    {
+      "s3fs_fuse": {
+        "s3_key": YOUR_AWS_KEY_FOR_S3,
+        "s3_secret": YOUR_AWS_SECRET_FOR_S3,
+        "mounts": [{:bucket => YOUR_BUCKET_NAME,
+                    :path => "/mnt/shared/zodb/blobs",
+                    :tmp_store => "/mnt/tmp/s3_cache"}]
+      },
+      "plone_blobs": {"blob_dir": "/mnt/shared/zodb/"}
+    }
+
+See the "s3fs-fuse cookbook"[https://github.com/hw-cookbooks/s3fs-fuse]
+documentation for more details on parameters.  Using S3 this way will not tend
+to provide great performance, though it provides an easy to setup fault-
+tolerant network filesystem, which is hard to come by.  Caching (via the ZEO
+server) may help alleviate performance issues.
+
+
 #### ZEO Server Layer
 
 The ZEO server layer is a custom application server layer named
