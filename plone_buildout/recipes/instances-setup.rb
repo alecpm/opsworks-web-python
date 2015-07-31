@@ -40,7 +40,7 @@ template "/etc/logrotate.d/supervisor" do
   mode 0644
 end
 
-if !node["plone_blobs"]["blob_dir"].nil?
+if !deploy[:user].nil? && !node["plone_blobs"]["blob_dir"].nil?
   directory node["plone_blobs"]["blob_dir"] do
     owner deploy[:user]
     group deploy[:group]

@@ -17,7 +17,7 @@ buildout_setup do
   app_name app_name
 end
 
-if node["plone_zeoserver"]["filestorage_dir"]
+if !deploy[:user].nil? && !node["plone_zeoserver"]["filestorage_dir"].nil?
   directory node["plone_zeoserver"]["filestorage_dir"] do
     owner deploy[:user]
     group deploy[:group]
@@ -27,7 +27,7 @@ if node["plone_zeoserver"]["filestorage_dir"]
     ignore_failure true
   end
 end
-if node["plone_blobs"]["blob_dir"]
+if !deploy[:user].nil? && !node["plone_blobs"]["blob_dir"].nil?
   # Create the blob dir if it doesn't exist, and give it "safe" permissions
   directory node["plone_blobs"]["blob_dir"] do
     owner deploy[:user]
