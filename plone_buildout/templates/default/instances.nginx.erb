@@ -77,6 +77,8 @@ server {
         set $is_font 1;
     }
 
+    <%= node["plone_instances"]["subsite_config"][host] =%>
+
     location / {
         # Avoid duplicate entries in search engines due to trailing slashes
         if ( $http_user_agent ~* ^(Googlebot|msnbot|Bingbot|BingPreview|Yahoo|Baiduspider) ) {
