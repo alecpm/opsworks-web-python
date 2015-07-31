@@ -20,6 +20,9 @@ define :buildout_configure do
   run_actions = params[:run_action]
   force_build = params[:force_build]
 
+  group = deploy[:group] || 'www-data'
+  owner = deploy[:user] || 'deploy'
+
   buildout_download_caches do
     deploy_data deploy
   end
@@ -34,8 +37,8 @@ define :buildout_configure do
   link logs do
     link_type :symbolic
     to "#{deploy[:deploy_to]}/shared/var/log"
-    owner deploy[:user]
-    group deploy[:group]
+    owner owner
+    group group
   end
 
   # Filter rails keys from environment and try to apply an ordering,
@@ -76,8 +79,8 @@ define :buildout_configure do
       template ::File.join(release_path, config_file) do
         source Helpers.buildout_setting(deploy,'config_template', node)
         cookbook deploy["buildout_config_cookbook"] || 'opsworks_deploy_python'
-        owner deploy[:user]
-        group deploy[:group]
+        owner owner
+        group group
         mode 0600
 
         variables Hash.new

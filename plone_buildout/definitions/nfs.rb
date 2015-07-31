@@ -2,6 +2,8 @@ define :blob_mounts do
   deploy = params[:deploy_data]
   use_gluster = params[:use_gluster]
 
+  group = deploy[:group] || 'www-data'
+  owner = deploy[:user] || 'deploy'
   ephemeral = node[:opsworks_initial_setup] && node[:opsworks_initial_setup][:ephemeral_mount_point] || '/mnt'
   base_dir = ::File.join(deploy[:deploy_to], "shared")
   mount_dir = ::File.join(ephemeral, "shared", "blobs")
@@ -11,22 +13,22 @@ define :blob_mounts do
   # Create the blob dir and link early, and ensure they have the
   # right ownership/permissions
   directory mount_dir do
-    owner deploy[:user]
-    group deploy[:group]
+    owner owner
+    group group
     mode 0755
     recursive true
     action :create
   end
   directory ::File.join(base_dir, "var") do
-    owner deploy[:user]
-    group deploy[:group]
+    owner owner
+    group group
     mode 0755
     recursive true
     action :create
   end
   directory blob_mount_dir do
-    owner deploy[:user]
-    group deploy[:group]
+    owner owner
+    group group
     mode 0750
     recursive true
     action :create
@@ -35,8 +37,8 @@ define :blob_mounts do
   # Link mounts to the correct location
   link blob_dir do
     to blob_mount_dir
-    owner deploy[:user]
-    group deploy[:group]
+    owner owner
+    group group
     action :create
   end
 
@@ -86,8 +88,8 @@ define :blob_mounts do
     end
     # Create the blob dir on the mount location if it doesn't already exist
     directory blob_mount_dir do
-      owner deploy[:user]
-      group deploy[:group]
+      owner owner
+      group group
       mode 0750
       recursive true
       action :create

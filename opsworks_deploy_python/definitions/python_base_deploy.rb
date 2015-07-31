@@ -2,6 +2,9 @@ define :python_base_setup do
   deploy = params[:deploy_data]
   application = params[:app_name]
 
+  group = deploy[:group] || 'www-data'
+  owner = deploy[:user] || 'deploy'
+
   Chef::Log.debug("*****************************************")
   Chef::Log.debug("Running #{recipe_name} for #{application}")
   Chef::Log.debug("*****************************************")
@@ -90,8 +93,8 @@ define :python_base_setup do
   end
 
   directory "#{deploy[:deploy_to]}/shared" do
-    group deploy[:group]
-    owner deploy[:user]
+    group group
+    owner owner
     mode 0770
     action :create
     recursive true
@@ -103,8 +106,8 @@ define :python_base_setup do
   node.normal[:deploy][application]["venv"] = venv_path
   python_virtualenv "#{application}-venv" do
     path venv_path
-    owner deploy[:user]
-    group deploy[:group]
+    owner owner
+    group group
     options venv_options
     action :create
   end
@@ -149,8 +152,8 @@ define :python_base_deploy do
   # so we need to take care of it ourselves
   (node[:deploy][application]["create_dirs_before_symlink"] || []).each do |dirname|
     directory ::File.join(deploy[:deploy_to], "shared", dirname) do
-      owner deploy[:user]
-      group deploy[:group]
+      owner owner
+      group group
       mode 0750
       recursive true
       action :create
@@ -182,8 +185,8 @@ define :python_base_deploy do
         link dir_path do
           link_type :symbolic
           to shared_path
-          owner deploy[:user]
-          group deploy[:group]
+          owner owner
+          group group
           action [:delete, :create]
           only_if "test -e #{::File.join(deploy[:deploy_to], 'current')}"
         end
@@ -201,8 +204,8 @@ define :python_base_deploy do
   node.normal[:deploy][application]["venv"] = venv_path
   python_virtualenv application + '-venv' do
     path venv_path
-    owner deploy[:user]
-    group deploy[:group]
+    owner owner
+    group group
     action :create
   end
 
