@@ -130,6 +130,9 @@ define :python_base_deploy do
   deploy = params[:deploy_data]
   application = params[:app_name]
 
+  group = deploy[:group] || 'www-data'
+  owner = deploy[:user] || 'deploy'
+
   # Merge symlink values from node default definitions
   ['symlink_before_migrate', 'purge_before_symlink', 'create_dirs_before_symlink'].each do |attr|
     if node["deploy_#{deploy[:custom_type]}"] && node["deploy_#{deploy[:custom_type]}"][attr]
