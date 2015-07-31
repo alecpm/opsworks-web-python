@@ -8,6 +8,7 @@ cookbook 'supervisor', github: 'poise/supervisor', ref: '2ebac961426eef394179c91
 cookbook 'papertrail', github: 'librato/papertrail-cookbook', tag: '0.0.6'
 cookbook "traceview", github: 'Optaros/tracelytics-chef', ref: 'e0f1b2bd7b72956963626da2788c9cc6b2b90294'
 cookbook 'newrelic_meetme_plugin', github: 'alecpm/newrelic_meetme_plugin'
+cookbook 's3fs-fuse', github: 'alecpm/s3fs-fuse'
 
 # We want to be explicit, since we don't explicitly include our
 # packages, except when testing
@@ -28,7 +29,6 @@ cookbook 'runit', '1.5.10'
 cookbook 'rsyslog', '1.12.2'
 cookbook 'newrelic', '2.3.0'
 cookbook 'newrelic_plugins', '1.1.0'
-cookbook 's3fs-fuse', '0.1.4'
 cookbook 'bluepill', '2.3.1'
 
 # Uncomment the items below for testing deployments with Vagrant
