@@ -292,11 +292,11 @@ following for shared blobs:
       "s3fs_fuse": {
         "s3_key": YOUR_AWS_KEY_FOR_S3,
         "s3_secret": YOUR_AWS_SECRET_FOR_S3,
-        "mounts": [{:bucket => YOUR_BUCKET_NAME,
-                    :path => "/mnt/shared/zodb/blobs",
-                    :tmp_store => "/mnt/tmp/s3_cache"}]
+        "mounts": [{"bucket: YOUR_BUCKET_NAME,
+                    "path": "/mnt/shared/zodb/blobs",
+                    "tmp_store": "/mnt/tmp/s3_cache"}]
       },
-      "plone_blobs": {"blob_dir": "/mnt/shared/zodb/"}
+      "plone_blobs": {"blob_dir": "/mnt/shared/zodb/blobs"}
     }
 
 See the "s3fs-fuse cookbook"[https://github.com/hw-cookbooks/s3fs-fuse]

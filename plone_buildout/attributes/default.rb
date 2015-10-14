@@ -29,6 +29,7 @@ default["plone_instances"]["base_config"] = "cfg/base.cfg"  # This must be set
 default["plone_instances"]["app_name"] = "plone_instances"  # This must be set
 default["plone_instances"]["site_id"] = "Plone"  # This must be set for VHosting
 default["plone_instances"]["subsites"] = {}  # mapping of vhost name to site path
+default["plone_instances"]["subsite_config"] = {}  # mapping of vhost name to additional_config
 default["plone_instances"]["per_cpu"] = 2 # Instances per server CPU
 default["plone_instances"]["instance_count"] = nil
 default["plone_instances"]["shared_blobs"] = true # Otherwise store blobs in DB
@@ -113,6 +114,7 @@ default['nginx_plone']['additional_config'] = nil
 default['nginx_plone']['additional_ssl_config'] = nil
 default['nginx_plone']['proxy_port'] = 6081
 default['nginx_plone']['log_retention_days'] = 14
+default['nginx_plone']['force_reload'] = false
 
 # Varnish config options
 default['varnish_plone']['grace'] = 60
