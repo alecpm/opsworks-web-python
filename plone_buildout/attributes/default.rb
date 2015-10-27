@@ -40,6 +40,9 @@ default["plone_instances"]["persistent_cache"] = true
 default["plone_instances"]["zserver_threads"] = nil
 default["plone_instances"]["sticky_sessions"] = false
 default["plone_instances"]["restart_delay"] = 0
+default["tmpdir"]["global_tmp"] = false
+default["tmpdir"]["tmpfs"] = false
+default["tmpdir"]["tmpfs_size"] = '1G'
 
 # Relstorage stuff
 default["plone_instances"]["enable_relstorage"] = false

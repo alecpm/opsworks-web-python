@@ -181,7 +181,6 @@ end
 
 if instance_data['newrelic_tracing']
   trace_config << "\n    collective.newrelic" << "\n"
-  orig_env = deploy["environment"] || {}
   environment.update({
                        'NEW_RELIC_ENABLED' => 'true',
                        'NEW_RELIC_CONFIG_FILE' => node['newrelic']['python_agent']['config_file'],
@@ -327,6 +326,17 @@ if (node["plone_zeoserver"]["filestorage_dir"] &&
   end
   link ::File.join(deploy[:deploy_to], 'shared', 'var', 'filestorage') do
     to fs_dir
+  end
+end
+
+if node['tmpdir']['global_tmp']
+  tmp_dir = ::File.join(deploy[:deploy_to], 'shared', 'var', 'tmp')
+  directory tmp_dir do
+    action :delete
+    ignore_failure true
+  end
+  link tmp_dir do
+    to '/tmp'
   end
 end
 

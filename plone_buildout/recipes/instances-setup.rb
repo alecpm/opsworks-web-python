@@ -1,3 +1,12 @@
+if node['tmpdir']['tmpfs']
+  mount '/tmp' do
+    device 'tmpfs'
+    fstype 'tmpfs'
+    options "nodev,nosuid,noatime,size=#{node['tmpdir']['tmpfs_size']}"
+    action [:mount, :enable]
+  end
+end
+
 instance_data = node["plone_instances"]
 app_name = instance_data["app_name"]
 return if app_name.nil? || app_name.empty?
