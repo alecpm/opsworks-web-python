@@ -333,6 +333,7 @@ if node['tmpdir']['global_tmp']
   tmp_dir = ::File.join(deploy[:deploy_to], 'shared', 'var', 'tmp')
   directory tmp_dir do
     action :delete
+    recursive true
     ignore_failure true
   end
   link tmp_dir do
