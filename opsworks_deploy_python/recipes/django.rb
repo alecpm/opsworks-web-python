@@ -53,6 +53,7 @@ node[:deploy].each do |application, deploy|
       cwd ::File.join(deploy[:deploy_to], 'current')
       user deploy[:user]
       group deploy[:group]
+      environment deploy[:environment_variables]
     end
   end
 
@@ -63,6 +64,7 @@ node[:deploy].each do |application, deploy|
       cwd ::File.join(deploy[:deploy_to], 'current')
       user deploy[:user]
       group deploy[:group]
+      environment deploy[:environment_variables]
     end
   end
 end
