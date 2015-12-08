@@ -47,7 +47,7 @@ replace_or_add "Nginx logrotate 2 weeks" do
 end
 
 if node['nginx_plone']['force_reload']
-  service nginx do
+  service "nginx" do
     action :reload
   end
 end
