@@ -336,6 +336,14 @@ if node['tmpdir']['global_tmp']
     recursive true
     ignore_failure true
   end
+  directory ::File.join(deploy[:deploy_to], 'shared', 'var') do
+    owner deploy[:user]
+    group deploy[:group]
+    mode 0755
+    recursive true
+    action :create
+    ignore_failure true
+  end
   link tmp_dir do
     to '/tmp'
   end
