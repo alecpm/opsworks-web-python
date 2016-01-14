@@ -316,6 +316,14 @@ if (node["plone_zeoserver"]["filestorage_dir"] &&
     node["plone_zeoserver"]["filestorage_dir"] !=
     ::File.join(deploy[:deploy_to], 'shared', 'var', 'filestorage'))
   fs_dir = node["plone_zeoserver"]["filestorage_dir"]
+  directory ::File.join(deploy[:deploy_to], 'shared', 'var') do
+    owner deploy[:user]
+    group deploy[:group]
+    mode 0755
+    recursive true
+    action :create
+    ignore_failure true
+  end
   directory fs_dir do
     owner deploy[:user]
     group deploy[:group]
