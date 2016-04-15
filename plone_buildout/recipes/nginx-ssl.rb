@@ -6,6 +6,9 @@ include_recipe "nginx::service"
 application_name = node["plone_instances"]["app_name"]
 application = node[:deploy][application_name]
 
+# Only run if the app being deployed is the primary app
+return if application.nil? || application[:deploy_to].nil? || !application[:deploy_to] || !application[:scm]
+
 if application[:ssl_support]
 
   template "#{node[:nginx][:dir]}/sites-available/instances-ssl" do

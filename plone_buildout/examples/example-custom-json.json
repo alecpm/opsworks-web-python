@@ -2,9 +2,7 @@
 "plone_instances" : {
   "app_name" : "***** YOUR APP NAME *****", "celery_enabled" : false, "broker_layer" : "redis",
   "nfs_blobs" : true, "gluster_blobs" : false, "solr_enabled" : false, celery_enabled: false,
-  "enable_relstorage" : false, "relstorage" : {
-    "db" : {"name" : null, "host" : null,  "user" : null, "password" : null},
-    "enable_cache" : true}
+  "enable_relstorage" : false
   },
 "deploy" : {
   "***** YOUR APP NAME *****" : {

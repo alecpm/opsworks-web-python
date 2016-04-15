@@ -20,6 +20,9 @@ define :buildout_configure do
   run_actions = params[:run_action]
   force_build = params[:force_build]
 
+  group = deploy[:group] || 'www-data'
+  owner = deploy[:user] || 'deploy'
+
   buildout_download_caches do
     deploy_data deploy
   end
@@ -34,8 +37,8 @@ define :buildout_configure do
   link logs do
     link_type :symbolic
     to "#{deploy[:deploy_to]}/shared/var/log"
-    owner deploy[:user]
-    group deploy[:group]
+    owner owner
+    group group
   end
 
   # Filter rails keys from environment and try to apply an ordering,
@@ -76,9 +79,9 @@ define :buildout_configure do
       template ::File.join(release_path, config_file) do
         source Helpers.buildout_setting(deploy,'config_template', node)
         cookbook deploy["buildout_config_cookbook"] || 'opsworks_deploy_python'
-        owner deploy[:user]
-        group deploy[:group]
-        mode 0644
+        owner owner
+        group group
+        mode 0600
 
         variables Hash.new
         variables.update deploy # include any custom stuff in the deploy properties
@@ -118,7 +121,7 @@ define :buildout_configure do
         source "supervisor_upstart.erb"
         owner "root"
         group "root"
-        mode 0755
+        mode 0700
         variables Hash.new
         variables.update deploy
         variables.update :supervisord => ::File.join(release_path, "bin", supervisor_part + 'd')
@@ -131,7 +134,9 @@ define :buildout_configure do
       end
       services.push(s)
     elsif init_commands.length
+      Chef::Log.info("init_commands: #{init_commands}")
       init_commands.each_with_index do |command, index|
+        Chef::Log.info("init_command: #{command}")
         if command["name"] == application
           service_name = application
         elsif command["name"]
@@ -148,6 +153,14 @@ define :buildout_configure do
             directory ::File.join(deploy[:deploy_to], "current")
             autostart true
             action :nothing
+            if command['eventlistener']
+              eventlistener true
+              # need write permission to supervisor.sock
+              user 'root'
+            end
+            if command['eventlistener_events']
+              eventlistener_events command['eventlistener_events']
+            end
             stdout_logfile "/var/log/supervisor/#{service_name}-stdout.log"
             stderr_logfile "/var/log/supervisor/#{service_name}-stderr.log"
             if command['delay'] && command['delay'] != 0
@@ -182,7 +195,7 @@ define :buildout_configure do
             cookbook deploy["buildout_config_cookbook"] || 'opsworks_deploy_python'
             owner "root"
             group "root"
-            mode 0644
+            mode 0600
             source "upstart.conf.erb"
             variables Hash.new
             variables.update deploy

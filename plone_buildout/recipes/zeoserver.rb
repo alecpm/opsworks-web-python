@@ -1,8 +1,8 @@
 app_name = node["plone_zeoserver"]["app_name"]
-return if !app_name
+return if app_name.nil? || app_name.empty?
 
 # Replace deploy if nil
-node.default[:deploy][app_name] = {} if !node[:deploy][app_name]
+node.default[:deploy][app_name] = {} if (node[:deploy][app_name].nil? || node[:deploy][app_name].empty?)
 deploy = node[:deploy][app_name]
 extra_parts = ["zeoserver", "backup"]
 
@@ -42,10 +42,11 @@ node.normal[:deploy][app_name]["buildout_additional_config"] = additional_config
 
 environment = {"PYTHON_EGG_CACHE" => ::File.join(node[:deploy][app_name][:deploy_to], "shared", "eggs")}
 
-node.normal[:deploy][app_name]["buildout_init_type"] = :supervisor if !deploy["buildout_init_type"]
+node.normal[:deploy][app_name]["buildout_init_type"] = :supervisor if (deploy["buildout_init_type"].nil? || deploy["buildout_init_type"].empty?)
 # Setup supervisor job
 node.normal[:deploy][app_name]["buildout_init_commands"] = [{'name' => 'zeoserver', 'cmd' => 'bin/zeoserver', 'args' => 'fg'}]
 
+# This is really a setup step, but setup may be to early to find the mount, in which case it is skipped and run again later during configure.
 # Maybe you want to mount your zeoserver's blob dir via NFS (why?)
 if node["plone_zeoserver"]["nfs_blobs"] || node["plone_zeoserver"]["gluster_blobs"]
   blob_mounts do
@@ -60,6 +61,7 @@ elsif node["plone_blobs"]["blob_dir"]
     mode 0700
     recursive true
     action :create
+    ignore_failure true
   end
   blob_location = ::File.join(deploy[:deploy_to], 'shared', 'var', 'blobstorage')
   if node["plone_blobs"]["blob_dir"] != blob_location
@@ -69,6 +71,7 @@ elsif node["plone_blobs"]["blob_dir"]
       mode 0755
       recursive true
       action :create
+      ignore_failure true
     end
     link blob_location do
       to node["plone_blobs"]["blob_dir"]
@@ -77,8 +80,8 @@ elsif node["plone_blobs"]["blob_dir"]
 end
 
 if (node["plone_zeoserver"]["filestorage_dir"]
-    node["plone_zeoserver"]["filestorage_dir"] !=
-    ::File.join(deploy[:deploy_to], 'shared', 'var', 'filestorage'))
+  node["plone_zeoserver"]["filestorage_dir"] !=
+  ::File.join(deploy[:deploy_to], 'shared', 'var', 'filestorage'))
 
   fs_dir = node["plone_zeoserver"]["filestorage_dir"]
   directory fs_dir do
@@ -87,6 +90,15 @@ if (node["plone_zeoserver"]["filestorage_dir"]
     mode 0700
     recursive true
     action :create
+    ignore_failure true
+  end
+  directory ::File.join(deploy[:deploy_to], 'shared', 'var') do
+    owner deploy[:user]
+    group deploy[:group]
+    mode 0700
+    recursive true
+    action :create
+    ignore_failure true
   end
   link ::File.join(deploy[:deploy_to], 'shared', 'var', 'filestorage') do
     to fs_dir

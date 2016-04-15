@@ -37,7 +37,7 @@ OpsWorks cookbook dependencies, by uncommenting the commented section
 at the bottom.
 
 You will need to install the vagrant-berkshelf plugin which requires
-[ChefDK](http://getchef.com/downloads/chef-dk) to be installed, and
+[ChefDK](https://downloads.chef.io/chef-dk/) to be installed, and
 the ChefDK path (/opt/chefdk/bin) must be added at the front of your
 PATH.  Then you must install the required vagrant ubuntu box and
 plugins:

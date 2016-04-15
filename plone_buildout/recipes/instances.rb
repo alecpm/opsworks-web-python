@@ -1,9 +1,9 @@
 app_name =  node["plone_instances"]["app_name"]
 Chef::Log.info("Running instances for #{app_name}")
-return if !app_name
+return if app_name.nil? || app_name.empty?
 
 # Replace deploy if nil
-node.default[:deploy][app_name] = {} if !node[:deploy][app_name]
+node.default[:deploy][app_name] = {} if node[:deploy][app_name].nil?
 deploy = node[:deploy][app_name]
 
 py_version = deploy["python_major_version"]
@@ -11,8 +11,8 @@ old_custom_py = py_version && py_version == "2.4"
 
 instance_data = node["plone_instances"]
 # Backend factor is 1/8 of standard CPU it appears
-instances = (node[:opsworks][:instance][:backends].to_i * instance_data["per_cpu"].to_f/8).ceil if node[:opsworks][:instance][:backends]
-instances = (node[:cpu][:total].to_i * instance_data["per_cpu"].to_f).ceil if !node[:opsworks][:instance][:backends]
+instances = (node[:opsworks][:instance][:backends].to_i * instance_data["per_cpu"].to_f/8).ceil if (!node[:opsworks][:instance][:backends].nil? && !node[:opsworks][:instance][:backends].zero?)
+instances = (node[:cpu][:total].to_i * instance_data["per_cpu"].to_f).ceil if (node[:opsworks][:instance][:backends].nil? || node[:opsworks][:instance][:backends].zero?)
 instances = 1 if instances < 1 || !instances
 Chef::Log.info("Calculated instance count #{instances}.  Based on Backends: #{node[:opsworks][:instance][:backends]} CPUs: #{node[:cpu][:total]} and per_cpu config: #{instance_data["per_cpu"]}")
 extra_parts = Array.new
@@ -22,35 +22,59 @@ extends = [instance_data["base_config"]]
 if instance_data["enable_relstorage"]
   storage = instance_data["relstorage"]
   extends.push(storage['config'])
-  db = storage["db"]
+  db = {"dsn" => storage["db"]["dsn"], "type" => storage["db"]["type"]}
+  if storage["db"]["name"].nil? && !(deploy[:database].nil? || deploy[:database][:database].nil? || deploy[:database][:database].empty?)
+    Chef::Log.info("Updating DB info from App config #{node[:deploy][app_name][:database]}")
+    db["host"] = node[:deploy][app_name][:database]["host"]
+    db["port"] = node[:deploy][app_name][:database]["port"]
+    db["type"] = node[:deploy][app_name][:database]["adapter"]
+    db["user"] = node[:deploy][app_name][:database]["username"]
+    db["password"] = node[:deploy][app_name][:database]["password"]
+    db["name"] = node[:deploy][app_name][:database]["database"]
+  else
+    Chef::Log.info("Did not update DB info from App #{node[:deploy][app_name][:database]}")
+    db["host"] = storage["db"]["host"]
+    db["port"] = storage["db"]["port"]
+    db["user"] = storage["db"]["user"]
+    db["password"] = storage["db"]["password"]
+    db["name"] = storage["db"]["name"]
+  end
+
   storage_config = "\n[relstorage]"
-  if db["dsn"]
+  if !db["dsn"].nil? && !db["dsn"].empty?
     # If we have an explicit DSN, then use it along with the db type
-    storage_config << "\n" << "db-type = #{db["type"]}" << "\n" << "dsn = #{db["dsn"]}"
+    storage_config << "\n" << "db-type = #{db['type']}" << "\n" << "dsn = #{db['dsn']}"
   else
     # Otherwise we use the default DB (Postgres) and DSN
-    storage_config << "\n" << "dbname = #{db["name"]}" << "\n" << "host = #{db["host"]}" 
-    storage_config << "\n" << "user = #{db["user"]}" << "\n" << "password = #{db["password"]}"
+    Chef::Log.info("Updating db paramaters: #{db}")
+    storage_config << "\n" << "dbname = #{db['name']}" << "\n" << "host = #{db['host']}"
+    storage_config << "\n" << "user = #{db['user']}" << "\n" << "password = #{db['password']}"
   end
+
+  # Setup DB driver
+  case db["type"] && db["type"].downcase
+  when 'postgres', 'postgresql', nil
+    driver = 'psycopg2'
+  when 'mysql'
+    driver = 'MySQL-python'
+  when 'oracle'
+    # This one needs libs not available through standard means,
+    # you're on your own with that setup
+    driver = 'cx_Oracle'
+  else
+    driver = nil
+  end
+  if driver || storage["enable_cache"]
+    additional_config << "\n" << "eggs +="
+  end
+  if driver
+    additional_config << "\n" << "    #{driver}"
+  end
+
   # Memcached cache config
   if storage["enable_cache"]
     cache_servers = nil
-    additional_config << "\n" << "eggs +="<< "\n" << "    pylibmc"
-    case db["type"]
-    when nil || 'postgres'
-      driver = 'psycopg2'
-    when 'mysql'
-      driver = 'MySQL-python'
-    when 'oracle'
-      # This one needs libs not available through standard means,
-      # you're on your own with that setup
-      driver = 'cx_Oracle'
-    else
-      driver = nil
-    end
-    if driver
-      additional_config << "\n" << "    #{driver}"
-    end
+    additional_config << "\n" << "    pylibmc" << "\n"
     if storage["cache_servers"]
       cache_servers = storage["cache_servers"]
     elsif node[:opsworks] && node[:opsworks][:layers] && node[:opsworks][:layers]["memcached"] && node[:opsworks][:layers]["memcached"][:instances]
@@ -128,7 +152,7 @@ init_commands.concat(deploy["buildout_init_commands"]) if deploy["buildout_init_
 environment = {"PYTHON_EGG_CACHE" => ::File.join(deploy[:deploy_to], "shared", "eggs")}
 
 client_config = "\n[client1]"
-client_config << "\n" << "shared_blob = off" if !instance_data["shared_blobs"]
+client_config << "\n" << "shared-blob = off" if !instance_data["shared_blobs"]
 client_config << "\n" << "blob-storage = #{node['plone_blobs']['blob_dir']}" if node['plone_blobs']['blob_dir']
 client_config << "\n" << "zeo-client-client = zeoclient-1" if instance_data["persistent_cache"]
 client_config << "\n" << "zodb-cache-size = #{instance_data["zodb_cache_size"]}" if instance_data["zodb_cache_size"]
@@ -157,7 +181,6 @@ end
 
 if instance_data['newrelic_tracing']
   trace_config << "\n    collective.newrelic" << "\n"
-  orig_env = deploy["environment"] || {}
   environment.update({
                        'NEW_RELIC_ENABLED' => 'true',
                        'NEW_RELIC_CONFIG_FILE' => node['newrelic']['python_agent']['config_file'],
@@ -212,7 +235,7 @@ if instance_data["enable_celery"]
   broker_layer = instance_data["broker_layer"]
   port = instance_data['broker']['port']
   host = instance_data["broker"]["host"] if instance_data["broker"]["host"]
-  if !host && node[:opsworks] && node[:opsworks][:layers] && node[:opsworks][:layers][broker_layer] &&  node[:opsworks][:layers][broker_layer][:instances]
+  if (host.nil? || host.empty?) && node[:opsworks] && node[:opsworks][:layers] && node[:opsworks][:layers][broker_layer] &&  node[:opsworks][:layers][broker_layer][:instances]
     instance_name, broker_instance = node[:opsworks][:layers][broker_layer][:instances].detect {
       |name, instance| instance[:status] == "online"
     }
@@ -247,7 +270,7 @@ if instance_data["enable_celery"]
 end
 
 node.normal[:deploy][app_name]["buildout_init_commands"] = init_commands
-node.normal[:deploy][app_name]["buildout_init_type"] = :supervisor if !deploy["buildout_init_type"]
+node.normal[:deploy][app_name]["buildout_init_type"] = :supervisor if (deploy["buildout_init_type"].nil? || deploy["buildout_init_type"].empty?)
 Chef::Log.debug("Merged supervisor init_commands: #{node[:deploy][app_name]["buildout_init_commands"]}")
 
 # This is really a setup step, but setup may be to early to find the mount, in which case it is skipped and run again later during configure.
@@ -264,6 +287,7 @@ elsif node["plone_blobs"]["blob_dir"]
     mode 0700
     recursive true
     action :create
+    ignore_failure true
   end
   # Symlink the default blob location to the specified blob dir if
   # shared blobs are enabled
@@ -276,6 +300,7 @@ elsif node["plone_blobs"]["blob_dir"]
         mode 0755
         recursive true
         action :create
+        ignore_failure true
       end
       link blob_location do
         to node["plone_blobs"]["blob_dir"]
@@ -291,15 +316,44 @@ if (node["plone_zeoserver"]["filestorage_dir"] &&
     node["plone_zeoserver"]["filestorage_dir"] !=
     ::File.join(deploy[:deploy_to], 'shared', 'var', 'filestorage'))
   fs_dir = node["plone_zeoserver"]["filestorage_dir"]
+  directory ::File.join(deploy[:deploy_to], 'shared', 'var') do
+    owner deploy[:user]
+    group deploy[:group]
+    mode 0755
+    recursive true
+    action :create
+    ignore_failure true
+  end
   directory fs_dir do
     owner deploy[:user]
     group deploy[:group]
     mode 0700
     recursive true
     action :create
+    ignore_failure true
   end
   link ::File.join(deploy[:deploy_to], 'shared', 'var', 'filestorage') do
     to fs_dir
+  end
+end
+
+if node['tmpdir']['global_tmp']
+  tmp_dir = ::File.join(deploy[:deploy_to], 'shared', 'var', 'tmp')
+  directory tmp_dir do
+    action :delete
+    recursive true
+    ignore_failure true
+  end
+  directory ::File.join(deploy[:deploy_to], 'shared', 'var') do
+    owner deploy[:user]
+    group deploy[:group]
+    mode 0755
+    recursive true
+    action :create
+    ignore_failure true
+  end
+  link tmp_dir do
+    to '/tmp'
   end
 end
 

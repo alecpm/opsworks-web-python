@@ -45,3 +45,9 @@ replace_or_add "Nginx logrotate 2 weeks" do
   pattern "^\s*rotate\s+"
   line "        rotate #{node['nginx_plone']['log_retention_days']}"
 end
+
+if node['nginx_plone']['force_reload']
+  service "nginx" do
+    action :reload
+  end
+end

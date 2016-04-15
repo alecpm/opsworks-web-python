@@ -31,7 +31,7 @@ node.normal[:glusterfs][:server][:volumes] = volumes
 
 gluster_layer = node["plone_blobs"]["layer"]
 peers = node["plone_blobs"]["servers"]
-if !peers && node[:opsworks] && node[:opsworks][:layers] && node[:opsworks][:layers][gluster_layer] && node[:opsworks][:layers][gluster_layer][:instances]
+if (peers.nil? || peers.empty?) && node[:opsworks] && node[:opsworks][:layers] && node[:opsworks][:layers][gluster_layer] && node[:opsworks][:layers][gluster_layer][:instances]
   peers = []
   node[:opsworks][:layers][gluster_layer][:instances].each {
     |name, instance| peers.push(instance[:private_ip])

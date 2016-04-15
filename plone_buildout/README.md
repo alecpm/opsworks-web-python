@@ -38,74 +38,74 @@ Berkshelf` to pull in cookbook dependencies.  Go to `Stack Settings`
 -> `Edit` to set these.  For a Zeo deployment with NFS shared blobs,
 the simplest Custom JSON is the following:
 
-    {"plone_instances" : {
+    {
+      "plone_instances" : {
         "app_name" : "plone_instances", "nfs_blobs" : true
-    },
-    "zeoserver" : {
+      },
+      "zeoserver" : {
         "nfs_blobs" : true
-    },
-    "deploy" : {
-        "plone_instances" : {
-            "shallow_clone" : true
-        },
-        "zeoserver" : {
-            "shallow_clone" : true
-        }
-    }}
+      },
+      "deploy" : {
+        "plone_instances" : {},
+        "zeoserver" : {}
+      }
+    }
 
-For a relstorage stack, the simplest Custom JSON is the following:
+For a relstorage stack assign a Postgresql Database to the app, and use the
+following Custom JSON:
 
-    {"plone_instances" : {
-        "app_name" : "plone_instances", "nfs_blobs" : true,
-        "enable_relstorage": true,
-        "relstorage" : {
-            "db" : {
-                "name" : "YOUR_DB_NAME",
-                "host" : "YOUR_DB_HOST",
-                "user" : "YOUR_DB_USER",
-                "password" : "YOUR_DB_PASSWORD"
-            },
-            "enable_cache" : true
-        }
-    },
-    "deploy" : {
-        "plone_instances" : {
-            "shallow_clone" : true
-        },
-    }}
+    {
+      "plone_instances" : {
+        "app_name" : "plone_instances",
+        "nfs_blobs" : true,
+        "enable_relstorage": true
+      },
+      "deploy" : {"plone_instances" : {}}
+    }
 
-Additionally, you may also want to enable EBS Optimized instances for
-any layers which have mounted EBS volumes (Shared Blobs, Zeoserver,
-...).  You can do this by editing the EBS Volumes tab of the desired
-layer.
+To store blobs in your Relstorage DB:
 
-It is recommended that RelStorage based stacks use Amazon RDS with
-Multi-AZ to provide high avaialability.  If you create and RDS to
-server your database , be sure that its security group allows access
-to the `AWS-OpsWorks-Custom-Server` EC2 Security Group that your
-zope instances will run under.
+    {
+      "plone_instances" : {
+        "app_name" : "plone_instances",
+        "shared_blobs": false,
+        "enable_relstorage": true
+      },
+      "deploy" : {"plone_instances" : {}}
+    }
 
-You'll generally want to update the Stack's Apps to set the
-application repository parameters to your buildout (see
-[Applications](#applications)).  Then you'll want to configure and
-start some instances (see [Instances](#instances)).  Initially, you'll
-probably want to start by adding all layers to a single instance, but
-you can have multiple instances per layer and multiple layers per
-instance in whatever configuration makes sense for your application.
+
+Additionally, you may also want to enable EBS Optimized instances for any
+layers which have mounted EBS volumes (Shared Blobs, Zeoserver, ...).  You can
+do this by editing the EBS Volumes tab of the desired layer.
+
+Finally, if you intend to use separate servers for various services, you will
+want to update the security groups for layers which provide internal services
+within the layers.  The easiest way to do this is to add the `default`
+security group (for your region or current VPC) to the security groups for
+those layers (generally the HAProxy/LB, Shared Blobs, Solr, and Plone
+Instances layers).  Alternatively, you can create custom security groups to
+limit connectivity to the specific ports required by those services.
+
+It is recommended that RelStorage based stacks use Amazon RDS with Multi-AZ to
+provide high avaialability.  If you create and RDS to server your database ,
+be sure that its security group allows access to the `AWS-OpsWorks-Custom-
+Server` EC2 Security Group that your zope instances will run under (or add the
+`default` security group for the `Plone Instances` layer as above and either
+add the RDS to that security group or modify the RDS security group to allow
+access from the `default` group).
+
+You'll generally want to update the Stack's Apps to set the application
+repository parameters to your buildout (see [Applications](#applications)).
+Then you'll want to configure and start some instances (see
+[Instances](#instances)).  Initially, you'll probably want to start by adding
+all layers to a single instance, but you can have multiple instances per layer
+and multiple layers per instance in whatever configuration makes sense for
+your application.
 
 The layers automatically created by CloudFormation can be customized
-extensively, and details are provided below regarding the
-functionality and configuration of each layer.
-
-Note: Your Zope instances will be running and the plone site (default
-/Plone) will be server on on Port 80 via Nginx/Varnish/HAProxy, but
-you will not be able to directly access the instances unless you
-change the security group permissions to allow you access to ports
-8081, etc.  You can do this by modifying allowed Inbound rules for the
-`AWS-OpsWorks-Custom-Server` security group in the EC2 Security Groups
-configuration to allow access from specific IP addresses.  You will
-need to do this to initially create your Plone site if you haven't
-already created one.
+extensively, and details are provided below regarding the functionality and
+configuration of each layer.
 
 
 Under the Hood of a Scalable Stack Structure
@@ -279,6 +279,33 @@ current generation instances), to speed replication and reads for
 those servers which connect to that peer.
 
 
+#### Notes on using S3 for blob storage (s3fs-fuse)
+
+You can store blobs in S3 using a mounting a bucket as a user-space filesystem
+and using that for shared blob storage or as the backing store for a ZEO
+server serving blobs.  To do so you just need to include the `s3fs-fuse`
+recipe early in the `setup` stage of the layers you want to attach the storage
+to (either instances and/or zeoserver).  The configuration would look like the
+following for shared blobs:
+
+    {
+      "s3fs_fuse": {
+        "s3_key": YOUR_AWS_KEY_FOR_S3,
+        "s3_secret": YOUR_AWS_SECRET_FOR_S3,
+        "mounts": [{"bucket: YOUR_BUCKET_NAME,
+                    "path": "/mnt/shared/zodb/blobs",
+                    "tmp_store": "/mnt/tmp/s3_cache"}]
+      },
+      "plone_blobs": {"blob_dir": "/mnt/shared/zodb/blobs"}
+    }
+
+See the "s3fs-fuse cookbook"[https://github.com/hw-cookbooks/s3fs-fuse]
+documentation for more details on parameters.  Using S3 this way will not tend
+to provide great performance, though it provides an easy to setup fault-
+tolerant network filesystem, which is hard to come by.  Caching (via the ZEO
+server) may help alleviate performance issues.
+
+
 #### ZEO Server Layer
 
 The ZEO server layer is a custom application server layer named
@@ -329,6 +356,7 @@ You'll probably want to customize the stats username and password.
 The front end layer uses the following recipes:
 
   * Setup: `plone_buildout::haproxy` `plone_buildout::varnish`
+  `plone_buildout::nginx`
   * Configure: `plone_buildout::haproxy` `plone_buildout::varnish` `plone_buildout::nginx`
   * Deploy: `plone_buildout::haproxy`
 
@@ -500,11 +528,11 @@ include:
   * `os_packages`: Any required packages to be installed via apt
   * `buildout_extends`: An array of additional extends files to use (e.g. `["cfg/sources.cfg"]`)
   * `buildout_parts_to_include`: An array of additional parts to include (e.g. `["mycustompart"]`)
-  * `buildout_init_commands`: An array of additional (non-instance) commands for supervisor to control (e.g. `[{"name": "mydaemon", "cmd": "bin/mydaemon", "args": "console"}]`)
+  * `buildout_init_commands`: An array of additional (non-instance) commands for supervisor to control (e.g. `[{"name": "mydaemon", "cmd": "bin/mydaemon", "args": "console"}]`).  To use supervisor event listeners like Superlance's `memmon` (you'll need to add a zc.recipe.egg:scripts part to your buildout to build the console scripts in that case), use the `eventlistener` key. (e.g., `[{ "name": "memmon", "init_type": "supervisor", "cmd":  "bin/memmon", "args": "-a 1GB -m foo@baz.com --name='Production memmon'", "eventlistener": true, "eventlistener_events": ["TICK_60"]}]`)
   * `environment`: A mapping of environment variables to include in the buildout and supervisor
   * `buildout_cache_archives`: An array with tgz archives to be fetched and expanded at a specific path (e.g. a cache of eggs or downloads, to speedup the initial build).  Example: `[{"url" : "https://url.to/plone-5.0-eggs.tgz", "path" : "shared/eggs", "user": "me", "password": "secret"}]`
   * `always_build_on_deploy`: Always run buildout on a deploy action, even if neither the buildout repo nor the config file has changed.  This is necessary to update packages when  you use mr.developer in your buildout.  Otherwise the deploy will not re-run the buildout unless the buildout repository has changed.
-  * `symlink_before_migrate`: A mapping of directories to link from the shared directory to the buildout directory in the deployment so their contents persist across deployments.  If you use `mr.developer` you'll probably want to use `{"src" : "src"}`.
+  * `symlink_before_migrate`: A mapping of directories to link from the shared directory to the buildout directory in the deployment so their contents persist across deployments.  If you use `mr.developer` to manage everything in `src` you'll probably want to use `{"src" : "src"}`.
   * `purge_before_symlink`: An array of directories in the buildout to remove before creating symlinks to shared.  For `mr.developer` based buildouts, you'll want `['src']`.
   * `create_dirs_before_symlink`: An array of directories in the shared directory to create before symlinking.  For `mr.developer` based buildouts, you'll also want `['src']`.
 
@@ -669,6 +697,32 @@ Specifically, the deb package installed automatically modifies the nginx
 config in a manner that can break responses containing HTML fragments.
 
 
+### Additional configuration
+
+There is a known issue with volume mounting on r3.large and r3.extralarge
+instances.  These cookbooks include a workaround recipe that should be added
+to the `Setup` recipes of any layer of primary functionality that might be
+assigned to such an instance.  The recipe is:
+
+  * `opsworks_deploy_python::r3-mount-patch`
+
+If you would like to have automatic system and security updates applied to
+your instances, you should include and configure the apt unattended upgrades
+recipe in the `Setup` recipes for any primary layer:
+
+  * `apt::unattended-upgrades`
+
+This recipe has a number of
+[configuration options](https://github.com/opscode-cookbooks/apt#unattended-upgrades-1),
+which can be set in the stack Custom JSON.  For example:
+
+  "apt": {
+    "unattended_upgrades": {
+      "package_blacklist": ["newrelic-sysmond"],
+      "mail": "you@example.com"
+    }
+  }
+
 ## Motivation
 
 After reading this, it still may not be clear why so many stack layers
@@ -799,7 +853,7 @@ advantages in exchange for a little extra up-front effort.
 
 With thanks to Jazkarta, Inc. and KCRW Radio
 ```text
-Copyright 2014, Alec Mitchell
+Copyright 2015, Alec Mitchell
 
 Licensed under the BSD License.
 ```

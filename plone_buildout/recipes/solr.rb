@@ -1,13 +1,14 @@
 # We deploy solr using the buildout since that does all the
 # configuration magic for us
 app_name = node["plone_solr"]["app_name"]
-return if !app_name
+return if app_name.nil? || app_name.empty?
 
 # Replace deploy if nil
-node.default[:deploy][app_name] = {} if !node[:deploy][app_name]
+node.default[:deploy][app_name] = {} if (node[:deploy][app_name].nil? || node[:deploy][app_name].empty?)
 deploy = node[:deploy][app_name]
 
-if deploy && deploy[:deploy_to]
+# Only create dirs and links on actual deploy
+if deploy && !(deploy[:scm].nil? || deploy[:scm].empty?)
   directory ::File.join(deploy[:deploy_to], "shared") do
     action :create
     owner deploy[:user]
@@ -15,8 +16,9 @@ if deploy && deploy[:deploy_to]
     mode 0755
     recursive true
   end
-  if ::File.exists?(node["plone_solr"]["data_dir"]) && node["plone_solr"]["data_dir"] != ::File.join(deploy[:deploy_to], "shared", "var")
-
+  if !(node["plone_solr"]["data_dir"].nil? || node["plone_solr"]["data_dir"].empty?) && node["plone_solr"]["data_dir"] != ::File.join(deploy[:deploy_to], "shared", "var")
+    # Modify create_dirs attribute to remove var
+    node.normal[:deploy][app_name]["create_dirs_before_symlink"] = node[:deploy][app_name]["create_dirs_before_symlink"].select {|e| e != 'var'}
     # Delete the directory if it was already created
     directory ::File.join(deploy[:deploy_to], "shared", "var") do
       action :delete

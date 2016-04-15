@@ -118,3 +118,17 @@ end
 include_recipe 'newrelic_meetme_plugin' if node['newrelic_meetme_plugin']['services'].length
 
 Chef::Log.info("Enabled newrelic plugins: #{node['newrelic_meetme_plugin']['services']}")
+
+directory "/etc/apt/apt.conf.d" do
+  recursive true
+  action :create
+  mode 0755
+end
+
+file "/etc/apt/apt.conf.d/local" do
+  content 'Dpkg::Options {
+    "--force-confdef";
+    "--force-confold";
+  }'
+  mode 0644
+end

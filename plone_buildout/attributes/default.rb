@@ -28,6 +28,8 @@ default["plone_blobs"]["blob_dir"] = nil # Use if using shared blobs, will symli
 default["plone_instances"]["base_config"] = "cfg/base.cfg"  # This must be set
 default["plone_instances"]["app_name"] = "plone_instances"  # This must be set
 default["plone_instances"]["site_id"] = "Plone"  # This must be set for VHosting
+default["plone_instances"]["subsites"] = {}  # mapping of vhost name to site path
+default["plone_instances"]["subsite_config"] = {}  # mapping of vhost name to additional_config
 default["plone_instances"]["per_cpu"] = 2 # Instances per server CPU
 default["plone_instances"]["instance_count"] = nil
 default["plone_instances"]["shared_blobs"] = true # Otherwise store blobs in DB
@@ -38,13 +40,22 @@ default["plone_instances"]["persistent_cache"] = true
 default["plone_instances"]["zserver_threads"] = nil
 default["plone_instances"]["sticky_sessions"] = false
 default["plone_instances"]["restart_delay"] = 0
+default["tmpdir"]["global_tmp"] = false
+default["tmpdir"]["tmpfs"] = false
+default["tmpdir"]["tmpfs_size"] = '1G'
 
 # Relstorage stuff
 default["plone_instances"]["enable_relstorage"] = false
 default["plone_instances"]["relstorage"] = {}
-default["plone_instances"]["relstorage"]["db"] = {"type" => "postgres", "dsn" => nil,"name" => nil, "host" => nil, 
-  "user" => nil, "password" => nil}
-default["plone_instances"]["relstorage"]["enable_cache"] = false
+default["plone_instances"]["relstorage"]["db"] = {
+    "type" => "postgres",
+    "dsn" => nil,
+    "name" => nil,
+    "host" => nil,
+    "user" => nil,
+    "password" => nil
+}
+default["plone_instances"]["relstorage"]["enable_cache"] = true
 default["plone_instances"]["relstorage"]["config"] = 'cfg/relstorage.cfg'
 default["plone_instances"]["relstorage"]["cache_servers"] = nil # host:port strings will be automatically set
 default["plone_instances"]["relstorage"]["enable_pack"] = false # set to true on one instance deployment
@@ -106,6 +117,7 @@ default['nginx_plone']['additional_config'] = nil
 default['nginx_plone']['additional_ssl_config'] = nil
 default['nginx_plone']['proxy_port'] = 6081
 default['nginx_plone']['log_retention_days'] = 14
+default['nginx_plone']['force_reload'] = false
 
 # Varnish config options
 default['varnish_plone']['grace'] = 60
@@ -118,19 +130,35 @@ default['sftp']['remote_addr'] = nil
 
 
 # Change default configs for other packages
-node.normal["redis"]["config"]["listen_addr"] = "0.0.0.0"
-node.normal["redis"]["config"]["dir"] = ::File.join(ephemeral, 'redis')
-node.normal["redis"]["config"]["vm"][:vm_swap_file] = ::File.join(ephemeral, 'redis/redis.swap')
-node.normal[:haproxy][:balance] = "leastconn"
-node.normal[:haproxy][:retries] = 3
-node.normal[:haproxy][:check_interval] = 10000
-node.normal[:haproxy][:server_timeout] = '900s'
+include_attribute "redis"
+node.default["redis"]["config"]["listen_addr"] = "0.0.0.0"
+node.default["redis"]["config"]["dir"] = ::File.join(ephemeral, 'redis')
+node.default["redis"]["config"]["vm"][:vm_swap_file] = ::File.join(ephemeral, 'redis/redis.swap')
 
-node.normal[:newrelic][:varnish][:version] = 'v0.0.5'
-node.normal[:newrelic][:varnish][:install_path] = "/opt/newrelic"
-node.normal[:newrelic][:varnish][:plugin_path] = "#{node[:newrelic][:varnish][:install_path]}/newrelic_varnish_plugin"
-node.normal[:newrelic][:varnish][:download_url] = "https://github.com/varnish/newrelic_varnish_plugin/archive/#{node[:newrelic][:varnish][:version]}.tar.gz"
-node.normal[:newrelic][:varnish][:user] = "root"
+include_attribute "haproxy"
+node.default[:haproxy][:balance] = "leastconn"
+node.default[:haproxy][:retries] = 3
+node.default[:haproxy][:check_interval] = 10000
+node.default[:haproxy][:server_timeout] = '900s'
+node.default[:haproxy][:sticky_sessions] = false
+node.default[:haproxy][:rise] = 1
+node.default[:haproxy][:fall] = 5
+
+include_attribute "newrelic"
+node.default[:newrelic][:varnish][:version] = 'v0.0.5'
+node.default[:newrelic][:varnish][:install_path] = "/opt/newrelic"
+node.default[:newrelic][:varnish][:plugin_path] = "#{node[:newrelic][:varnish][:install_path]}/newrelic_varnish_plugin"
+node.default[:newrelic][:varnish][:download_url] = "https://github.com/varnish/newrelic_varnish_plugin/archive/#{node[:newrelic][:varnish][:version]}.tar.gz"
+node.default[:newrelic][:varnish][:user] = "root"
+
+node.default['newrelic']['python_agent']['python_version'] = '2.40.0.34'
+node.default["apt"]["unattended_upgrades"]["package_blacklist"] = ["newrelic-sysmond"]
+
+# Version update
+node.default[:s3fs_fuse][:version] = '1.74'
+
+# Ubuntu install seems to put the bluepill binary in another location
+node.default["bluepill"]["bin"] = "/usr/local/bin/bluepill"
 
 node.normal['openssh']['server']['match'] = {
 	"Group sftp" => {

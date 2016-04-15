@@ -1,6 +1,9 @@
 define :buildout_download_caches do
   deploy = params[:deploy_data]
 
+  group = deploy[:group] || 'www-data'
+  owner = deploy[:user] || 'deploy'
+
   archives = Helpers.buildout_setting(deploy, 'cache_archives', node) || []
 
   archives.each do |archive|
@@ -18,8 +21,8 @@ define :buildout_download_caches do
 
     directory location do
       mode 0750
-      owner deploy[:user]
-      group deploy[:group]
+      owner owner
+      group group
       recursive true
       action :create
       not_if "test -d #{location}"
@@ -44,14 +47,14 @@ define :buildout_download_caches do
         
         remote_file "#{tmpdir}/#{fname}" do
           source archive_url
-          owner deploy[:user]
-          group deploy[:group]
+          owner owner
+          group group
         end
         
         execute 'extract tarred cache' do
           cwd location
-          user deploy[:user]
-          group deploy[:group]
+          user owner
+          group group
           command "tar xvfz #{tmpdir}/#{fname}"
         end
       end

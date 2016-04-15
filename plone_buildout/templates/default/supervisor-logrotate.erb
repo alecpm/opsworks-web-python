@@ -1,0 +1,21 @@
+/var/log/supervisor/*.log  {
+        daily
+        missingok
+        rotate 7
+        compress
+        delaycompress
+        notifempty
+        copytruncate
+        sharedscripts
+}
+
+/tmp/*.log  {
+        daily
+        missingok
+        rotate 7
+        compress
+        delaycompress
+        notifempty
+        copytruncate
+        sharedscripts
+}
