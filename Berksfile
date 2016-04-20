@@ -11,6 +11,7 @@ cookbook 'newrelic_meetme_plugin', github: 'alecpm/newrelic_meetme_plugin'
 
 # We want to be explicit, since we don't explicitly include our
 # packages, except when testing
+cookbook 'iptables', '1.1.0'
 cookbook 'varnish', '0.9.12'
 cookbook 'gunicorn', '1.1.2'
 cookbook 'build-essential', '1.4.2'
