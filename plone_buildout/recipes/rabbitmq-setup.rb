@@ -3,5 +3,9 @@ package "rabbitmq-server" do
 end
 
 service "rabbitmq-server" do
+  action :stop
+end
+
+service "rabbitmq-server" do
   action :disable
 end
