@@ -90,8 +90,6 @@ if instance_data["enable_relstorage"]
       # co-zoned cache is specified
       # We set a poll-interval if we are using caches
       storage_config << "\n" << "poll-interval = 60"
-      # BBB
-      storage_config << "\n" << "cache-servers = ${memcached:servers}" << "\n"
       # The actual setting
       storage_config << "\n" << '[memcached]' << "\n" << "servers = #{cache_servers}" << "\n"
     end
