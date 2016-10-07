@@ -160,6 +160,7 @@ node.default[:s3fs_fuse][:version] = '1.74'
 # Ubuntu install seems to put the bluepill binary in another location
 node.default["bluepill"]["bin"] = "/usr/local/bin/bluepill"
 
+node.normal['openssh']['server']['ciphers'] = 'chacha20-poly1305@openssh.com,aes256-gcm@openssh.com,aes128-gcm@openssh.com,aes256-ctr,aes192-ctr,aes128-ctr'
 node.normal['openssh']['server']['match'] = {
 	"Group sftp" => {
 		"force_command" => 'internal-sftp'
