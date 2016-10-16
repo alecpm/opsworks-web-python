@@ -194,7 +194,7 @@
                 "AppSource": {
                     "Type": "git",
                     "Url": "https://github.com/alecpm/opsworks_example_buildouts.git",
-                    "Revision": "master"
+                    "Revision": "plone-5.0"
                 },
                 "EnableSsl": false,
                 "SslConfiguration": {}
@@ -213,7 +213,7 @@
                 "AppSource": {
                     "Type": "git",
                     "Url": "https://github.com/alecpm/opsworks_example_buildouts.git",
-                    "Revision": "master"
+                    "Revision": "plone-5.0"
                 },
                 "EnableSsl": false,
                 "SslConfiguration": {}
