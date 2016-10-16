@@ -17,7 +17,7 @@
                 "DefaultInstanceProfileArn": {
                     "Fn::GetAtt": [ "OpsWorksInstanceProfile", "Arn"]
                 },
-                "DefaultRootDeviceType": "instance-store",
+                "DefaultRootDeviceType": "ebs",
                 "ConfigurationManager": {
                     "Version": "11.10",
                     "Name": "Chef"
@@ -45,9 +45,9 @@
                 "Name": "Plone Instances",
                 "Type": "custom",
                 "Shortname": "plone_instances",
-                "EnableAutoHealing": "true",
-                "AutoAssignElasticIps": "false",
-                "AutoAssignPublicIps": "false",
+                "EnableAutoHealing": false,
+                "AutoAssignElasticIps": false,
+                "AutoAssignPublicIps": true,
                 "Packages": [
                     "libjpeg8-dev", "libfreetype6-dev", "liblcms1-dev",
                     "zlib1g-dev", "libwebp-dev", "webp", "mime-support",
@@ -79,8 +79,8 @@
                     "Shutdown": [],
                     "Deploy": []
                 },
-                "AutoAssignPublicIps": false,
-                "EnableAutoHealing": true,
+                "AutoAssignPublicIps": true,
+                "EnableAutoHealing": false,
                 "Shortname": "shared_blobs",
                 "AutoAssignElasticIps": false,
                 "VolumeConfigurations": [{
@@ -107,8 +107,8 @@
                     "Shutdown": [],
                     "Deploy": ["plone_buildout::enable_pack"]
                 },
-                "AutoAssignPublicIps": false,
-                "EnableAutoHealing": true,
+                "AutoAssignPublicIps": true,
+                "EnableAutoHealing": false,
                 "Shortname": "db_packing",
                 "AutoAssignElasticIps": false
             }
@@ -129,8 +129,8 @@
                     "Shutdown": [],
                     "Deploy": []
                 },
-                "AutoAssignPublicIps": false,
-                "EnableAutoHealing": true,
+                "AutoAssignPublicIps": true,
+                "EnableAutoHealing": false,
                 "Shortname": "ebs_snapshots",
                 "AutoAssignElasticIps": false
             }
@@ -162,7 +162,7 @@
                     "Deploy": ["plone_buildout::haproxy"]
                 },
                 "Packages": ["autoconf", "automake"],
-                "AutoAssignPublicIps": false,
+                "AutoAssignPublicIps": true,
                 "AutoAssignElasticIps": true,
                 "EnableAutoHealing": true,
                 "Attributes": {
@@ -184,8 +184,8 @@
                 },
                 "Type": "memcached",
                 "Name": "Memcached",
-                "AutoAssignPublicIps": false,
-                "EnableAutoHealing": true,
+                "AutoAssignPublicIps": true,
+                "EnableAutoHealing": false,
                 "Shortname": "memcached",
                 "AutoAssignElasticIps": false
             }

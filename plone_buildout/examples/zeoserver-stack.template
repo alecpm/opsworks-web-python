@@ -17,7 +17,7 @@
                 "DefaultInstanceProfileArn": {
                     "Fn::GetAtt": [ "OpsWorksInstanceProfile", "Arn"]
                 },
-                "DefaultRootDeviceType": "instance-store",
+                "DefaultRootDeviceType": "ebs",
                 "ConfigurationManager": {
                     "Version": "11.10",
                     "Name": "Chef"
@@ -45,9 +45,9 @@
                 "Name": "Plone Instances",
                 "Type": "custom",
                 "Shortname": "plone_instances",
-                "EnableAutoHealing": "true",
-                "AutoAssignElasticIps": "false",
-                "AutoAssignPublicIps": "false",
+                "EnableAutoHealing": false,
+                "AutoAssignElasticIps": false,
+                "AutoAssignPublicIps": true,
                 "Packages": [
                     "libjpeg8-dev", "libfreetype6-dev", "liblcms1-dev",
                     "zlib1g-dev", "libwebp-dev", "webp", "mime-support",
@@ -73,9 +73,9 @@
                 "Name": "Zeoserver",
                 "Type": "custom",
                 "Shortname": "zeoserver",
-                "EnableAutoHealing": "true",
-                "AutoAssignElasticIps": "false",
-                "AutoAssignPublicIps": "true",
+                "EnableAutoHealing": false,
+                "AutoAssignElasticIps": false,
+                "AutoAssignPublicIps": true,
                 "Packages": ["autoconf", "automake"],
                 "CustomRecipes": {
                     "Undeploy": ["plone_buildout::zeoserver-undeploy"],
@@ -107,8 +107,8 @@
                     "Shutdown": [],
                     "Deploy": []
                 },
-                "AutoAssignPublicIps": false,
-                "EnableAutoHealing": true,
+                "AutoAssignPublicIps": true,
+                "EnableAutoHealing": false,
                 "Shortname": "shared_blobs",
                 "AutoAssignElasticIps": false,
                 "VolumeConfigurations": [{
@@ -135,8 +135,8 @@
                     "Shutdown": [],
                     "Deploy": []
                 },
-                "AutoAssignPublicIps": false,
-                "EnableAutoHealing": true,
+                "AutoAssignPublicIps": true,
+                "EnableAutoHealing": false,
                 "Shortname": "ebs_snapshots",
                 "AutoAssignElasticIps": false
             }
@@ -168,9 +168,9 @@
                     "Deploy": ["plone_buildout::haproxy"]
                 },
                 "Packages": ["autoconf", "automake"],
-                "AutoAssignPublicIps": false,
+                "AutoAssignPublicIps": true,
                 "AutoAssignElasticIps": true,
-                "EnableAutoHealing": true,
+                "EnableAutoHealing": false,
                 "Attributes": {
                     "HaproxyHealthCheckUrl": "/misc_/CMFPlone/plone_icon",
                     "HaproxyHealthCheckMethod": "HEAD",
