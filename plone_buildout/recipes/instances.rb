@@ -98,11 +98,15 @@ if instance_data["enable_relstorage"]
   if storage["enable_pack"]
     extra_parts.push("pack-config")
     if storage["two_stage_pack"]
-          extra_parts.push("zodbpack-prepack", "zodbpack-pack")
+      extra_parts.push("zodbpack-prepack", "zodbpack-pack")
     else
       extra_parts.push("zodbpack")
     end
     storage_config << "\n" << "[zodbpack]" << "\n" << "pack-days = #{storage["pack_days"]}" << "\n"
+    if !storage["enable_gc"]
+      storage_config << "\n" << "[pack-config]" << "\n" << "enable-gc = false" << "\n"
+    elsif storage['truncate_refs']
+      extra_parts.push("zodb-clear-refs")
   end
 else
   storage = instance_data["zeo"]
