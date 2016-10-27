@@ -107,6 +107,7 @@ if instance_data["enable_relstorage"]
       storage_config << "\n" << "[pack-config]" << "\n" << "enable-gc = false" << "\n"
     elsif storage['truncate_refs']
       extra_parts.push("zodb-clear-refs")
+    end
   end
 else
   storage = instance_data["zeo"]
