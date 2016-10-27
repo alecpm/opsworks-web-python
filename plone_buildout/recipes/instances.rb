@@ -103,7 +103,7 @@ if instance_data["enable_relstorage"]
       extra_parts.push("zodbpack")
     end
     storage_config << "\n" << "[zodbpack]" << "\n" << "pack-days = #{storage["pack_days"]}" << "\n"
-    if !storage["enable_gc"]
+    if !storage["pack_gc"]
       storage_config << "\n" << "[pack-config]" << "\n" << "enable-gc = false" << "\n"
     elsif storage['truncate_refs']
       extra_parts.push("zodb-clear-refs")
