@@ -88,9 +88,6 @@ if instance_data["enable_relstorage"]
       # Would be nice to order these based on the instance AZ, so that
       # the closer one is preferred, or perhaps so that only the
       # co-zoned cache is specified
-      # We set a poll-interval if we are using caches
-      storage_config << "\n" << "poll-interval = 60"
-      # The actual setting
       storage_config << "\n" << '[memcached]' << "\n" << "servers = #{cache_servers}" << "\n"
     end
   end
