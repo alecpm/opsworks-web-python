@@ -19,7 +19,7 @@ defaults
   option          httplog
   option          dontlognull
   retries         <%= node[:haproxy][:retries] %>
-  option          redispatch
+  no option          redispatch
   maxconn        <%= node[:haproxy][:default_max_connections] %>
   timeout client <%= node[:haproxy][:client_timeout] %>             # Client and server timeout must match the longest
   timeout server <%= node[:haproxy][:server_timeout] %>             # time we may wait for a response from the server.
@@ -46,8 +46,9 @@ backend plone_instances
 <% if node["plone_instances"]["sticky_sessions"] -%>
   appsession __ac len 32 timeout 1d
   cookie sid insert nocache indirect
+  option persist
 <%end -%>
-  option redispatch
+  no option redispatch
   option forwardfor
   option forceclose
   option httpchk <%= node[:haproxy][:health_check_method] %> <%= node[:haproxy][:health_check_url] %>
