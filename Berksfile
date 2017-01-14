@@ -31,6 +31,8 @@ cookbook 'newrelic', '2.3.0'
 cookbook 'newrelic_plugins', '1.1.0'
 cookbook 'bluepill', '2.3.1'
 cookbook 'certbot', '0.1.2'
+# avoid certbot override
+cookbook 'nginx', :github => "aws/opsworks-cookbooks", :rel => 'nginx', :tag => 'release-chef-11.10'
 
 # Uncomment the items below for testing deployments with Vagrant
 
