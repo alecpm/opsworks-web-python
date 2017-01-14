@@ -155,3 +155,6 @@ node.default[:s3fs_fuse][:version] = '1.74'
 
 # Ubuntu install seems to put the bluepill binary in another location
 node.default["bluepill"]["bin"] = "/usr/local/bin/bluepill"
+
+# Certbot domains
+node.default['certbot_domains'] = []

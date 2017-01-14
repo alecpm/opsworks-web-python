@@ -24,6 +24,7 @@ depends "newrelic_meetme_plugin"
 depends "newrelic_plugins"
 depends "papertrail"
 depends "traceview"
+depends "certbot"
 
 # GlusterFS is missing this one
 depends "apt"
