@@ -7,7 +7,7 @@ application_name = node["plone_instances"]["app_name"]
 application = node[:deploy][application_name]
 
 # Only run if the app being deployed is the primary app
-return if node.default['certbot_domains'].empty? && (application.nil? || !application[:ssl_certificate] )
+return if node['certbot_domains'].empty? && (application.nil? || !application[:ssl_certificate])
 
 if application[:ssl_support] || !node.default['certbot_domains'].empty?
 
