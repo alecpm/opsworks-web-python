@@ -9,7 +9,7 @@ application = node[:deploy][application_name]
 # Only run if the app being deployed is the primary app
 return if application.nil? || application[:deploy_to].nil? || !application[:deploy_to] || !application[:scm]
 
-if application[:ssl_support]
+if application[:ssl_support] || !node.default['certbot_domains'].empty?
 
   template "#{node[:nginx][:dir]}/sites-available/instances-ssl" do
     source "instances-ssl.nginx.erb"
@@ -30,6 +30,9 @@ if application[:ssl_support]
     mode 0644
   end
 
+end
+
+if application[:ssl_support]
   # certificate
 
   directory "#{node[:nginx][:dir]}/ssl" do
