@@ -9,7 +9,7 @@ application = node[:deploy][application_name]
 # Only run if the app being deployed is the primary app
 return if node['certbot_domains'].empty? && (application.nil? || !application[:ssl_certificate])
 
-if application[:ssl_support] || !node.default['certbot_domains'].empty?
+if !node['certbot_domains'].empty? || application[:ssl_support]
 
   template "#{node[:nginx][:dir]}/sites-available/instances-ssl" do
     source "instances-ssl.nginx.erb"
@@ -18,7 +18,7 @@ if application[:ssl_support] || !node.default['certbot_domains'].empty?
     mode 0644
     variables(
       :application => application,
-      :domains => !node.default['certbot_domains'].empty? ? node.default['certbot_domains'] : application[:domains]
+      :domains => !node['certbot_domains'].empty? ? node['certbot_domains'] : application[:domains]
     )
     notifies :restart, "service[nginx]", :delayed
   end
