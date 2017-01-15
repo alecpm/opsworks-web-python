@@ -1,13 +1,20 @@
+<% for domain in @domains %>
 server {
     listen  443;
-
+    server_name <%= domain %>;
     ssl on;
     ssl_protocols TLSv1.2 TLSv1.1 TLSv1;
-    ssl_certificate /etc/nginx/ssl/<%= @application[:domains].first %>.crt;
-    ssl_certificate_key /etc/nginx/ssl/<%= @application[:domains].first %>.key;
-    <% if @application[:ssl_certificate_ca] -%>
-    ssl_client_certificate /etc/nginx/ssl/<%= @application[:domains].first %>.ca;
-    <% end -%>
+    <% if node['certbot']['config_dir']  %>
+      ssl_certificate <%= node['certbot']['config_dir'] %>/live/<%= domain %>/fullchain.pem;
+      ssl_certificate_key <%= node['certbot']['config_dir'] %>/live/<%= domain %>/privkey.pem;
+      ssl_client_certificate <%= node['certbot']['config_dir'] %>/live/<%= domain %>/chain.pem;
+    <% elsif @application[:ssl_certificate] %>
+      ssl_certificate /etc/nginx/ssl/<%= domain %>.crt;
+      ssl_certificate_key /etc/nginx/ssl/<%= domain %>.key;
+      <% if @application[:ssl_certificate_ca] %>
+      ssl_client_certificate /etc/nginx/ssl/<%= domain %>.ca;
+      <% end %>
+    <% end %>
     ssl_session_cache   shared:SSL:10m;
     ssl_session_timeout 10m;
     keepalive_timeout 30;
@@ -51,3 +58,4 @@ server {
     }
 
 }
+<% end %>
