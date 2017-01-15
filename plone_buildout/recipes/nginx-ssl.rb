@@ -18,7 +18,7 @@ if application[:ssl_support]
     mode 0644
     variables(
       :application => application,
-      :domains => !node.default['certbot_domains'].empty? ? node.default['certbot_domains'] : application[:domains];
+      :domains => !node.default['certbot_domains'].empty? ? node.default['certbot_domains'] : application[:domains]
     )
     notifies :restart, "service[nginx]", :delayed
   end
