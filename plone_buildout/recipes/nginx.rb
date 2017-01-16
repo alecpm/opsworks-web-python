@@ -23,8 +23,8 @@ include_recipe 'nginx'
 
 if !node['certbot_domains'].empty?
   # Ensure conf file exists
-  file "#{node['nginx']['dir']}/certbot.conf" do
-    content ""
+  file "#{node[:nginx][:dir]}/certbot.conf" do
+    content " "
     mode 644
     action :create_if_missing
   end
