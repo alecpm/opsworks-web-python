@@ -21,6 +21,13 @@ end
 
 include_recipe 'nginx'
 
+if !node['certbot_domains'].empty?
+  # Ensure conf file exists
+  file "#{node['nginx']['dir']}/certbot.conf" do
+    action :touch
+  end
+end
+
 template "#{node[:nginx][:dir]}/sites-available/instances" do
   source "instances.nginx.erb"
   owner "root"
