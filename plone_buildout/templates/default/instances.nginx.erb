@@ -16,13 +16,16 @@ server {
     server_name _;
     gzip_types application/javascript application/x-javascript application/xhtml+xml application/xml application/xml+rss text/css text/javascript text/plain text/xml application/json text/json application/vnd.ms-fontobject application/x-font-opentype application/x-font-truetype application/x-font-ttf font/eot font/opentype font/otf image/svg+xml image/vnd.microsoft.icon;
 
+    <% if !node['certbot_domains'].empty? %>
+    include node['nginx']['dir']}/certbot.conf;
+    <% end %>
     # Show status information on /_main-status
     location = /_main_status_ {
         stub_status on;
         allow 127.0.0.1;
         deny all;
     }
-    
+
     <%= node['nginx_plone']['additional_config'] %>
 
     location = <%= node[:haproxy][:stats_url] %> {
@@ -34,7 +37,7 @@ server {
     if ($filename ~* ^.*?\.(eot)|(ttf)|(woff)$) {
         set $is_font 1;
     }
-    
+
     # Rewrite Plone URLs and proxy everything to Varnish
     location / {
         # Avoid duplicate entries in search engines due to trailing slashes
