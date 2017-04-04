@@ -31,6 +31,7 @@ cookbook 'newrelic', '2.3.0'
 cookbook 'newrelic_plugins', '1.1.0'
 cookbook 'bluepill', '2.3.1'
 cookbook 'certbot', :github => "alecpm/chef-certbot"
+cookbook 'cron', '3.0.0'
 # avoid certbot override
 cookbook 'nginx', :github => "aws/opsworks-cookbooks", :rel => 'nginx', :tag => 'release-chef-11.10'
 
