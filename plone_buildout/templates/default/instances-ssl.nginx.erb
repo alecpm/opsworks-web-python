@@ -4,7 +4,7 @@ server {
     server_name <%= domain %>;
     ssl on;
     ssl_protocols TLSv1.2 TLSv1.1 TLSv1;
-    <% if node['certbot']['config_dir']  %>
+    <% if node['certbot_domains'] && !node['certbot_domains'].empty?  %>
       ssl_certificate <%= node['certbot']['config_dir'] %>/live/<%= domain %>/fullchain.pem;
       ssl_certificate_key <%= node['certbot']['config_dir'] %>/live/<%= domain %>/privkey.pem;
       ssl_client_certificate <%= node['certbot']['config_dir'] %>/live/<%= domain %>/chain.pem;
