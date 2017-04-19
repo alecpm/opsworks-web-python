@@ -8,6 +8,7 @@ node.default["deploy_python"]["purge_before_symlink"] = []
 node.default["deploy_python"]["create_dirs_before_symlink"] = ['public', 'tmp']
 node.default["deploy_python"]["packages"] = []
 node.default["deploy_python"]["os_packages"] = []
+node.default["deploy_python"]["ruby_gems"] = []
 node.default["deploy_python"]["venv_options"] = '--no-site-packages'
 
 node.default["apt"]["unattended_upgrades"]["enable"] = true
