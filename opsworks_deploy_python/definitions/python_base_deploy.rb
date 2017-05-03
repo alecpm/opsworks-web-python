@@ -18,6 +18,15 @@ define :python_base_setup do
     end
   end
 
+  ruby_gems = deploy["ruby_gems"] ? deploy["ruby_gems"] : node["deploy_python"]["ruby_gems"]
+  # Install gem dependencies
+    ruby_gems.each do |pkg,ver|
+    gem_package pkg do
+      action :install
+      version ver if ver && ver.length > 0
+    end
+  end
+
   # We need to establish a value for the original pip/venv location as
   # a baseline so we don't find the older ones later, we assume ubuntu
   # here, because we are lazy and this is for OpsWorks
