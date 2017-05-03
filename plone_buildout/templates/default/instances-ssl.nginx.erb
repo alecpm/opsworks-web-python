@@ -18,7 +18,7 @@ server {
     ssl_session_cache   shared:SSL:10m;
     ssl_session_timeout 10m;
     keepalive_timeout 30;
-    gzip_types application/x-javascript application/xhtml+xml application/xml application/xml+rss text/css text/javascript text/plain text/xml application/json text/json;
+    gzip_types application/javascript application/x-javascript application/xhtml+xml application/xml application/xml+rss text/css text/javascript text/plain text/xml application/json text/json application/vnd.ms-fontobject application/x-font-opentype application/x-font-truetype application/x-font-ttf font/eot font/opentype font/otf image/svg+xml image/vnd.microsoft.icon;
 
     <%= node['nginx_plone']['additional_ssl_config'] %>
 

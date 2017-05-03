@@ -72,7 +72,7 @@ server {
 server {
     listen *:80;
     server_name <%= host%>;
-    gzip_types application/x-javascript application/xhtml+xml application/xml application/xml+rss text/css text/javascript text/plain text/xml application/json text/json;
+    gzip_types application/javascript application/x-javascript application/xhtml+xml application/xml application/xml+rss text/css text/javascript text/plain text/xml application/json text/json application/vnd.ms-fontobject application/x-font-opentype application/x-font-truetype application/x-font-ttf font/eot font/opentype font/otf image/svg+xml image/vnd.microsoft.icon;
 
     if ($request_filename ~* ^.*?/([^/]*?)$) {
         set $filename $1;
