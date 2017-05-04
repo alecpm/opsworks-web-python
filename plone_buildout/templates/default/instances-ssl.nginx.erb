@@ -1,5 +1,5 @@
 <% for domain in @domains %>
-<% if domain !== application["application"] || @domains.length == 1 %>
+<% if domain != application["application"] || @domains.length == 1 %>
 server {
     listen  443;
     server_name <%= domain %>;
