@@ -61,6 +61,8 @@ default["plone_instances"]["relstorage"]["cache_servers"] = nil # host:port stri
 default["plone_instances"]["relstorage"]["enable_pack"] = false # set to true on one instance deployment
 default["plone_instances"]["relstorage"]["pack_days"] = 7
 default["plone_instances"]["relstorage"]["two_stage_pack"] = false
+default["plone_instances"]["relstorage"]["pack_gc"] = true
+default["plone_instances"]["relstorage"]["truncate_refs"] = false
 
 # Zeo stuff
 default["plone_instances"]["zeo_layer"] = "zeoserver"
@@ -160,6 +162,11 @@ node.default[:s3fs_fuse][:version] = '1.74'
 # Ubuntu install seems to put the bluepill binary in another location
 node.default["bluepill"]["bin"] = "/usr/local/bin/bluepill"
 
+# Certbot domains
+node.default['certbot_domains'] = []
+node.default['certbot_email'] = nil
+
+# Adjust SSH ciphers and enable sftp
 node.normal['openssh']['server']['ciphers'] = 'chacha20-poly1305@openssh.com,aes256-gcm@openssh.com,aes128-gcm@openssh.com,aes256-ctr,aes192-ctr,aes128-ctr'
 node.normal['openssh']['server']['match'] = {
 	"Group sftp" => {

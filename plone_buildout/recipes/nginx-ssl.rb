@@ -7,9 +7,9 @@ application_name = node["plone_instances"]["app_name"]
 application = node[:deploy][application_name]
 
 # Only run if the app being deployed is the primary app
-return if application.nil? || application[:deploy_to].nil? || !application[:deploy_to] || !application[:scm]
+return if node['certbot_domains'].empty? && (application.nil? || !application[:ssl_certificate])
 
-if application[:ssl_support]
+if !node['certbot_domains'].empty? || application[:ssl_support]
 
   template "#{node[:nginx][:dir]}/sites-available/instances-ssl" do
     source "instances-ssl.nginx.erb"
@@ -18,6 +18,7 @@ if application[:ssl_support]
     mode 0644
     variables(
       :application => application,
+      :domains => !node['certbot_domains'].empty? ? node['certbot_domains'] : application[:domains]
     )
     notifies :restart, "service[nginx]", :delayed
   end
@@ -29,6 +30,9 @@ if application[:ssl_support]
     mode 0644
   end
 
+end
+
+if application[:ssl_support]
   # certificate
 
   directory "#{node[:nginx][:dir]}/ssl" do

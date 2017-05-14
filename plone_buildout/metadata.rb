@@ -25,6 +25,7 @@ depends "newrelic_plugins"
 depends "openssh"
 depends "papertrail"
 depends "traceview"
+depends "certbot"
 
 # GlusterFS is missing this one
 depends "apt"

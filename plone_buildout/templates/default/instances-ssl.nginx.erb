@@ -1,17 +1,25 @@
+<% for domain in @domains %>
+<% if domain != @application[:application] || @domains.length == 1 %>
 server {
     listen  443;
-
+    server_name <%= domain %>;
     ssl on;
     ssl_protocols TLSv1.2 TLSv1.1;
-    ssl_certificate /etc/nginx/ssl/<%= @application[:domains].first %>.crt;
-    ssl_certificate_key /etc/nginx/ssl/<%= @application[:domains].first %>.key;
-    <% if @application[:ssl_certificate_ca] -%>
-    ssl_client_certificate /etc/nginx/ssl/<%= @application[:domains].first %>.ca;
-    <% end -%>
+    <% if node['certbot_domains'] && !node['certbot_domains'].empty?  %>
+      ssl_certificate <%= node['certbot']['config_dir'] %>/live/<%= domain %>/fullchain.pem;
+      ssl_certificate_key <%= node['certbot']['config_dir'] %>/live/<%= domain %>/privkey.pem;
+      ssl_client_certificate <%= node['certbot']['config_dir'] %>/live/<%= domain %>/chain.pem;
+    <% elsif @application[:ssl_certificate] %>
+      ssl_certificate /etc/nginx/ssl/<%= domain %>.crt;
+      ssl_certificate_key /etc/nginx/ssl/<%= domain %>.key;
+      <% if @application[:ssl_certificate_ca] %>
+      ssl_client_certificate /etc/nginx/ssl/<%= domain %>.ca;
+      <% end %>
+    <% end %>
     ssl_session_cache   shared:SSL:10m;
     ssl_session_timeout 10m;
     keepalive_timeout 30;
-    gzip_types application/x-javascript application/xhtml+xml application/xml application/xml+rss text/css text/javascript text/plain text/xml application/json text/json;
+    gzip_types application/javascript application/x-javascript application/xhtml+xml application/xml application/xml+rss text/css text/javascript text/plain text/xml application/json text/json application/vnd.ms-fontobject application/x-font-opentype application/x-font-truetype application/x-font-ttf font/eot font/opentype font/otf image/svg+xml image/vnd.microsoft.icon;
 
     <%= node['nginx_plone']['additional_ssl_config'] %>
 
@@ -39,9 +47,10 @@ server {
 
         rewrite ^/(.*)$ /VirtualHostBase/$scheme/$http_host:$server_port/<%= node["plone_instances"]["site_id"]%>/VirtualHostRoot/$1 break;
         proxy_pass http://cache;
-        proxy_connect_timeout 75;
+        proxy_connect_timeout 90;
+        proxy_read_timeout 900;
         proxy_send_timeout 900;
-        proxy_read_timeout 185;
+        send_timeout 900;
         proxy_buffer_size  256k;
         proxy_buffers      16   256k;
         proxy_set_header Host $http_host;
@@ -50,3 +59,5 @@ server {
     }
 
 }
+<% end %>
+<% end %>
