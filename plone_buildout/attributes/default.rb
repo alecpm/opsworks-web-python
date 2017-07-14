@@ -159,4 +159,6 @@ node.default["bluepill"]["bin"] = "/usr/local/bin/bluepill"
 # Certbot domains
 node.default['certbot_domains'] = []
 node.default['certbot_email'] = nil
+
+include_attribute "cron"
 node.default['cron']['package_name'] = 'cron'
