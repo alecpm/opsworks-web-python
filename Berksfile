@@ -32,7 +32,7 @@ cookbook 'newrelic_plugins', '1.1.0'
 cookbook 'bluepill', '2.3.1'
 cookbook 'certbot', :github => "alecpm/chef-certbot"
 cookbook 'cron', '3.0.0'
-cookbook 'timezone_lwrp', '~> 0.1.10'
+cookbook 'system', '= 0.9.1'
 # avoid certbot override
 cookbook 'nginx', :github => "aws/opsworks-cookbooks", :rel => 'nginx', :tag => 'release-chef-11.10'
 
