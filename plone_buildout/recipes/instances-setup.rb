@@ -60,6 +60,9 @@ if !deploy[:user].nil? && !node["plone_blobs"]["blob_dir"].nil?
   end
 end
 
+# use proper `arch` label
+repo_arch = node["kernel"]["machine"] == "x86_64" ? "amd64" : "i386"
+
 apt_repository "nodesource" do
   arch repo_arch
   uri "https://deb.nodesource.com/node_4.x"
