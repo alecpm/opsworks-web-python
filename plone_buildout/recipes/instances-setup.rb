@@ -59,3 +59,15 @@ if !deploy[:user].nil? && !node["plone_blobs"]["blob_dir"].nil?
     ignore_failure true
   end
 end
+
+apt_repository "nodesource" do
+  arch repo_arch
+  uri "https://deb.nodesource.com/node_4.x"
+  distribution node["lsb"]["codename"]
+  components ["main"]
+  key "https://deb.nodesource.com/gpgkey/nodesource.gpg.key"
+end
+
+package "nodejs" do
+  action :install
+end
