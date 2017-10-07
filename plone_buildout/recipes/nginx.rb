@@ -55,6 +55,12 @@ replace_or_add "Nginx logrotate 2 weeks" do
   line "        rotate #{node['nginx_plone']['log_retention_days']}"
 end
 
+replace_or_add "Nginx logrotate daily" do
+  path "/etc/logrotate.d/nginx"
+  pattern "^\s*weekly\s*$"
+  line "       daily"
+end
+
 if node['nginx_plone']['force_reload']
   service "nginx" do
     action :reload
