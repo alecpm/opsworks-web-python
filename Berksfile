@@ -37,7 +37,6 @@ cookbook 'certbot', :github => "alecpm/chef-certbot"
 cookbook 'cron', '3.0.0'
 cookbook 'system', '= 0.9.1'
 cookbook 'ohai', '= 3.0.1'
-cookbook 'nio4r', '= 1.0.0'
 
 # avoid certbot override
 cookbook 'nginx', :github => "aws/opsworks-cookbooks", :rel => 'nginx', :tag => 'release-chef-11.10'
