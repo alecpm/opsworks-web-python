@@ -102,6 +102,7 @@ node.normal['newrelic_meetme_plugin']['services'] = services
 if node['newrelic']['infrastructure']
   apt_repository 'newrelic-infra' do
     uri node['newrelic']['repository']['infrastructure']['uri']
+    distribution {7 => 'wheezy', 8 => 'jessie', 9 => 'stretch', 10 => 'buster', 12 => 'precise', 14 => 'trusty', 16 => 'xenial'}[node['platform_version'].to_i]
     components node['newrelic']['repository']['infrastructure']['components']
     key node['newrelic']['repository']['infrastructure']['key']
     arch 'amd64'
