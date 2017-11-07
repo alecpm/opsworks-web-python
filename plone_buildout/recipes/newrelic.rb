@@ -1,5 +1,3 @@
-include NewRelic::Helpers
-
 node.normal['newrelic']['server_monitoring']['license'] = node['newrelic']['license']
 node.normal['newrelic']['application_monitoring']['license'] = node['newrelic']['license']
 node.normal['newrelic_meetme_plugin']['license'] = node['newrelic']['license']
@@ -102,7 +100,30 @@ services.update(node['newrelic_meetme_plugin']['services'] || {})
 node.normal['newrelic_meetme_plugin']['services'] = services
 
 if node['newrelic']['infrastructure']
-  include_recipe 'newrelic::infrastructure_agent'
+  apt_repository 'newrelic-infra' do
+    uri node['newrelic']['repository']['infrastructure']['uri']
+    components node['newrelic']['repository']['infrastructure']['components']
+    key node['newrelic']['repository']['infrastructure']['key']
+    arch 'amd64'
+  end
+  package 'newrelic-infra' do
+    action :install
+  end
+  service 'newrelic-infra' do
+    action [:enable, :start]
+  end
+  template '/etc/newrelic-infra.yml' do
+    source 'newrelic-infra.yml.erb'
+    owner 'root'
+    group 'root'
+    mode '0644'
+    variables(
+      :resource => {
+        :license => node['newrelic']['license']
+      }
+    )
+    notifies :restart, 'service[newrelic-infra]', :delayed
+  end
 end
 if node['newrelic']['servers']
   include_recupe 'newrelic::server_monitor_agent'
@@ -118,56 +139,7 @@ if node.recipe?('plone_buildout::instances-setup') && node['plone_instances']['n
       node[:opsworks][:stack][:name] + ': ' + node['newrelic']["application_monitoring"]["app_name"])
   include_recipe 'python::default'
   include_recipe 'plone_buildout::instances-setup'
-
-  # Manual python agent config
-  newrelic_repository
-  config_file = node['newrelic']['python_agent']['config_file']
-  config_dir = ::File.dirname(config_file)
-  directory config_dir do
-    owner 'root'
-    group 'root'
-    recursive true
-  end
-  template config_file do
-    cookbook node['newrelic']['python_agent']['template']['cookbook']
-    source node['newrelic']['python_agent']['template']['source']
-    owner 'root'
-    group 'root'
-    mode '0644'
-    variables(
-      :resource => {
-        license => node['newrelic']['license'],
-        app_name => node['newrelic']['application_monitoring']['app_name'],
-        version => node['newrelic']['python_agent']['python_version'],
-        high_security => node['newrelic']['application_monitoring']['high_security'],
-        enabled => node['newrelic']['application_monitoring']['enabled'],
-        logfile => node['newrelic']['application_monitoring']['logfile'],
-        loglevel => node['newrelic']['application_monitoring']['loglevel'],
-        daemon_ssl => node['newrelic']['application_monitoring']['daemon']['ssl'],
-        capture_params => node['newrelic']['application_monitoring']['capture_params'],
-        ignored_params => node['newrelic']['application_monitoring']['ignored_params'],
-        transaction_tracer_enable => node['newrelic']['application_monitoring']['transaction_tracer']['enable'],
-        transaction_tracer_threshold => node['newrelic']['application_monitoring']['transaction_tracer']['threshold'],
-        transaction_tracer_record_sql => node['newrelic']['application_monitoring']['transaction_tracer']['record_sql'],
-        transaction_tracer_stack_trace_threshold => node['newrelic']['application_monitoring']['transaction_tracer']['stack_trace_threshold'],
-        transaction_tracer_slow_sql => node['newrelic']['application_monitoring']['transaction_tracer']['slow_sql']),
-        transaction_tracer_explain_threshold => node['newrelic']['application_monitoring']['transaction_tracer']['explain_threshold'],
-        error_collector_enable => node['newrelic']['application_monitoring']['error_collector']['enable']),
-        error_collector_ignore_errors => node['newrelic']['application_monitoring']['error_collector']['ignore_errors'],
-        browser_monitoring_auto_instrument => node['newrelic']['application_monitoring']['browser_monitoring']['auto_instrument']),
-        cross_application_tracer_enable => node['newrelic']['application_monitoring']['cross_application_tracer']['enable']),
-        feature_flag => node['newrelic']['python_agent']['feature_flag'],
-        thread_profiler_enable => node['newrelic']['application_monitoring']['thread_profiler']['enable'])
-      }
-    )
-    sensitive true
-    action :create
-  end
-  python_pip 'newrelic' do
-    virtualenv node[:deploy][node['plone_instances']['app_name']]['venv'] || (node['newrelic']['python_agent']['python_venv'] unless node['newrelic']['python_agent']['python_venv'].nil?)
-    version node['newrelic']['python_agent']['python_version'] unless node['newrelic']['python_agent']['python_version'].nil?
-    action :install
-  end
+  include_recipe 'newrelic::python_agent'
   Chef::Log.info("Enabled newrelic python agent")
 end
 

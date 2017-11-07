@@ -149,7 +149,11 @@ node.default[:newrelic][:varnish][:plugin_path] = "#{node[:newrelic][:varnish][:
 node.default[:newrelic][:varnish][:download_url] = "https://github.com/varnish/newrelic_varnish_plugin/archive/#{node[:newrelic][:varnish][:version]}.tar.gz"
 node.default[:newrelic][:varnish][:user] = "root"
 
-node.default['newrelic']['python_agent']['python_version'] = '2.40.0.34'
+node.default[:newrelic]['python_agent']['python_version'] = '2.40.0.34'
+node.default[:newrelic]['repository']['infrastructure']['key'] = 'https://download.newrelic.com/infrastructure_agent/gpg/newrelic-infra.gpg'
+node.default[:newrelic]['repository']['infrastructure']['ssl_verify'] = true
+node.default[:newrelic]['repository']['infrastructure']['uri'] = 'https://download.newrelic.com/infrastructure_agent/linux/apt'
+node.default[:newrelic]['repository']['infrastructure']['components'] = ['main']
 node.default["apt"]["unattended_upgrades"]["package_blacklist"] = ["newrelic-sysmond"]
 
 # Version update
