@@ -13,7 +13,7 @@ cookbook 's3fs-fuse', github: 'alecpm/s3fs-fuse'
 # packages, except when testing
 cookbook 'varnish', '0.9.12'
 cookbook 'gunicorn', '1.1.2'
-cookbook 'build-essential', '1.4.2'
+cookbook 'build-essential', '= 3.2.0'
 cookbook 'apt', '2.7.0'
 cookbook 'yum', '3.1.2'
 cookbook 'yum-epel', '0.3.4'
@@ -31,6 +31,10 @@ cookbook 'newrelic_plugins', '~> 1.1.0'
 cookbook 'newrelic_meetme_plugin', '~> 0.5.0'
 cookbook 'bluepill', '2.3.1'
 cookbook 'hostsfile', '= 2.4.6'
+cookbook 'poise', '2.3.2'
+cookbook 'poise-python', '1.0.0'
+cookbook 'poise-languages', '1.0.0'
+cookbook 'curl', '2.0.0'
 cookbook 'certbot', :github => "alecpm/chef-certbot"
 
 # Chef 11 compat

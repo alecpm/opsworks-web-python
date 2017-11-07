@@ -101,7 +101,8 @@ node.normal['newrelic_meetme_plugin']['services'] = services
 
 if node['newrelic']['infrastructure']
   include_recipe 'newrelic::infrastructure_agent'
-else
+end
+if node['newrelic']['servers']
   include_recupe 'newrelic::server_monitor_agent'
 end
 
