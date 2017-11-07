@@ -51,7 +51,7 @@ if (node.recipe?('plone_buildout::varnish') || node.recipe?('varnish') ||
     plugin_version   node[:newrelic][:varnish][:version]
     install_path     node[:newrelic][:varnish][:install_path]
     plugin_path      node[:newrelic][:varnish][:plugin_path]
-    download_url     node[:newrelic][:varnish][:download_url] 
+    download_url     node[:newrelic][:varnish][:download_url]
     user             node[:newrelic][:varnish][:user]
   end
 
@@ -99,7 +99,11 @@ end
 services.update(node['newrelic_meetme_plugin']['services'] || {})
 node.normal['newrelic_meetme_plugin']['services'] = services
 
-include_recipe 'newrelic'
+if node['newrelic']['infrastructure']
+  include_recipe 'newrelic::infrastructure_agent'
+else
+  include_recupe 'newrelic::server_monitor_agent'
+end
 
 if node.recipe?('plone_buildout::instances-setup') && node['plone_instances']['newrelic_tracing']
    # install the python agent in the buildout venv
