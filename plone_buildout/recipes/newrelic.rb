@@ -100,9 +100,18 @@ services.update(node['newrelic_meetme_plugin']['services'] || {})
 node.normal['newrelic_meetme_plugin']['services'] = services
 
 if node['newrelic']['infrastructure']
+  ubuntu_names = {
+    7 => 'wheezy',
+    8 => 'jessie',
+    9 => 'stretch',
+    10 => 'buster',
+    12 => 'precise',
+    14 => 'trusty',
+    16 => 'xenial'
+  }
   apt_repository 'newrelic-infra' do
     uri node['newrelic']['repository']['infrastructure']['uri']
-    distribution {7 => 'wheezy', 8 => 'jessie', 9 => 'stretch', 10 => 'buster', 12 => 'precise', 14 => 'trusty', 16 => 'xenial'}[node['platform_version'].to_i]
+    distribution ubuntu_names[node['platform_version'].to_i]
     components node['newrelic']['repository']['infrastructure']['components']
     key node['newrelic']['repository']['infrastructure']['key']
     arch 'amd64'
@@ -110,8 +119,13 @@ if node['newrelic']['infrastructure']
   package 'newrelic-infra' do
     action :install
   end
+  service 'newrelic-sysmod' do
+    action [:disable, :stop]
+    ignore_failure true
+  end
   service 'newrelic-infra' do
     action [:enable, :start]
+    ignore_failure true
   end
   template '/etc/newrelic-infra.yml' do
     source 'newrelic-infra.yml.erb'
@@ -127,6 +141,10 @@ if node['newrelic']['infrastructure']
   end
 end
 if node['newrelic']['servers']
+  service 'newrelic-infra' do
+    action [:enable, :start]
+    ignore_failure true
+  end
   include_recupe 'newrelic::server_monitor_agent'
 end
 
