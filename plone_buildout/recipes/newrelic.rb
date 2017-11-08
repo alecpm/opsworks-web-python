@@ -116,13 +116,8 @@ if node['newrelic']['infrastructure']
     key node['newrelic']['repository']['infrastructure']['key']
     arch 'amd64'
   end
-  provider = nil
-  if (node['platform_version'].to_f <= 14.04 &&  node['platform_version'].to_f >= 9.10)
-    provider  = Chef::Provider::Service::Upstart
-  end
   package 'newrelic-infra' do
     action :install
-    provider provider unless provider.nil?
   end
   service 'newrelic-sysmond' do
     action [:disable, :stop]
@@ -130,8 +125,12 @@ if node['newrelic']['infrastructure']
   end
   service 'newrelic-infra' do
     action [:enable, :start]
+    when 'ubuntu'
+      if (node['platform_version'].to_f <= 14.04 &&  node['platform_version'].to_f >= 9.10)
+        provider Chef::Provider::Service::Upstart
+      end
+    end
     ignore_failure true
-    provider provider unless provider.nil?
   end
   template '/etc/newrelic-infra.yml' do
     source 'newrelic-infra.yml.erb'
