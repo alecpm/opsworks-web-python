@@ -157,7 +157,7 @@ if node['newrelic']['servers']
     action [:enable, :start]
     ignore_failure true
   end
-  include_recupe 'newrelic::server_monitor_agent'
+  include_recipe 'newrelic::server_monitor_agent'
 end
 
 if node.recipe?('plone_buildout::instances-setup') && node['plone_instances']['newrelic_tracing']
