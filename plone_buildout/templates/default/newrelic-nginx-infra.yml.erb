@@ -8,6 +8,7 @@ instances:
       labels:
           env: <%= node[:opsworks][:stack][:name] %>
           role: webserver
+          label: <%= node[:opsworks][:instance][:hostname] %>
 
     - name: nginx-server-inventory
       command: inventory
@@ -16,3 +17,4 @@ instances:
       labels:
           env: <%= node[:opsworks][:stack][:name] %>
           role: webserver
+          label: <%= node[:opsworks][:instance][:hostname] %>
