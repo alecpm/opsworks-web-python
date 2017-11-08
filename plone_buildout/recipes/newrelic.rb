@@ -140,6 +140,9 @@ if node['newrelic']['infrastructure']
     notifies :restart, 'service[newrelic-infra]', :delayed
   end
   if node.recipe?('plone_buildout::nginx')
+    package 'newrelic-infra-integrations' do
+      action :install
+    end
     template '/etc/newrelic-infra/integrations.d/nginx-config.yml' do
       source 'newrelic-nginx-infra.yml.erb'
       mode '0644'
