@@ -2,7 +2,7 @@ default["deploy_buildout"] = {}
 # Override these in an app deployment with node[:deploy][#{app_name}]["buildout_"#{varname}]
 default["deploy_buildout"]["cache_archives"] = [] # mapping with references to cached archives to download {"url" => ..., "user" => ..., "password" => ..., "path" => ..., "purge" => ...}
 default["deploy_buildout"]["symlink_before_migrate"] = {
-  'eggs'=> 'eggs', 
+  'eggs'=> 'eggs',
   'downloads' => 'downloads',
   'extends' => 'extends',
   'var' => 'var',
