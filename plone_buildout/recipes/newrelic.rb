@@ -167,10 +167,10 @@ if node['newrelic']['servers']
 end
 
 if node.recipe?('plone_buildout::instances-setup') && node['plone_instances']['newrelic_tracing']
-   # install the python agent in the buildout venv
-   node.normal['newrelic']['python_agent']['python_venv']  =
-     ::File.join(node[:deploy][node['plone_instances']['app_name']][:deploy_to],
-                 'shared', 'env')
+  # install the python agent in the buildout venv
+  #node.normal['newrelic']['python_agent']['python_venv']  =
+  # ::File.join(node[:deploy][node['plone_instances']['app_name']][:deploy_to],
+  #             'shared', 'env')
   # Append stack name to app name
   node.normal['newrelic']["application_monitoring"]["app_name"] = (
       node[:opsworks][:stack][:name] + ': ' + node['newrelic']["application_monitoring"]["app_name"])
