@@ -74,22 +74,22 @@ sub vcl_pipe {
 }
 
 # Called if the cache has a copy of the page.
-# sub vcl_hit {
-#     if (req.request == "PURGE") {
-#         ban_url(req.url);
-#         error 200 "Purged";
-#     }
-#
-#     if (obj.ttl <= 0s) {
-#         return(pass);
-#     }
-#
-#     if ((req.http.Authorization || req.http.Cookie ~ "__ac=") && !obj.http.Cache-Control ~ "public") {
-#         return(pass);
-#     }
-#     return(pass);
-# }
-#
+sub vcl_hit {
+    if (req.request == "PURGE") {
+        ban_url(req.url);
+        error 200 "Purged";
+    }
+
+    if (obj.ttl <= 0s) {
+        return(pass);
+    }
+
+    if ((req.http.Authorization || req.http.Cookie ~ "__ac=") && !obj.http.Cache-Control ~ "public") {
+        return(pass);
+    }
+    return(pass);
+}
+
 # Called if the cache does not have a copy of the page.
 # sub vcl_miss {
 #     if (req.http.If-Modified-Since) {
