@@ -1,4 +1,4 @@
-node.normal[:nginx][:client_max_body_size] = '128m'
+node.normal[:nginx][:client_max_body_size] = node[:nginx_plone][:client_max_body_size]
 
 ephemeral = node[:opsworks_initial_setup] && node[:opsworks_initial_setup][:ephemeral_mount_point] || '/'
 log_dir = ::File.join(ephemeral, '/var/log/nginx')
