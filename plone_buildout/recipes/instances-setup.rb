@@ -65,7 +65,7 @@ repo_arch = node["kernel"]["machine"] == "x86_64" ? "amd64" : "i386"
 
 apt_repository "nodesource" do
   arch repo_arch
-  uri "https://deb.nodesource.com/node_4.x"
+  uri "https://deb.nodesource.com/node_8.x"
   distribution node["lsb"]["codename"]
   components ["main"]
   key "https://deb.nodesource.com/gpgkey/nodesource.gpg.key"
