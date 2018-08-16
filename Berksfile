@@ -36,7 +36,7 @@ cookbook 'hostsfile', '= 2.4.6'
 cookbook 'curl', '2.0.0'
 cookbook 'windows', '1.44.3'
 cookbook 'chef_handler', '1.4.0'
-cookbook 'certbot', 'v0.2.2', :github => "alecpm/chef-certbot"
+cookbook 'certbot', '0.2.2', :github => "alecpm/chef-certbot"
 
 # Chef 11 compat
 cookbook 'cron', '3.0.0'
