@@ -85,6 +85,8 @@ default["plone_instances"]["solr_host"] = nil
 # Metrics
 # Newrelic
 default["plone_instances"]["newrelic_tracing"] = false
+default["new_relic"]["servers"] = true
+default["new_relic"]["infrastructure"] = false
 default['newrelic']["application_monitoring"]["app_name"] = node['plone_instances']['app_name']
 default['newrelic']["application_monitoring"]["browser_monitoring"]["auto_instrument"] = true
 default['newrelic']["application_monitoring"]["transaction_tracer"]["slow_sql"] = false
@@ -120,6 +122,7 @@ default['nginx_plone']['additional_ssl_config'] = nil
 default['nginx_plone']['proxy_port'] = 6081
 default['nginx_plone']['log_retention_days'] = 14
 default['nginx_plone']['force_reload'] = false
+default['nginx_plone']['client_max_body_size'] = '128m'
 
 # Varnish config options
 default['varnish_plone']['grace'] = 60
@@ -153,7 +156,11 @@ node.default[:newrelic][:varnish][:plugin_path] = "#{node[:newrelic][:varnish][:
 node.default[:newrelic][:varnish][:download_url] = "https://github.com/varnish/newrelic_varnish_plugin/archive/#{node[:newrelic][:varnish][:version]}.tar.gz"
 node.default[:newrelic][:varnish][:user] = "root"
 
-node.default['newrelic']['python_agent']['python_version'] = '2.40.0.34'
+node.default[:newrelic]['python_agent']['python_version'] = '2.40.0.34'
+node.default[:newrelic]['repository']['infrastructure']['key'] = 'https://download.newrelic.com/infrastructure_agent/gpg/newrelic-infra.gpg'
+node.default[:newrelic]['repository']['infrastructure']['ssl_verify'] = true
+node.default[:newrelic]['repository']['infrastructure']['uri'] = 'https://download.newrelic.com/infrastructure_agent/linux/apt'
+node.default[:newrelic]['repository']['infrastructure']['components'] = ['main']
 node.default["apt"]["unattended_upgrades"]["package_blacklist"] = ["newrelic-sysmond"]
 
 # Version update

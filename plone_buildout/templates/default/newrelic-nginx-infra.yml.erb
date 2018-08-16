@@ -1,0 +1,20 @@
+integration_name: com.newrelic.nginx
+
+instances:
+    - name: nginx-server-metrics
+      command: metrics
+      arguments:
+          status_url: http://127.0.0.1/_main_status_
+      labels:
+          env: <%= node[:opsworks][:stack][:name] %>
+          role: webserver
+          label: <%= node[:opsworks][:instance][:hostname] %>
+
+    - name: nginx-server-inventory
+      command: inventory
+      arguments:
+          config_path: /etc/nginx/nginx.conf
+      labels:
+          env: <%= node[:opsworks][:stack][:name] %>
+          role: webserver
+          label: <%= node[:opsworks][:instance][:hostname] %>

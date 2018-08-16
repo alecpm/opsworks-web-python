@@ -21,6 +21,10 @@ server {
     keepalive_timeout 30;
     gzip_types application/javascript application/x-javascript application/xhtml+xml application/xml application/xml+rss text/css text/javascript text/plain text/xml application/json text/json application/vnd.ms-fontobject application/x-font-opentype application/x-font-truetype application/x-font-ttf font/eot font/opentype font/otf image/svg+xml image/vnd.microsoft.icon;
 
+    <% if !node['certbot_domains'].empty? %>
+    include <%= node['nginx']['dir'] %>/certbot.conf;
+    <% end %>
+
     <%= node['nginx_plone']['additional_ssl_config'] %>
 
     if ($request_filename ~* ^.*?/([^/]*?)$) {
@@ -45,7 +49,7 @@ server {
             add_header Access-Control-Allow-Methods GET,OPTIONS,HEAD;
         }
 
-        rewrite ^/(.*)$ /VirtualHostBase/$scheme/$http_host:$server_port/<%= node["plone_instances"]["site_id"]%>/VirtualHostRoot/$1 break;
+        rewrite ^/(.*)$ /VirtualHostBase/$final_scheme/$http_host:$final_port/<%= node["plone_instances"]["site_id"]%>/VirtualHostRoot/$1 break;
         proxy_pass http://cache;
         proxy_connect_timeout 90;
         proxy_read_timeout 900;

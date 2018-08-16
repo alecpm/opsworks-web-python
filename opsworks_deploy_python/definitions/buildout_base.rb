@@ -60,7 +60,7 @@ define :buildout_configure do
     build_cmd = "#{buildout_cmd} -c #{config_file} #{Helpers.buildout_setting(deploy, 'flags', node)}"
     buildout_version = Helpers.buildout_setting(deploy,'buildout_version', node)
     if !(buildout_version.nil? || buildout_version.empty?)
-      bootstrap_cmd = "#{bootstrap_cmd} -v #{buildout_version}"
+      bootstrap_cmd = "#{bootstrap_cmd} --buildout-version=#{buildout_version}"
     end
     bootstrap_params = Helpers.buildout_setting(deploy,'bootstrap_params', node)
     if !(bootstrap_params.nil? || bootstrap_params.empty?)

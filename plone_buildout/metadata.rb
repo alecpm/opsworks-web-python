@@ -26,6 +26,7 @@ depends "openssh"
 depends "papertrail"
 depends "traceview"
 depends "certbot"
+depends "system"
 
 # GlusterFS is missing this one
 depends "apt"

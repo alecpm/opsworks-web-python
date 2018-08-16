@@ -7,7 +7,6 @@ cookbook 'glusterfs', github: 'alecpm/glusterfs-cookbook', tag: '0.2.0'
 cookbook 'supervisor', github: 'poise/supervisor', ref: '2ebac961426eef394179c91a6cc9f9165a0f5e31'
 cookbook 'papertrail', github: 'librato/papertrail-cookbook', tag: '0.0.6'
 cookbook "traceview", github: 'Optaros/tracelytics-chef', ref: 'e0f1b2bd7b72956963626da2788c9cc6b2b90294'
-cookbook 'newrelic_meetme_plugin', github: 'alecpm/newrelic_meetme_plugin'
 cookbook 's3fs-fuse', github: 'alecpm/s3fs-fuse'
 
 # We want to be explicit, since we don't explicitly include our
@@ -15,7 +14,7 @@ cookbook 's3fs-fuse', github: 'alecpm/s3fs-fuse'
 cookbook 'iptables', '1.1.0'
 cookbook 'varnish', '0.9.12'
 cookbook 'gunicorn', '1.1.2'
-cookbook 'build-essential', '1.4.2'
+cookbook 'build-essential', '= 3.2.0'
 cookbook 'apt', '2.7.0'
 cookbook 'yum', '3.1.2'
 cookbook 'yum-epel', '0.3.4'
@@ -29,11 +28,21 @@ cookbook 'postfix', '3.1.8'
 cookbook 'python', '1.4.6'
 cookbook 'runit', '1.5.10'
 cookbook 'rsyslog', '1.12.2'
-cookbook 'newrelic', '2.3.0'
-cookbook 'newrelic_plugins', '1.1.0'
+cookbook 'newrelic', '~> 2.26.0'
+cookbook 'newrelic_plugins', '~> 1.1.0'
+cookbook 'newrelic_meetme_plugin', '~> 0.5.0'
 cookbook 'bluepill', '2.3.1'
+cookbook 'hostsfile', '= 2.4.6'
+cookbook 'curl', '2.0.0'
+cookbook 'windows', '1.44.3'
+cookbook 'chef_handler', '1.4.0'
 cookbook 'certbot', :github => "alecpm/chef-certbot"
+
+# Chef 11 compat
 cookbook 'cron', '3.0.0'
+cookbook 'system', '= 0.9.1'
+cookbook 'ohai', '= 3.0.1'
+
 # avoid certbot override
 cookbook 'nginx', :github => "aws/opsworks-cookbooks", :rel => 'nginx', :tag => 'release-chef-11.10'
 
