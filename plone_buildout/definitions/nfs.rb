@@ -6,7 +6,7 @@ define :blob_mounts do
   owner = deploy[:user] || 'deploy'
   ephemeral = node[:opsworks_initial_setup] && node[:opsworks_initial_setup][:ephemeral_mount_point] || '/mnt'
   base_dir = ::File.join(deploy[:deploy_to], "shared")
-  mount_dir = ::File.join(ephemeral, "shared", "blobs")
+  mount_dir = ::File.join(ephemeral, "import", "blobs")
   blob_dir = ::File.join(base_dir, "var", "blobstorage")
   blob_mount_dir = File.join(mount_dir, "blobstorage")
 
