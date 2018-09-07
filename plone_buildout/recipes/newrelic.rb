@@ -1,6 +1,6 @@
 node.normal['newrelic']['server_monitoring']['license'] = node['newrelic']['license']
 node.normal['newrelic']['application_monitoring']['license'] = node['newrelic']['license']
-node.normal['newrelic_meetme_plugin']['license'] = node['newrelic']['license']
+#node.normal['newrelic_meetme_plugin']['license'] = node['newrelic']['license']
 
 services = {}
 
@@ -157,8 +157,8 @@ if node['newrelic']['servers']
   end
 
   # Include any globally configured service plugins
-  services.update(node['newrelic_meetme_plugin']['services'] || {})
-  node.normal['newrelic_meetme_plugin']['services'] = services
+  #services.update(node['newrelic_meetme_plugin']['services'] || {})
+  #node.normal['newrelic_meetme_plugin']['services'] = services
 
 
   service 'newrelic-infra' do
@@ -182,9 +182,8 @@ if node.recipe?('plone_buildout::instances-setup') && node['plone_instances']['n
   Chef::Log.info("Enabled newrelic python agent")
 end
 
-include_recipe 'newrelic_meetme_plugin' if node['newrelic_meetme_plugin']['services'].length
-
-Chef::Log.info("Enabled newrelic plugins: #{node['newrelic_meetme_plugin']['services']}")
+#include_recipe 'newrelic_meetme_plugin' if node['newrelic_meetme_plugin']['services'].length
+#Chef::Log.info("Enabled newrelic plugins: #{node['newrelic_meetme_plugin']['services']}")
 
 directory "/etc/apt/apt.conf.d" do
   recursive true
