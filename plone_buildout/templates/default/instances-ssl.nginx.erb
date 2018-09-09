@@ -26,6 +26,9 @@ server {
     <% end %>
 
     <%= node['nginx_plone']['additional_ssl_config'] %>
+    <% if !node['plone_instances']['subsite_config'].nil? && node['plone_instances']['subsite_config'].has_key?(domain) %>
+        <%= node['plone_instances']['subsite_config'][domain] =%>
+    <% end %>
 
     if ($request_filename ~* ^.*?/([^/]*?)$) {
         set $filename $1;

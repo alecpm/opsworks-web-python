@@ -95,7 +95,10 @@ server {
         set $is_font 1;
     }
 
-    <%= node["plone_instances"]["subsite_config"][host] =%>
+    <%= node['nginx_plone']['additional_config'] %>
+    <% if !node['plone_instances']['subsite_config'].nil? && node['plone_instances']['subsite_config'].has_key?(host) %>
+        <%= node['plone_instances']['subsite_config'][host] =%>
+    <% end %>
 
     location / {
         # Avoid duplicate entries in search engines due to trailing slashes
