@@ -11,6 +11,7 @@ return if node['certbot_domains'].empty? && (application.nil? || !application[:s
 
 if !node['certbot_domains'].empty? || application[:domains]
   domains = {}
+  key_name = node['certbot_domains'][0] unless node['certbot_domains'].empty?
   (node['certbot_domains'].empty? ? application[:domains] : node['certbot_domains']).each do |d|
     domains[d] = node['plone_instances']['site_id'] unless d.start_with?('*.')
     next if node['plone_instances']['subsites'].nil?
@@ -28,7 +29,8 @@ if !node['certbot_domains'].empty? || application[:domains]
     mode 0644
     variables(
       application: application,
-      domains: domains
+      domains: domains,
+      key_name: key_name
     )
     notifies :restart, 'service[nginx]', :delayed
   end
