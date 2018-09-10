@@ -10,18 +10,36 @@ application = node[:deploy][application_name]
 return if node['certbot_domains'].empty? && (application.nil? || !application[:ssl_certificate])
 
 if !node['certbot_domains'].empty? || application[:domains]
-  domains = {}
+  base_path = node['plone_instances']['site_id']
+  # Set default domain
+  vhosts = {'_' => base_path}
+
+  # Set certbot key name based on first registered certbot hostname
   key_name = node['certbot_domains'][0] unless node['certbot_domains'].empty?
-  (node['certbot_domains'].empty? ? application[:domains] : node['certbot_domains']).each do |d|
-    domains[d] = node['plone_instances']['site_id'] unless d.start_with?('*.')
-    next if node['plone_instances']['subsites'].nil?
-    node['plone_instances']['subsites'].each do |name, root|
-      domains[name] = (node['plone_instances']['site_id'] + '/' + root) if d == name || name.start_with?(d.sub(/^\*\./, '.'))
+
+  # Virtualhosts for all defined subsites
+  if node['plone_instances']['subsites']
+    node['plone_instances']['subsites'].each {
+      |domain, path| vhosts[domain] = base_path + '/' + path
+    }
+  end
+
+  # Virtualhosts for all non-wildcard certbot domains that aren't already defined,
+  # probably unnecessary
+  if node['certbot_domains']
+    node['certbot_domains'].each do |domain|
+      vhosts[domain] = base_path unless (vhosts.has_key?(domain) || domain.start_with?('*.'))
     end
   end
-  if domains.empty? && !(node['certbot_domains'].empty? && application[:domains].empty?)
-    domains['_'] = node['plone_instances']['site_id']
+
+  # Virtualhosts for all non-wildcard AWS app domains that aren't already defined,
+  # also probably unnecessary
+  if application[:domains]
+    application[:domains].each do |domain|
+      vhosts[domain] = base_path unless (vhosts.has_key?(domain) || domain.start_with?('*.'))
+    end
   end
+
   template "#{node[:nginx][:dir]}/sites-available/instances-ssl" do
     source 'instances-ssl.nginx.erb'
     owner 'root'
@@ -29,7 +47,7 @@ if !node['certbot_domains'].empty? || application[:domains]
     mode 0644
     variables(
       application: application,
-      domains: domains,
+      domains: vhosts,
       key_name: key_name
     )
     notifies :restart, 'service[nginx]', :delayed
