@@ -80,7 +80,7 @@ if instance_data["enable_relstorage"]
     elsif node[:opsworks] && node[:opsworks][:layers] && node[:opsworks][:layers]["memcached"] && node[:opsworks][:layers]["memcached"][:instances]
       cache_listing = []
       node[:opsworks][:layers]["memcached"][:instances].each {
-        |name, instance| cache_listing.push("#{instance[:public_dns_name] || instance[:private_dns_name]}:11211") if instance[:status] == "online"
+        |name, instance| cache_listing.push("#{instance[:public_dns_name] || instance[:private_dns_name]}:11211") if instance[:status] == "online" || instance[:public_dns_name] == node[:opsworks][:instance][:public_dns_name]
       }
       cache_servers = cache_listing.join(" ")
     end
@@ -115,7 +115,7 @@ else
     address = instance_data["zeo"]["address"]
   elsif node[:opsworks] && node[:opsworks][:layers] && node[:opsworks][:layers][zeo_layer] && node[:opsworks][:layers][zeo_layer][:instances]
     instance_name, zeo_instance = node[:opsworks][:layers][zeo_layer][:instances].detect {
-      |name, instance| instance[:status] == "online"
+      |name, instance| instance[:status] == "online"  || instance[:public_dns_name] == node[:opsworks][:instance][:public_dns_name]
     }
     address = "#{zeo_instance[:public_dns_name] || zeo_instance[:private_dns_name]}:8001" if zeo_instance
   end
@@ -135,7 +135,7 @@ if instance_data["solr_enabled"] && node[:opsworks]
     storage_config << "\n" << "[solr-host]" << "\n" << "host = #{instance_data["solr_host"]}" << "\n"
   elsif  node[:opsworks] && node[:opsworks][:layers] && node[:opsworks][:layers][solr_layer] &&  node[:opsworks][:layers][solr_layer][:instances]
     instance_name, solr_instance = node[:opsworks][:layers][solr_layer][:instances].detect {
-      |name, instance| instance[:status] == "online"
+      |name, instance| instance[:status] == "online"  || instance[:public_dns_name] == node[:opsworks][:instance][:public_dns_name]
     }
     if solr_instance
       storage_config << "\n" << "[solr-host]" << "\n" << "host = #{solr_instance[:public_dns_name] || solr_instance[:private_dns_name]}" << "\n"
@@ -237,7 +237,7 @@ if instance_data["enable_celery"]
   host = instance_data["broker"]["host"] if instance_data["broker"]["host"]
   if (host.nil? || host.empty?) && node[:opsworks] && node[:opsworks][:layers] && node[:opsworks][:layers][broker_layer] &&  node[:opsworks][:layers][broker_layer][:instances]
     instance_name, broker_instance = node[:opsworks][:layers][broker_layer][:instances].detect {
-      |name, instance| instance[:status] == "online"
+      |name, instance| instance[:status] == "online"  || instance[:public_dns_name] == node[:opsworks][:instance][:public_dns_name]
     }
     if broker_instance
       host = broker_instance[:public_dns_name] || broker_instance[:private_dns_name]
@@ -251,6 +251,9 @@ if instance_data["enable_celery"]
     storage_config << "\n" << '[celery]' << "\n" << 'broker-host = ${celery-broker:host}'
     storage_config << "\n" << 'broker-port = ${celery-broker:port}' << "\n"
     celery_cmd = 'worker'
+    celery_cmd += ' ' + instance_data['celery_args'] if instance_data['celery_args']
+    beat_cmd = 'beat'
+    beat_cmd += ' ' + instance_data['beat_args'] if instance_data['beat_args']
 
     if instance_data['newrelic_tracing']
       storage_config << "eggs += newrelic" << "\n"
@@ -264,7 +267,7 @@ if instance_data["enable_celery"]
     end
     init_commands.push({'name' => "celery", 'cmd' => 'bin/celery', 'args' => celery_cmd})
     if instance_data['celerybeat']
-      init_commands.push({'name' => "celerybeat", 'cmd' => 'bin/celerybeat'})
+      init_commands.push({'name' => "celerybeat", 'cmd' => 'bin/celery', 'args' => beat_cmd})
     end
   end
 end
