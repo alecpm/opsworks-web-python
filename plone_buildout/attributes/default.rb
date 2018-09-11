@@ -71,6 +71,8 @@ default["plone_instances"]["zeo"] = {"address" => nil}
 # Celery stuff
 default["plone_instances"]["enable_celery"] = false
 default["plone_instances"]["celerybeat"] = false
+default["plone_instances"]["celery_args"] = ''
+default["plone_instances"]["beat_args"] = ''
 # Broker will generally be attached to an exisitng layer
 default["plone_instances"]["broker_layer"] = "celery_broker"
 # Set the host if e.g. you want to use an ElastiCache Redis cluster.
