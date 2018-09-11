@@ -1,4 +1,4 @@
-<% for domain in @domains %>
+<% @domains.each do |domain, path| %>
 <% if domain != @application[:application] || @domains.length == 1 %>
 server {
     listen  443;
@@ -6,9 +6,9 @@ server {
     ssl on;
     ssl_protocols TLSv1.2 TLSv1.1;
     <% if node['certbot_domains'] && !node['certbot_domains'].empty?  %>
-      ssl_certificate <%= node['certbot']['config_dir'] %>/live/<%= domain %>/fullchain.pem;
-      ssl_certificate_key <%= node['certbot']['config_dir'] %>/live/<%= domain %>/privkey.pem;
-      ssl_client_certificate <%= node['certbot']['config_dir'] %>/live/<%= domain %>/chain.pem;
+      ssl_certificate <%= node['certbot']['config_dir'] %>/live/<%= @key_name %>/fullchain.pem;
+      ssl_certificate_key <%= node['certbot']['config_dir'] %>/live/<%= @key_name %>/privkey.pem;
+      ssl_client_certificate <%= node['certbot']['config_dir'] %>/live/<%= @key_name %>/chain.pem;
     <% elsif @application[:ssl_certificate] %>
       ssl_certificate /etc/nginx/ssl/<%= domain %>.crt;
       ssl_certificate_key /etc/nginx/ssl/<%= domain %>.key;
@@ -26,6 +26,9 @@ server {
     <% end %>
 
     <%= node['nginx_plone']['additional_ssl_config'] %>
+    <% if !node['plone_instances']['subsite_config'].nil? && node['plone_instances']['subsite_config'].has_key?(domain) %>
+        <%= node['plone_instances']['subsite_config'][domain] =%>
+    <% end %>
 
     if ($request_filename ~* ^.*?/([^/]*?)$) {
         set $filename $1;
@@ -49,7 +52,7 @@ server {
             add_header Access-Control-Allow-Methods GET,OPTIONS,HEAD;
         }
 
-        rewrite ^/(.*)$ /VirtualHostBase/$final_scheme/$http_host:$final_port/<%= node["plone_instances"]["site_id"]%>/VirtualHostRoot/$1 break;
+        rewrite ^/(.*)$ /VirtualHostBase/$final_scheme/$http_host:$final_port/<%= path %>/VirtualHostRoot/$1 break;
         proxy_pass http://cache;
         proxy_connect_timeout 90;
         proxy_read_timeout 900;

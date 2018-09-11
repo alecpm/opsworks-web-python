@@ -84,6 +84,10 @@ server {
     server_name <%= host%>;
     gzip_types application/javascript application/x-javascript application/xhtml+xml application/xml application/xml+rss text/css text/javascript text/plain text/xml application/json text/json application/vnd.ms-fontobject application/x-font-opentype application/x-font-truetype application/x-font-ttf font/eot font/opentype font/otf image/svg+xml image/vnd.microsoft.icon;
 
+    <% if !node['certbot_domains'].empty? %>
+    include <%= node['nginx']['dir'] %>/certbot.conf;
+    <% end %>
+
     if ($request_filename ~* ^.*?/([^/]*?)$) {
         set $filename $1;
     }
@@ -91,7 +95,10 @@ server {
         set $is_font 1;
     }
 
-    <%= node["plone_instances"]["subsite_config"][host] =%>
+    <%= node['nginx_plone']['additional_config'] %>
+    <% if !node['plone_instances']['subsite_config'].nil? && node['plone_instances']['subsite_config'].has_key?(host) %>
+        <%= node['plone_instances']['subsite_config'][host] =%>
+    <% end %>
 
     location / {
         # Avoid duplicate entries in search engines due to trailing slashes

@@ -51,14 +51,14 @@ end
 
 replace_or_add "Nginx logrotate 2 weeks" do
   path "/etc/logrotate.d/nginx"
-  pattern "^\s*rotate\s+"
+  pattern "(?<![A-Za-z])rotate"
   line "        rotate #{node['nginx_plone']['log_retention_days']}"
 end
 
 replace_or_add "Nginx logrotate daily" do
   path "/etc/logrotate.d/nginx"
-  pattern "^\s*weekly\s*$"
-  line "       daily"
+  pattern "weekly"
+  line "        daily"
 end
 
 if node['nginx_plone']['force_reload']
