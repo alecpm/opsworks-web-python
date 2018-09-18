@@ -32,7 +32,8 @@ defaults
   <% if node[:haproxy][:http_server_close] %>
   option          http-server-close                                 # enable HTTP connection closing on the server side
   <% end %>
-  option          abortonclose                                      # enable early dropping of aborted  option          httpchk                                           # enable HTTP protocol to check on servers health
+  option          abortonclose                                      # enable early dropping of aborted option httpchk                                           # enable HTTP protocol to check on servers health
+
   <% if node[:haproxy][:enable_stats] -%>
   stats auth <%= node[:haproxy][:stats_user] %>:<%= node[:haproxy][:stats_password] %>
   stats uri <%= node[:haproxy][:stats_url] %>
