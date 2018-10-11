@@ -10,10 +10,10 @@ server {
       ssl_certificate_key <%= node['certbot']['config_dir'] %>/live/<%= @key_name %>/privkey.pem;
       ssl_client_certificate <%= node['certbot']['config_dir'] %>/live/<%= @key_name %>/chain.pem;
     <% elsif @application[:ssl_certificate] %>
-      ssl_certificate /etc/nginx/ssl/<%= domain %>.crt;
-      ssl_certificate_key /etc/nginx/ssl/<%= domain %>.key;
+      ssl_certificate /etc/nginx/ssl/<%= @application[:domains].first %>.crt;
+      ssl_certificate_key /etc/nginx/ssl/<%= @application[:domains].first %>.key;
       <% if @application[:ssl_certificate_ca] %>
-      ssl_client_certificate /etc/nginx/ssl/<%= domain %>.ca;
+      ssl_client_certificate /etc/nginx/ssl/<%= @application[:domains].first %>.ca;
       <% end %>
     <% end %>
     ssl_session_cache   shared:SSL:10m;
