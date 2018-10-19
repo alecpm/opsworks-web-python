@@ -1,10 +1,13 @@
 if node["sftp"]["user"]
 
-	node.normal["openssh"]["server"]["match"]["Address #{node["sftp"]["remote_addr"]}"] = {
-		"password_authentication" => "yes"
+	node.normal['openssh']['server']['match'] = {
+		"Group sftp" => {
+			"force_command" => '/usr/lib/openssh/sftp-server -f AUTHPRIV -l INFO'
+		},
+		"Address #{node["sftp"]["remote_addr"]}" => {
+			"password_authentication" => "yes"
+		}
 	}
-
-	include_recipe 'openssh'
 
 	group "sftp" do
 	end
@@ -49,3 +52,5 @@ if node["sftp"]["user"]
 	end
 
 end
+
+include_recipe 'openssh'

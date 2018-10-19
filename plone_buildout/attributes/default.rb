@@ -175,11 +175,11 @@ node.default["bluepill"]["bin"] = "/usr/local/bin/bluepill"
 node.default['certbot_domains'] = []
 node.default['certbot_email'] = nil
 
-# Adjust SSH ciphers and enable sftp
-node.normal['openssh']['server']['ciphers'] = 'chacha20-poly1305@openssh.com,aes256-gcm@openssh.com,aes128-gcm@openssh.com,aes256-ctr,aes192-ctr,aes128-ctr'
-node.normal['openssh']['server']['match'] = {
-	"Group sftp" => {
-		"force_command" => 'internal-sftp'
-	}
-}
-node.normal['openssh']['server']['subsystem'] = 'sftp internal-sftp'
+# Adjust SSH ciphers
+node.default['openssh']['server']['ciphers'] = 'chacha20-poly1305@openssh.com,aes256-gcm@openssh.com,aes128-gcm@openssh.com,aes256-ctr,aes192-ctr,aes128-ctr'
+node.default['openssh']['server']['kex_algorithms'] = 'curve25519-sha256@libssh.org,ecdh-sha2-nistp521,ecdh-sha2-nistp384,ecdh-sha2-nistp256,diffie-hellman-group-exchange-sha256'
+node.default['openssh']['server']['m_a_cs'] = 'hmac-sha2-512-etm@openssh.com,hmac-sha2-256-etm@openssh.com,umac-128-etm@openssh.com,hmac-sha2-512,hmac-sha2-256,umac-128@openssh.com'
+node.default['openssh']['server']['subsystem'] = 'sftp /usr/lib/openssh/sftp-server -f AUTHPRIV -l INFO'
+node.default['openssh']['server']['password_authentication'] = 'no'
+node.default['openssh']['server']['log_level'] = 'VERBOSE'
+node.default['openssh']['server']['use_privilege_separation'] = 'yes'
