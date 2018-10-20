@@ -46,7 +46,7 @@ backend plone_instances
   balance <%= node[:haproxy][:balance] %>
 <% if node["plone_instances"]["sticky_sessions"] -%>
   appsession __ac len 32 timeout 1d
-  cookie sid insert nocache indirect
+  cookie sid insert nocache indirect secure
   option persist
 <%end -%>
   no option redispatch
