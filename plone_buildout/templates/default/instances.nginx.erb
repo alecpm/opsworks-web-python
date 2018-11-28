@@ -36,6 +36,7 @@ server {
         deny all;
     }
 
+    <%= node['nginx_plone']['default_config'] %>
     <%= node['nginx_plone']['additional_config'] %>
 
     location = <%= node[:haproxy][:stats_url] %> {
