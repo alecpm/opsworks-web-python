@@ -42,6 +42,7 @@ define :python_base_setup do
 
   py_version = deploy["python_major_version"]
   use_custom_py = py_version && py_version != "2.7"
+  py_version = py_version.to_s
   pip_location = find_executable "pip#{py_version}"
   virtualenv_location = find_executable "virtualenv-#{py_version}"
   virtualenv_ver_map = {
