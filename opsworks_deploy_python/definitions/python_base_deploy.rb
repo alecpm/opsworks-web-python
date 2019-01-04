@@ -1,3 +1,6 @@
+require 'mkmf'
+require 'open-uri'
+
 define :python_base_setup do
   deploy = params[:deploy_data]
   application = params[:app_name]
@@ -39,17 +42,14 @@ define :python_base_setup do
 
   py_version = deploy["python_major_version"]
   use_custom_py = py_version && py_version != "2.7"
-  pip_ver_map = {
-    "2.4" => "1.1",
-    "2.5" => "1.3.1",
-    "2.6" => "1.5.4"
-  }
+  pip_location = find_executable "pip#{py_version}"
+  virtualenv_location = find_executable "virtualenv-#{py_version}"
   virtualenv_ver_map = {
     "2.4" => "1.7.2",
     "2.5" => "1.9.1",
     "2.6" => "1.11.4"
   }
-  if use_custom_py
+  if !pip_location && use_custom_py
     # We need to install an older python
     py_command = "python#{py_version}"
     apt_repository 'deadsnakes' do
@@ -69,23 +69,26 @@ define :python_base_setup do
       action :install
       ignore_failure true  # This one doesn't always exist
     end
-    # only set the python binary for this chef run, once the venv is
-    # established we don't want to keep this around
-    node.force_override['python']['binary'] = "/usr/bin/#{py_command}"
-    # We use easy install to install pip, because get-pip.py seems to
-    # fail on some python versions
-    pip = "pip"
-    pip_ver = pip_ver_map[py_version]
-    pip << "==#{pip_ver}" if pip_ver
+    download = open("https://bootstrap.pypa.io/#{py_version}/get-pip.py")
+    IO.copy_stream(download, '~/get-pip.py')
+    execute "/usr/bin/#{py_command} ~/get-pip.py"
+    pip_location = find_executable "pip#{py_version}"
+  end
+  if !virtualenv_location && use_custom_py
     venv = "virtualenv"
     venv_ver = virtualenv_ver_map[py_version]
     venv << "==#{venv_ver}" if venv_ver
-    execute "/usr/bin/easy_install-#{py_version} #{pip} #{venv}"
-    node.override['python']['pip_location'] = "/usr/bin/pip#{py_version}"
-    node.override['python']['virtualenv_location'] = "/usr/bin/virtualenv-#{py_version}"
+    execute "#{pip_location} install #{venv}"
+    virtualenv_location = find_executable "virtualenv-#{py_version}"
   end
-  
-  if !use_custom_py
+
+  if use_custom_py
+    # only set the python binary for this chef run, once the venv is
+    # established we don't want to keep this around
+    node.force_override['python']['binary'] = "/usr/bin/#{py_command}"
+    node.override['python']['pip_location'] = pip_location
+    node.override['python']['virtualenv_location'] = virtualenv_location
+  else
     python_pip "setuptools" do
       version 3.3
       action :upgrade
