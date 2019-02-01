@@ -1,7 +1,7 @@
 <% @domains.each do |domain, path| %>
 <% if domain != @application[:application] || @domains.length == 1 %>
 server {
-    listen  443;
+    listen  443<%= ' default_server' if domain == '_' %>;
     server_name <%= domain %>;
     ssl on;
     ssl_protocols TLSv1.2 TLSv1.1 TLSv1;
