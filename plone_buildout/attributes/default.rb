@@ -131,6 +131,8 @@ default['nginx_plone']['client_max_body_size'] = '128m'
 # Varnish config options
 default['varnish_plone']['grace'] = 60
 default['varnish_plone']['default_ttl'] = 300
+default['varnish']['use_default_repo'] = false
+default['varnish']['parameters']['nuke_limit'] = 500
 
 # Change default configs for other packages
 include_attribute "redis"
