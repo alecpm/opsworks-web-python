@@ -4,9 +4,12 @@ package "autofs" do
 end
 
 service "autofs" do
-  if node['platform'] == 'ubuntu'
-    provider Chef::Provider::Service::Systemd
-  end
+  provider value_for_platform(
+    'ubuntu' => {
+      '14.04' => Chef::Provider::Service::Upstart,
+      '18.04' => Chef::Provider::Service::Systemd
+    }
+  )
   supports :status => true, :restart => false, :reload => true
   action [ :enable, :start ]
 end

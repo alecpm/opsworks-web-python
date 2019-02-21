@@ -6,7 +6,7 @@ end
 # "vagrant box add precise64 http://files.vagrantup.com/precise64.box""
 # Or try on trusty64 "vagrant box add ubuntu/trusty64"
 Vagrant.configure("2") do |config|
-  config.vm.box = "precise64"
+  config.vm.box = "ubuntu/bionic64"
   #config.vm.box = "ubuntu/trusty64"
   config.vm.provider "virtualbox" do |v|
     v.memory = 512
