@@ -6,8 +6,9 @@ end
 service "autofs" do
   provider value_for_platform(
     'ubuntu' => {
+      '< 14.04' => Chef::Provider::Service::Debian,
       '14.04' => Chef::Provider::Service::Upstart,
-      '18.04' => Chef::Provider::Service::Systemd
+      'default' => Chef::Provider::Service::Systemd
     }
   )
   supports :status => true, :restart => false, :reload => true
