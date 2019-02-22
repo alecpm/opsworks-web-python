@@ -1,4 +1,4 @@
-# The varnish dir should no generate i/o so we mount it as tmpfs
+# The varnish dir should not generate i/o so we mount it as tmpfs
 directory '/var/lib/varnish' do
   recursive true
   action :create
