@@ -3,24 +3,14 @@ package "autofs" do
   retry_delay 5
 end
 
-autofs_service_provider = value_for_platform(
-  'ubuntu' => {
-    '< 14.04' => Chef::Provider::Service::Debian,
-    '14.04' => Chef::Provider::Service::Upstart,
-    'default' => Chef::Provider::Service::Systemd
-  }
-)
-begin
-  if File.readlines('/etc/lsb-release').grep(/pretending to be 14\.04/).size > 0
-    autofs_service_provider = Chef::Provider::Service::Systemd
-  end
-rescue
-    # ignore
-end
-
-
 service "autofs" do
-  provider autofs_service_provider
+  provider value_for_platform(
+    'ubuntu' => {
+      '< 14.04' => Chef::Provider::Service::Debian,
+      '14.04' => Chef::Provider::Service::Upstart,
+      'default' => Chef::Provider::Service::Systemd
+    }
+  )
   supports :status => true, :restart => false, :reload => true
   action [ :enable, :start ]
 end
