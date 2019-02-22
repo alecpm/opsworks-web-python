@@ -14,7 +14,8 @@ if node['newrelic']['infrastructure']
     10 => 'buster',
     12 => 'precise',
     14 => 'trusty',
-    16 => 'xenial'
+    16 => 'xenial',
+    18 => 'bionic',
   }
   apt_repository 'newrelic-infra' do
     uri node['newrelic']['repository']['infrastructure']['uri']
@@ -35,7 +36,7 @@ if node['newrelic']['infrastructure']
     ignore_failure true
     case node['platform']
     when 'ubuntu'
-      if (node['platform_version'].to_f <= 14.04 &&  node['platform_version'].to_f >= 9.10)
+      if (node['platform_version'].to_f <= 14.04 && node['platform_version'].to_f >= 9.10)
         provider Chef::Provider::Service::Upstart
       end
     end
