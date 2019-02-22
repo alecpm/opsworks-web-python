@@ -15,6 +15,21 @@ unless up_to_date?
   Chef::Log.info "Install berkself dependency: git"
   ensure_scm_package_installed("git")
 
+  begin
+    if File.readlines('/etc/lsb-release').grep(/pretending to be 14\.04/).size > 0
+        file '/etc/lsb-release' do
+            content "DISTRIB_ID=Ubuntu\nDISTRIB_RELEASE=14.04\nDISTRIB_CODENAME=bionic\nDISTRIB_DESCRIPTION=\"Ubuntu 18.04.2 LTS pretending to be 14.04\""
+            owner 'root'
+            group 'root'
+            mode '0644'
+            action :create
+            ignore_failure true
+        end
+    end
+  rescue
+      # ignore
+  end
+
   opsworks_commons_assets_installer "Try to install berkshelf prebuilt package" do
     asset "opsworks-berkshelf"
     version node['opsworks_berkshelf']['version']
@@ -70,3 +85,18 @@ unless up_to_date?
 end
 
 opsworks_berkshelf_runner "Install berkshelf cookbooks"
+
+begin
+  if File.readlines('/etc/lsb-release').grep(/pretending to be 14\.04/).size > 0
+      file '/etc/lsb-release' do
+          content "DISTRIB_ID=Ubuntu\nDISTRIB_RELEASE=18.04\nDISTRIB_CODENAME=bionic\nDISTRIB_DESCRIPTION=\"Ubuntu 18.04.2 LTS pretending to be 14.04\""
+          owner 'root'
+          group 'root'
+          mode '0644'
+          action :create
+          ignore_failure true
+      end
+  end
+rescue
+    # ignore
+end
