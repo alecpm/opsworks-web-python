@@ -4,7 +4,7 @@ source 'https://supermarket.getchef.com'
 
 cookbook 'redis', github: 'coderanger/chef-redis', tag: '1.0.4'
 cookbook 'glusterfs', github: 'alecpm/glusterfs-cookbook', tag: '0.2.0'
-cookbook 'supervisor', github: 'poise/supervisor', ref: '2ebac961426eef394179c91a6cc9f9165a0f5e31'
+cookbook 'supervisor', github: 'poise/supervisor', ref: '7c9aa287f66327a062287c1cb4b97b225d886e7c'
 cookbook 'papertrail', github: 'librato/papertrail-cookbook', tag: '0.0.6'
 cookbook "traceview", github: 'Optaros/tracelytics-chef', ref: 'e0f1b2bd7b72956963626da2788c9cc6b2b90294'
 cookbook 's3fs-fuse', github: 'alecpm/s3fs-fuse'

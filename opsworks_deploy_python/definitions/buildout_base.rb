@@ -71,7 +71,11 @@ define :buildout_configure do
     init_commands = Helpers.buildout_setting(deploy, 'init_commands', node)
     init_type = Helpers.buildout_setting(deploy, 'init_type', node)
     if init_type == :supervisor
-      include_recipe "supervisor"
+      if platform?('ubuntu') && node['platform_version'].to_f >= 16.04
+        package 'supervisor'
+      else
+        include_recipe 'supervisor'
+      end
     end
 
     env["PYTHON_EGG_CACHE"] = ::File.join(deploy[:deploy_to], 'shared', 'eggs')
