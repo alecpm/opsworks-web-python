@@ -5,7 +5,7 @@ service "haproxy" do
 end
 
 template "/etc/haproxy/haproxy.cfg" do
-  cookbook "haproxy"
+  cookbook "plone_buildout"
   source "haproxy.cfg.erb"
   owner "root"
   group "root"
