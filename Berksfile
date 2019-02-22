@@ -36,6 +36,7 @@ cookbook 'hostsfile', '= 2.4.6'
 cookbook 'curl', '2.0.0'
 cookbook 'windows', '1.44.3'
 cookbook 'chef_handler', '1.4.0'
+cookbook 'selinux_policy', '1.1.1'
 cookbook 'certbot', :github => "alecpm/chef-certbot"
 
 # Chef 11 compat
