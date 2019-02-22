@@ -8,4 +8,5 @@ certbot_certonly_webroot 'multi-cert' do
   domains node['certbot_domains']
   expand true
   agree_tos true
+  ignore_failure true
 end
