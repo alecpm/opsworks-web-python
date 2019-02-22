@@ -16,7 +16,7 @@ cookbook 'varnish', '1.0.2'
 cookbook 'gunicorn', '1.1.2'
 cookbook 'build-essential', '= 3.2.0'
 cookbook 'apt', '2.7.0'
-cookbook 'yum', '3.1.2'
+cookbook 'yum', '3.13.0'
 cookbook 'yum-epel', '0.3.4'
 cookbook 'git', '3.1.0'
 cookbook 'seven_zip', '= 2.0.2'
@@ -36,7 +36,7 @@ cookbook 'hostsfile', '= 2.4.6'
 cookbook 'curl', '2.0.0'
 cookbook 'windows', '1.44.3'
 cookbook 'chef_handler', '1.4.0'
-cookbook 'selinux_policy', '1.1.1'
+cookbook 'selinux_policy', '1.1.0'
 cookbook 'certbot', :github => "alecpm/chef-certbot"
 
 # Chef 11 compat
