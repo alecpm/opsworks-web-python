@@ -8,9 +8,6 @@ begin
             action :create
             ignore_failure true
         end
-        ohai 'reload_os_config' do
-            action :reload
-        end
     end
 rescue
     # ignore
