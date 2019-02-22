@@ -141,6 +141,12 @@ include_attribute "redis"
 node.default["redis"]["config"]["listen_addr"] = "0.0.0.0"
 node.default["redis"]["config"]["dir"] = ::File.join(ephemeral, 'redis')
 node.default["redis"]["config"]["vm"][:vm_swap_file] = ::File.join(ephemeral, 'redis/redis.swap')
+node.default["redisio"]["package_install"] = true
+node.default["redisio"]["servers"] = [
+    {'port' => '6379',
+     'address'=> '0.0.0.0',
+    }
+]
 
 include_attribute "haproxy"
 node.default[:haproxy][:balance] = "leastconn"

@@ -11,6 +11,7 @@ cookbook 's3fs-fuse', github: 'alecpm/s3fs-fuse'
 
 # We want to be explicit, since we don't explicitly include our
 # packages, except when testing
+cookbook 'redisio', '2.7.2'
 cookbook 'varnish', '1.0.2'
 cookbook 'gunicorn', '1.1.2'
 cookbook 'build-essential', '= 3.2.0'
