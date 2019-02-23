@@ -1,4 +1,4 @@
-include_recipe "patches"
+include_recipe 'plone_buildout::patches'
 app_name =  node["plone_instances"]["app_name"]
 Chef::Log.info("Running instances for #{app_name}")
 return if app_name.nil? || app_name.empty?
