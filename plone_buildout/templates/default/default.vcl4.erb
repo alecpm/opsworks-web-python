@@ -21,7 +21,7 @@ acl purge {
 sub vcl_recv {
     unset req.http.x-cache;
     call sanitize_compression;
-    unset resp.http.Accept-Encoding;
+    unset req.http.Accept-Encoding;
 
     if (req.method != "GET" && req.method != "HEAD") {
        # PURGE - The CacheFu product can invalidate updated URLs
