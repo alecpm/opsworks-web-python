@@ -190,6 +190,14 @@ node.default["bluepill"]["bin"] = "/usr/local/bin/bluepill"
 node.default['certbot_domains'] = []
 node.default['certbot_email'] = nil
 
+node.normal['pretend_ubuntu_version'] = nil
+begin
+    if File.readlines('/etc/lsb-release').grep(/pretending to be 14\.04/).size > 0
+        node.normal['pretend_ubuntu_version'] = true
+    end
+rescue
+    # ignore
+end
 
 if node['pretend_ubuntu_version']
     node.normal['nfs']['service_provider']['idmap'] = Chef::Provider::Service::Systemd
