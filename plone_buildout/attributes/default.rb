@@ -204,3 +204,7 @@ if node['pretend_ubuntu_version']
     default['nfs']['service']['lock'] = 'rpc-statd'
     default['nfs']['service']['idmap'] = 'nfs-idmapd'
 end
+
+if node.normal['pretend_ubuntu_version'] || (platform?('ubuntu') && node['platform_version'].to_f >= 16.04)
+    node.normal['supervisor']['dir'] = '/etc/supervisor/conf.d'
+end
