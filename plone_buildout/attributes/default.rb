@@ -134,7 +134,7 @@ default['varnish_plone']['default_ttl'] = 300
 default['varnish']['use_default_repo'] = false
 default['varnish']['log_daemon'] = false
 default['varnish']['vcl_cookbook'] = 'plone_buildout'
-default['varnish']['conf_source'] = 'default.vcl.erb'
+default['varnish']['vcl_source'] = 'default.vcl.erb'
 
 # Change default configs for other packages
 include_attribute "redis"
