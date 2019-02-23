@@ -1,4 +1,3 @@
-Chef::Platform::platforms[:ubuntu][">= 16.04"] = {:service=>Chef::Provider::Service::Systemd}
 ephemeral = node[:opsworks_initial_setup] && node[:opsworks_initial_setup][:ephemeral_mount_point] || '/'
 
 default["plone_zeoserver"]["app_name"] = "zeoserver"
