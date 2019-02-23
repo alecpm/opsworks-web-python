@@ -4,7 +4,6 @@ include_recipe 'patches'
 service node['rsyslog']['service_name'] do
   supports :restart => true, :reload => true, :status => true
   action   :nothing
-  provider Chef::Provider::Service::Upstart
 end
 
 include_recipe "rsyslog::default"

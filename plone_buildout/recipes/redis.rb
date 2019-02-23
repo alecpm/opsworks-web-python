@@ -1,9 +1,9 @@
 include_recipe 'patches'
 package 'redis-server'
 
-service 'redis-server'
-    supports :restart => true, :status => true, :reload => false
-    action :nothing
+service 'redis-server' do
+    supports :restart => true, :reload => false, :status => true
+    action   :nothing
 end
 
 replace_or_add "Redis Listens on all addresses" do
