@@ -7,6 +7,7 @@ action :mount do
                        new_resource.device.gsub(/sd/, "xvd")
                      end
 
+  vol_uuid = `/sbin/blkid -s UUID -o value #{real_device_name}`.strip() if EbsVolumeHelpers.nvme_based?
   execute "mkfs #{real_device_name}" do
     command "mkfs -t #{new_resource.fstype} #{real_device_name}"
 
@@ -31,14 +32,14 @@ action :mount do
     %w(debian ubuntu) => { "default" => "relatime,nobootwait", "16.04" => nil, "18.04" => "relatime" },
     "default" => "relatime"
   )
-  if node.normal['pretend_ubuntu_version']
+  if node.pretend_ubuntu_version
     mount_options = 'relatime'
   end
-
   mount new_resource.mount_point do
     action [:mount, :enable]
     fstype new_resource.fstype || "auto"
-    device real_device_name
+    device_type vol_uuid ? :uuid : :device
+    device vol_uuid ? vol_uuid : real_device_name
     options mount_options
     pass 0
   end

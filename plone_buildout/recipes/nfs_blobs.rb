@@ -53,5 +53,5 @@ end
 nfs_export export_base do
   network network
   writeable true
-  options ['no_subtree_check', 'no_root_squash']
+  options ['no_subtree_check', 'no_root_squash', 'crossmnt']
 end
