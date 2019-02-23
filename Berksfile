@@ -11,7 +11,6 @@ cookbook 's3fs-fuse', github: 'alecpm/s3fs-fuse'
 
 # We want to be explicit, since we don't explicitly include our
 # packages, except when testing
-cookbook 'redisio', '2.7.2'
 cookbook 'varnish', '1.0.2'
 cookbook 'gunicorn', '1.1.2'
 cookbook 'build-essential', '= 3.2.0'
@@ -36,7 +35,6 @@ cookbook 'hostsfile', '= 2.4.6'
 cookbook 'curl', '2.0.0'
 cookbook 'windows', '1.44.3'
 cookbook 'chef_handler', '1.4.0'
-cookbook 'selinux_policy', '1.1.0'
 cookbook 'certbot', :github => "alecpm/chef-certbot"
 
 # Chef 11 compat
