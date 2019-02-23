@@ -203,4 +203,6 @@ if node['pretend_ubuntu_version']
     node.normal['nfs']['service_provider']['idmap'] = Chef::Provider::Service::Systemd
     node.normal['nfs']['service_provider']['portmap'] = Chef::Provider::Service::Systemd
     node.normal['nfs']['service_provider']['lock'] = Chef::Provider::Service::Systemd
+    default['nfs']['service']['lock'] = 'rpc-statd'
+    default['nfs']['service']['idmap'] = 'nfs-idmapd'
 end
