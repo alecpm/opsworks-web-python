@@ -1,4 +1,4 @@
-include_recipe 'patches'
+include_recipe 'plone_buildout::patches'
 # Define the rsyslog service, for restarting as needed. It's
 # ever-present on ubuntu
 service node['rsyslog']['service_name'] do

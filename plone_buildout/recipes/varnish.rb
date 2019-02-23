@@ -1,4 +1,4 @@
-include_recipe 'patches'
+include_recipe 'plone_buildout::patches'
 # The varnish dir should not generate i/o so we mount it as tmpfs
 directory '/var/lib/varnish' do
   recursive true

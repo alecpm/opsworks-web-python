@@ -1,6 +1,6 @@
 # Meant to be run on an app's Deploy event
 # to configure HTTPS server and certificate
-include_recipe 'patches'
+include_recipe 'plone_buildout::patches'
 include_recipe 'nginx::service'
 
 application_name = node['plone_instances']['app_name']

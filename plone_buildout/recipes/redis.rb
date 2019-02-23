@@ -1,4 +1,4 @@
-include_recipe 'patches'
+include_recipe 'plone_buildout::patches'
 package 'redis-server'
 
 service 'redis-server' do
