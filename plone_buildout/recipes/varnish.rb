@@ -19,7 +19,11 @@ directory ::File.join(ephemeral, '/varnish') do
   action :create
 end
 
-node.normal["varnish"]["vcl_cookbook"] = "plone_buildout"
 node.normal['varnish']['storage_file'] = ::File.join(ephemeral, 'varnish/varnish_storage.bin')
 
 include_recipe "varnish"
+if %x[sudo apt-cache policy varnish | grep -i Candidate:].match(/3\./)
+  node.normal["varnish"]["vcl_source"] = "default.vcl.erb"
+else
+  node.normal["varnish"]["vcl_source"] = "default.vcl4.erb"
+end

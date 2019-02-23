@@ -133,8 +133,15 @@ default['varnish_plone']['grace'] = 60
 default['varnish_plone']['default_ttl'] = 300
 default['varnish']['use_default_repo'] = false
 default['varnish']['log_daemon'] = false
-default['varnish']['vcl_cookbook'] = 'plone_buildout'
-default['varnish']['vcl_source'] = 'default.vcl.erb'
+node.normal['varnish']['vcl_cookbook'] = 'plone_buildout'
+node.normal["varnish"]["vcl_source"] = 'default.vcl.erb'
+if node.platform_family == 'debian'
+    if %x[sudo apt-cache policy varnish | grep -i Candidate:].match(/3\./)
+        node.normal["varnish"]["vcl_source"] = 'default.vcl.erb'
+    else
+        node.normal["varnish"]["vcl_source"] = 'default.vcl4.erb'
+    end
+end
 
 # Change default configs for other packages
 include_attribute "redis"
