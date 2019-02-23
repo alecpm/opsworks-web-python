@@ -1,3 +1,4 @@
+include_recipe 'patches'
 # We deploy solr using the buildout since that does all the
 # configuration magic for us
 app_name = node["plone_solr"]["app_name"]

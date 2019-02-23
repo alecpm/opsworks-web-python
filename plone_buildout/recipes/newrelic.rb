@@ -1,3 +1,4 @@
+include_recipe 'patches'
 node.normal['newrelic']['server_monitoring']['license'] = node['newrelic']['license']
 node.normal['newrelic']['application_monitoring']['license'] = node['newrelic']['license']
 #node.normal['newrelic_meetme_plugin']['license'] = node['newrelic']['license']

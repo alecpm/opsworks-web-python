@@ -1,3 +1,4 @@
+include_recipe 'patches'
 # Define the rsyslog service, for restarting as needed. It's
 # ever-present on ubuntu
 service node['rsyslog']['service_name'] do

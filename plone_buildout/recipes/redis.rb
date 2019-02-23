@@ -1,3 +1,4 @@
+include_recipe 'patches'
 package 'redis-server'
 
 service 'redis-server'

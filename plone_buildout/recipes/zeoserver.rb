@@ -1,3 +1,4 @@
+include_recipe 'patches'
 app_name = node["plone_zeoserver"]["app_name"]
 return if app_name.nil? || app_name.empty?
 

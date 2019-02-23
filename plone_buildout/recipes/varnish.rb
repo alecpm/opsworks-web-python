@@ -1,3 +1,4 @@
+include_recipe 'patches'
 # The varnish dir should not generate i/o so we mount it as tmpfs
 directory '/var/lib/varnish' do
   recursive true
