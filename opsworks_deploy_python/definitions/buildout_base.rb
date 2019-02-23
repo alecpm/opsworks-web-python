@@ -71,7 +71,7 @@ define :buildout_configure do
     init_commands = Helpers.buildout_setting(deploy, 'init_commands', node)
     init_type = Helpers.buildout_setting(deploy, 'init_type', node)
     if init_type == :supervisor
-      if platform?('ubuntu') && node['platform_version'].to_f >= 16.04
+      if node.normal['pretend_ubuntu_version'] || (platform?('ubuntu') && node['platform_version'].to_f >= 16.04)
         package 'supervisor'
       else
         include_recipe 'supervisor'
