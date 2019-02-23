@@ -1,5 +1,14 @@
 ephemeral = node[:opsworks_initial_setup] && node[:opsworks_initial_setup][:ephemeral_mount_point] || '/'
 
+node.normal['pretend_ubuntu_version'] = nil
+begin
+    if File.readlines('/etc/lsb-release').grep(/pretending to be 14\.04/).size > 0
+        node.normal['pretend_ubuntu_version'] = true
+    end
+rescue
+    # ignore
+end
+
 default["plone_zeoserver"]["app_name"] = "zeoserver"
 default["plone_zeoserver"]["enable_backup"] = false
 default["plone_zeoserver"]["enable_pack"] = true
@@ -135,12 +144,10 @@ default['varnish']['use_default_repo'] = false
 default['varnish']['log_daemon'] = false
 node.normal['varnish']['vcl_cookbook'] = 'plone_buildout'
 node.normal["varnish"]["vcl_source"] = 'default.vcl.erb'
-if node.platform_family == 'debian'
-    if %x[sudo apt-cache policy varnish | grep -i Candidate:].match(/3\./)
-        node.normal["varnish"]["vcl_source"] = 'default.vcl.erb'
-    else
-        node.normal["varnish"]["vcl_source"] = 'default.vcl4.erb'
-    end
+if node.normal['pretend_ubuntu_version'] || (platform?('ubuntu') && node['platform_version'].to_f >= 16.04)
+    node.normal["varnish"]["vcl_source"] = 'default.vcl4.erb'
+else
+    node.normal["varnish"]["vcl_source"] = 'default.vcl.erb'
 end
 
 # Change default configs for other packages
@@ -189,15 +196,6 @@ node.default["bluepill"]["bin"] = "/usr/local/bin/bluepill"
 # Certbot domains
 node.default['certbot_domains'] = []
 node.default['certbot_email'] = nil
-
-node.normal['pretend_ubuntu_version'] = nil
-begin
-    if File.readlines('/etc/lsb-release').grep(/pretending to be 14\.04/).size > 0
-        node.normal['pretend_ubuntu_version'] = true
-    end
-rescue
-    # ignore
-end
 
 if node['pretend_ubuntu_version']
     node.normal['nfs']['service_provider']['idmap'] = Chef::Provider::Service::Systemd
