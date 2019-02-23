@@ -16,22 +16,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-node.normal['haproxy_service_provider'] = value_for_platform(
-  'ubuntu' => {
-    '< 14.04' => Chef::Provider::Service::Debian,
-    '14.04' => Chef::Provider::Service::Upstart,
-    'default' => Chef::Provider::Service::Systemd
-  }
-)
-
-begin
-  if File.readlines('/etc/lsb-release').grep(/pretending to be 14\.04/).size > 0
-    node.normal['haproxy_service_provider'] = Chef::Provider::Service::Systemd
-  end
-rescue
-    # ignore
-end
-
 package "haproxy" do
   retries 3
   retry_delay 5
@@ -60,6 +44,5 @@ template '/etc/haproxy/haproxy.cfg' do
 end
 
 service 'haproxy' do
-  provider node['haproxy_service_provider']
   action [:enable, :start]
 end
