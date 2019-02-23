@@ -27,14 +27,19 @@ action :mount do
     mode "0755"
   end
 
+  mount_options = value_for_platform(
+    %w(debian ubuntu) => { "default" => "relatime,nobootwait", "16.04" => nil, "18.04" => "relatime" },
+    "default" => "relatime"
+  )
+  if node.normal['pretend_ubuntu_version']
+    mount_options = 'relatime'
+  end
+
   mount new_resource.mount_point do
     action [:mount, :enable]
     fstype new_resource.fstype || "auto"
     device real_device_name
-    options value_for_platform(
-                %w(debian ubuntu) => { "default" => "relatime,nobootwait", "16.04" => nil, "18.04" => "relatime" },
-                "default" => "relatime"
-            )
+    options mount_options
     pass 0
   end
 end
