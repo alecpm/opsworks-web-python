@@ -189,3 +189,10 @@ node.default["bluepill"]["bin"] = "/usr/local/bin/bluepill"
 # Certbot domains
 node.default['certbot_domains'] = []
 node.default['certbot_email'] = nil
+
+
+if node['pretend_ubuntu_version']
+    node.normal['nfs']['service_provider']['idmap'] = Chef::Provider::Service::Systemd
+    node.normal['nfs']['service_provider']['portmap'] = Chef::Provider::Service::Systemd
+    node.normal['nfs']['service_provider']['lock'] = Chef::Provider::Service::Systemd
+end
