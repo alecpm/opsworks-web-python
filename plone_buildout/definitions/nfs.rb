@@ -80,7 +80,7 @@ define :blob_mounts do
       end
     end
     mount_options << ",_netdev"  # Ensure reboot doesn't hang on mounts
-    if !node.pretend_ubuntu_version || node['platform_version'].to_f <= 16.04
+    if !node.pretend_ubuntu_version && node['platform_version'].to_f <= 16.04
       mount_options << ",nobootwait"
     end
 
