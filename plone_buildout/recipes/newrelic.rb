@@ -18,9 +18,13 @@ if node['newrelic']['infrastructure']
     16 => 'xenial',
     18 => 'bionic',
   }
+  distro_name = ubuntu_names[node['platform_version'].to_i]
+  if node.pretend_ubuntu_version
+    distro_name = 'bionic'
+  end
   apt_repository 'newrelic-infra' do
     uri node['newrelic']['repository']['infrastructure']['uri']
-    distribution ubuntu_names[node['platform_version'].to_i]
+    distribution distro_name
     components node['newrelic']['repository']['infrastructure']['components']
     key node['newrelic']['repository']['infrastructure']['key']
     arch 'amd64'
