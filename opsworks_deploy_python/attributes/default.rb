@@ -1,3 +1,16 @@
+node.normal['pretend_ubuntu_version'] = nil
+begin
+    if File.readlines('/etc/lsb-release').grep(/pretending to be 14\.04/).size > 0
+        node.normal['pretend_ubuntu_version'] = true
+    end
+rescue
+    # ignore
+end
+
+if node.normal['pretend_ubuntu_version'] || (platform?('ubuntu') && node['platform_version'].to_f >= 16.04)
+    node.normal['supervisor']['dir'] = '/etc/supervisor/conf.d'
+end
+
 include_attribute "deploy"
 include_attribute "opsworks_deploy_python::django"
 include_attribute "opsworks_deploy_python::buildout"

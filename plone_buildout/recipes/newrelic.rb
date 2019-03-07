@@ -1,3 +1,4 @@
+include_recipe 'plone_buildout::patches'
 node.normal['newrelic']['server_monitoring']['license'] = node['newrelic']['license']
 node.normal['newrelic']['application_monitoring']['license'] = node['newrelic']['license']
 #node.normal['newrelic_meetme_plugin']['license'] = node['newrelic']['license']
@@ -14,11 +15,16 @@ if node['newrelic']['infrastructure']
     10 => 'buster',
     12 => 'precise',
     14 => 'trusty',
-    16 => 'xenial'
+    16 => 'xenial',
+    18 => 'bionic',
   }
+  distro_name = ubuntu_names[node['platform_version'].to_i]
+  if node.pretend_ubuntu_version
+    distro_name = 'bionic'
+  end
   apt_repository 'newrelic-infra' do
     uri node['newrelic']['repository']['infrastructure']['uri']
-    distribution ubuntu_names[node['platform_version'].to_i]
+    distribution distro_name
     components node['newrelic']['repository']['infrastructure']['components']
     key node['newrelic']['repository']['infrastructure']['key']
     arch 'amd64'
@@ -35,7 +41,7 @@ if node['newrelic']['infrastructure']
     ignore_failure true
     case node['platform']
     when 'ubuntu'
-      if (node['platform_version'].to_f <= 14.04 &&  node['platform_version'].to_f >= 9.10)
+      if (node['platform_version'].to_f <= 14.04 && node['platform_version'].to_f >= 9.10)
         provider Chef::Provider::Service::Upstart
       end
     end

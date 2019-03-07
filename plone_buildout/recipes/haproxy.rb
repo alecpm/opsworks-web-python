@@ -1,9 +1,9 @@
+include_recipe 'plone_buildout::patches'
 # Define the rsyslog service, for restarting as needed. It's
 # ever-present on ubuntu
 service node['rsyslog']['service_name'] do
   supports :restart => true, :reload => true, :status => true
   action   :nothing
-  provider Chef::Provider::Service::Upstart
 end
 
 include_recipe "rsyslog::default"

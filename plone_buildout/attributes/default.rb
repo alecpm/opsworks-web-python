@@ -1,5 +1,14 @@
 ephemeral = node[:opsworks_initial_setup] && node[:opsworks_initial_setup][:ephemeral_mount_point] || '/'
 
+node.normal['pretend_ubuntu_version'] = nil
+begin
+    if File.readlines('/etc/lsb-release').grep(/pretending to be 14\.04/).size > 0
+        node.normal['pretend_ubuntu_version'] = true
+    end
+rescue
+    # ignore
+end
+
 default["plone_zeoserver"]["app_name"] = "zeoserver"
 default["plone_zeoserver"]["enable_backup"] = false
 default["plone_zeoserver"]["enable_pack"] = true
@@ -132,6 +141,14 @@ default['nginx_plone']['client_max_body_size'] = '128m'
 default['varnish_plone']['grace'] = 60
 default['varnish_plone']['default_ttl'] = 300
 default['varnish']['use_default_repo'] = false
+default['varnish']['log_daemon'] = false
+node.normal['varnish']['vcl_cookbook'] = 'plone_buildout'
+node.normal["varnish"]["vcl_source"] = 'default.vcl.erb'
+if node.normal['pretend_ubuntu_version'] || (platform?('ubuntu') && node['platform_version'].to_f >= 16.04)
+    node.normal["varnish"]["vcl_source"] = 'default.vcl4.erb'
+else
+    node.normal["varnish"]["vcl_source"] = 'default.vcl.erb'
+end
 
 # SFTP user
 default['sftp']['user'] = nil
@@ -144,6 +161,14 @@ include_attribute "redis"
 node.default["redis"]["config"]["listen_addr"] = "0.0.0.0"
 node.default["redis"]["config"]["dir"] = ::File.join(ephemeral, 'redis')
 node.default["redis"]["config"]["vm"][:vm_swap_file] = ::File.join(ephemeral, 'redis/redis.swap')
+node.default["redisio"]["package_install"] = true
+node.default["redisio"]["default_settings"]["address"] = "0.0.0.0"
+node.normal["redisio"]["servers"] = [
+    {'name' => 'redis',
+     'port' => '6379',
+     'address'=> '0.0.0.0',
+    }
+]
 
 include_attribute "haproxy"
 node.default[:haproxy][:balance] = "leastconn"
@@ -186,3 +211,15 @@ node.default['openssh']['server']['subsystem'] = 'sftp /usr/lib/openssh/sftp-ser
 node.default['openssh']['server']['password_authentication'] = 'no'
 node.default['openssh']['server']['log_level'] = 'VERBOSE'
 node.default['openssh']['server']['use_privilege_separation'] = 'yes'
+
+if node['pretend_ubuntu_version']
+    node.normal['nfs']['service_provider']['idmap'] = Chef::Provider::Service::Systemd
+    node.normal['nfs']['service_provider']['portmap'] = Chef::Provider::Service::Systemd
+    node.normal['nfs']['service_provider']['lock'] = Chef::Provider::Service::Systemd
+    default['nfs']['service']['lock'] = 'rpc-statd'
+    default['nfs']['service']['idmap'] = 'nfs-idmapd'
+end
+
+if node.normal['pretend_ubuntu_version'] || (platform?('ubuntu') && node['platform_version'].to_f >= 16.04)
+    node.normal['supervisor']['dir'] = '/etc/supervisor/conf.d'
+end

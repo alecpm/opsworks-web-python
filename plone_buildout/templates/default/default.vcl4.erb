@@ -1,0 +1,173 @@
+vcl 4.0;
+
+backend balancer {
+  .host = "127.0.0.1";
+  .port = "8080";
+  .first_byte_timeout = 300s;
+  .between_bytes_timeout = 100s;
+  .connect_timeout = 5s;
+}
+
+# This sets an access control list for an action we are calling "purge".
+# We allow the private subnet in full
+acl purge {
+  "127.0.0.1"/24;
+  <%  node[:opsworks][:layers]["plone_instances"][:instances].each do |name, backend| -%>
+  <%if backend[:private_ip] %>"<%= backend[:private_ip] %>"/32;<% end %>
+  <%if backend[:public_ip] %>"<%= backend[:public_ip] %>"/32;<% end %>
+  <% end -%>
+}
+
+sub vcl_recv {
+    unset req.http.x-cache;
+    call sanitize_compression;
+    unset req.http.Accept-Encoding;
+
+    if (req.method != "GET" && req.method != "HEAD") {
+       # PURGE - The CacheFu product can invalidate updated URLs
+       if (req.method == "PURGE") {
+           if (!client.ip ~ purge) {
+               return (synth(405, "Not allowed."));
+           }
+           return(hash);
+       }
+       # Handle special requests
+       if (req.method != "PUT" &&
+           req.method != "TRACE" &&
+           req.method != "OPTIONS" &&
+           req.method != "DELETE") {
+         /* Non-RFC2616 or CONNECT which is weird. */
+         return(pipe);
+       }
+       # Pass any POST, PUT, TRACE, OPTIONS, DELETE requests directly
+       return(pass);
+    }
+
+    # Do not cache the creation of objects in Plone
+    if (req.url ~ "createObject"){
+        return(pass);
+    }
+
+    call sanitize_cookies;
+    call annotate_request;
+
+   # The default vcl_recv is used from here.
+}
+
+sub vcl_backend_response {
+  set beresp.grace = <%= node['varnish_plone']['grace'] %>s;
+  call rewrite_s_maxage;
+
+  if (beresp.http.Set-Cookie) {
+      set beresp.ttl = 0s;
+      set beresp.uncacheable = true;
+      set beresp.http.X-Varnish-Action = "FETCH (pass - response sets cookie)";
+      return(deliver);
+  }
+  if (!beresp.http.Cache-Control ~ "s-maxage=[1-9]" && beresp.http.Cache-Control ~ "(private|no-cache|no-store)") {
+      set beresp.ttl = 0s;
+      set beresp.uncacheable = true;
+      set beresp.http.X-Varnish-Action = "FETCH (pass - response sets private/no-cache/no-store token)";
+      return(deliver);
+  }
+  if (bereq.http.X-Anonymous && !beresp.http.Cache-Control) {
+      set beresp.ttl = <%= node['varnish_plone']['default_ttl'] %>s;
+      set beresp.http.X-Varnish-Action = "FETCH (override - backend not setting cache control)";
+  }
+  if (!bereq.http.X-Anonymous && !beresp.http.Cache-Control) {
+      set beresp.ttl = 0s;
+      set beresp.uncacheable = true;
+      set beresp.http.X-Varnish-Action = "FETCH (pass - not cacheable)";
+      return(deliver);
+  }
+  if (!bereq.http.X-Anonymous && beresp.http.ETag ~ "^|") {
+      set beresp.http.X-Varnish-Action = "FETCH (override - cache as anon)";
+      set bereq.http.X-Anonymous = "True";
+  }
+  return(deliver);
+}
+
+sub vcl_hit {
+	set req.http.x-cache = "hit";
+}
+
+sub vcl_miss {
+	set req.http.x-cache = "miss";
+}
+
+sub vcl_pass {
+	set req.http.x-cache = "pass";
+}
+
+sub vcl_pipe {
+	set req.http.x-cache = "pipe uncacheable";
+}
+
+sub vcl_synth {
+	set resp.http.x-cache = "synth synth";
+}
+
+sub vcl_deliver {
+  call rewrite_age;
+	if (obj.uncacheable) {
+		set req.http.x-cache = req.http.x-cache + " uncacheable" ;
+	} else {
+		set req.http.x-cache = req.http.x-cache + " cached" ;
+	}
+	set resp.http.x-cache = req.http.x-cache;
+}
+
+# Sanitize compression handling
+sub sanitize_compression {
+    if (req.http.Accept-Encoding) {
+        if (req.url ~ "\.(jpg|png|gif|gz|tgz|bz2|tbz|mp3|ogg)$") {
+            # No point in compressing these
+            unset req.http.Accept-Encoding;
+        } elsif (req.http.Accept-Encoding ~ "gzip") {
+            set req.http.Accept-Encoding = "gzip";
+        } elsif (req.http.Accept-Encoding ~ "deflate" && req.http.user-agent !~ "MSIE") {
+            set req.http.Accept-Encoding = "deflate";
+        } else {
+            # unknown algorithm
+            unset req.http.Accept-Encoding;
+        }
+    }
+}
+
+# Sanitize cookies so they do not needlessly destroy cacheability for anonymous pages
+sub sanitize_cookies {
+    if (req.http.Cookie) {
+        set req.http.Cookie = ";" + req.http.Cookie;
+        set req.http.Cookie = regsuball(req.http.Cookie, "; +", ";");
+        set req.http.Cookie = regsuball(req.http.Cookie, ";(statusmessages|__ac|_ZopeId|__cp|beaker\.session|authomatic)=", "; \1=");
+        set req.http.Cookie = regsuball(req.http.Cookie, ";[^ ][^;]*", "");
+        set req.http.Cookie = regsuball(req.http.Cookie, "^[; ]+|[; ]+$", "");
+
+        if (req.http.Cookie == "") {
+            unset req.http.Cookie;
+        }
+    }
+}
+
+# Keep auth/anon variants apart if "Vary: X-Anonymous" is in the response
+sub annotate_request {
+    if (!(req.http.Cookie && req.http.Cookie ~ "__ac(|_(name|password|persistent))=")) {
+        set req.http.X-Anonymous = "True";
+    }
+}
+
+# The varnish response should always declare itself to be fresh
+sub rewrite_age {
+    if (resp.http.Age) {
+        set resp.http.X-Varnish-Age = resp.http.Age;
+        set resp.http.Age = "0";
+    }
+}
+
+# Rewrite s-maxage to exclude from intermediary proxies
+# (to cache *everywhere*, just use 'max-age' token in the response to avoid this override)
+sub rewrite_s_maxage {
+    if (beresp.http.Cache-Control ~ "s-maxage") {
+        set beresp.http.Cache-Control = regsub(beresp.http.Cache-Control, "s-maxage=[0-9]+", "s-maxage=0");
+    }
+}

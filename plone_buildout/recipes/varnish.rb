@@ -1,4 +1,5 @@
-# The varnish dir should no generate i/o so we mount it as tmpfs
+include_recipe 'plone_buildout::patches'
+# The varnish dir should not generate i/o so we mount it as tmpfs
 directory '/var/lib/varnish' do
   recursive true
   action :create
@@ -18,7 +19,6 @@ directory ::File.join(ephemeral, '/varnish') do
   action :create
 end
 
-node.normal["varnish"]["vcl_cookbook"] = "plone_buildout"
 node.normal['varnish']['storage_file'] = ::File.join(ephemeral, 'varnish/varnish_storage.bin')
 
 include_recipe "varnish"

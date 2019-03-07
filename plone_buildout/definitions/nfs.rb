@@ -79,7 +79,11 @@ define :blob_mounts do
         mount_options << ",backupvolfile-server=#{storage_instances[1][:private_ip]}"
       end
     end
-    mount_options << ",_netdev,nobootwait"  # Ensure reboot doesn't hang on mounts
+    mount_options << ",_netdev"  # Ensure reboot doesn't hang on mounts
+    if !node.pretend_ubuntu_version && node['platform_version'].to_f <= 16.04
+      mount_options << ",nobootwait"
+    end
+
     mount mount_dir do
       device "#{host}:#{share}"
       fstype mount_type

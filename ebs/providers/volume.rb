@@ -1,0 +1,46 @@
+use_inline_resources
+
+action :mount do
+  real_device_name = if EbsVolumeHelpers.nvme_based?
+                       EbsVolumeHelpers.device_name(new_resource.volume_id)
+                     else
+                       new_resource.device.gsub(/sd/, "xvd")
+                     end
+
+  vol_uuid = `/sbin/blkid -s UUID -o value #{real_device_name}`.strip() if EbsVolumeHelpers.nvme_based?
+  execute "mkfs #{real_device_name}" do
+    command "mkfs -t #{new_resource.fstype} #{real_device_name}"
+
+    only_if do
+      BlockDevice.wait_for(real_device_name)
+
+      # check volume filesystem
+      command = "blkid -s TYPE -o value #{real_device_name}"
+      cmd = Mixlib::ShellOut.new(command)
+      cmd.run_command
+      cmd.error?
+    end
+  end
+
+  directory new_resource.mount_point do
+    recursive true
+    action :create
+    mode "0755"
+  end
+
+  mount_options = value_for_platform(
+    %w(debian ubuntu) => { "default" => "relatime,nobootwait", "16.04" => nil, "18.04" => "relatime" },
+    "default" => "relatime"
+  )
+  if node.pretend_ubuntu_version
+    mount_options = 'relatime'
+  end
+  mount new_resource.mount_point do
+    action [:mount, :enable]
+    fstype new_resource.fstype || "auto"
+    device_type vol_uuid ? :uuid : :device
+    device vol_uuid ? vol_uuid : real_device_name
+    options mount_options
+    pass 0
+  end
+end

@@ -1,23 +1,5 @@
+include_recipe 'plone_buildout::patches'
 node.normal[:nginx][:client_max_body_size] = node[:nginx_plone][:client_max_body_size]
-
-ephemeral = node[:opsworks_initial_setup] && node[:opsworks_initial_setup][:ephemeral_mount_point] || '/'
-log_dir = ::File.join(ephemeral, '/var/log/nginx')
-# Store logs on large fast instance storage
-directory log_dir do
-  recursive true
-  action :create
-end
-
-directory '/var/log/nginx' do
-  action :create
-end
-
-mount '/var/log/nginx' do
-  device log_dir
-  fstype 'none'
-  options "bind,rw"
-  action [:mount, :enable]
-end
 
 include_recipe 'nginx'
 
