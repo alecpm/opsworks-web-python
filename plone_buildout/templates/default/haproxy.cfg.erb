@@ -45,8 +45,13 @@ defaults
 backend plone_instances
   balance <%= node[:haproxy][:balance] %>
 <% if node["plone_instances"]["sticky_sessions"] -%>
+  <% if node['pretend_ubuntu_version'] || node['platform_version'].to_f >= 16.04 -%>
+  stick-table type string len 256 size 10m expire 3d
+  stick on cookie(__ac)
+  <% else %>
   appsession __ac len 32 timeout 1d
-  cookie sid insert nocache indirect httponly secure
+  <% end -%>
+  cookie sid insert nocache indirect
   option persist
 <%end -%>
   no option redispatch
