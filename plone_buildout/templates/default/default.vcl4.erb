@@ -56,18 +56,19 @@ sub vcl_recv {
 
 sub vcl_backend_response {
   set beresp.grace = <%= node['varnish_plone']['grace'] %>s;
-  call rewrite_s_maxage;
 
   if (beresp.http.Set-Cookie) {
       set beresp.ttl = 0s;
       set beresp.uncacheable = true;
       set beresp.http.X-Varnish-Action = "FETCH (pass - response sets cookie)";
+      call rewrite_s_maxage;
       return(deliver);
   }
   if (!beresp.http.Cache-Control ~ "s-maxage=[1-9]" && beresp.http.Cache-Control ~ "(private|no-cache|no-store)") {
       set beresp.ttl = 0s;
       set beresp.uncacheable = true;
       set beresp.http.X-Varnish-Action = "FETCH (pass - response sets private/no-cache/no-store token)";
+      call rewrite_s_maxage;
       return(deliver);
   }
   if (bereq.http.X-Anonymous && !beresp.http.Cache-Control) {
@@ -84,6 +85,8 @@ sub vcl_backend_response {
       set beresp.http.X-Varnish-Action = "FETCH (override - cache as anon)";
       set bereq.http.X-Anonymous = "True";
   }
+
+  call rewrite_s_maxage;
   return(deliver);
 }
 
