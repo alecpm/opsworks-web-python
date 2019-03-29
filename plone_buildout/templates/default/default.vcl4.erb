@@ -139,7 +139,7 @@ sub sanitize_cookies {
     if (req.http.Cookie) {
         set req.http.Cookie = ";" + req.http.Cookie;
         set req.http.Cookie = regsuball(req.http.Cookie, "; +", ";");
-        set req.http.Cookie = regsuball(req.http.Cookie, ";(statusmessages|__ac|_ZopeId|__cp|beaker\.session|authomatic)=", "; \1=");
+        set req.http.Cookie = regsuball(req.http.Cookie, ";(statusmessages|__ac|_ZopeId|__cp|beaker\.session|authomatic|sid)=", "; \1=");
         set req.http.Cookie = regsuball(req.http.Cookie, ";[^ ][^;]*", "");
         set req.http.Cookie = regsuball(req.http.Cookie, "^[; ]+|[; ]+$", "");
 
