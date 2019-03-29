@@ -51,7 +51,8 @@ sub vcl_recv {
     call sanitize_cookies;
     call annotate_request;
 
-   # The default vcl_recv is used from here.
+    # The default vcl_recv is used from here.
+    return(hash);
 }
 
 sub vcl_backend_response {
