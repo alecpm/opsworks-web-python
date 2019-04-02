@@ -140,6 +140,7 @@ default['nginx_plone']['client_max_body_size'] = '128m'
 # Varnish config options
 default['varnish_plone']['grace'] = 60
 default['varnish_plone']['default_ttl'] = 300
+default['varnish_plone']['tmpfs_var'] = true
 default['varnish']['use_default_repo'] = false
 default['varnish']['log_daemon'] = false
 node.normal['varnish']['vcl_cookbook'] = 'plone_buildout'

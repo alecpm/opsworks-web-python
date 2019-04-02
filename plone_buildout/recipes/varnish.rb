@@ -5,11 +5,13 @@ directory '/var/lib/varnish' do
   action :create
 end
 
-mount '/var/lib/varnish' do
-  fstype 'tmpfs'
-  options 'rw,size=256M'
-  device 'tmpfs'
-  action [:mount, :enable]
+if node['varnish_plone']['tmpfs_var']
+  mount '/var/lib/varnish' do
+    fstype 'tmpfs'
+    options 'rw,size=256M'
+    device 'tmpfs'
+    action [:mount, :enable]
+  end
 end
 
 ephemeral = node[:opsworks_initial_setup] && node[:opsworks_initial_setup][:ephemeral_mount_point] || '/'
