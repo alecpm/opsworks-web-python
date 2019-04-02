@@ -43,6 +43,7 @@ if node['pretend_ubuntu_version'] || (platform?('ubuntu') && node['platform_vers
   template node['varnish']['default'] do
     source node['varnish']['conf_source']
     cookbook node['varnish']['conf_cookbook']
+    variables config: node['varnish']
     owner 'root'
     group 'root'
     mode 0644
