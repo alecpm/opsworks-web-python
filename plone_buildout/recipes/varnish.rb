@@ -40,7 +40,7 @@ if node['pretend_ubuntu_version'] || (platform?('ubuntu') && node['platform_vers
     owner 'root'
     group 'root'
     mode 0644
-    notifies notifies :run, 'execute[systemctl-daemon-reload]', :immediately
+    notifies :run, 'execute[systemctl-daemon-reload]', :immediately
     notifies 'restart', 'service[varnish]'
   end
 end
