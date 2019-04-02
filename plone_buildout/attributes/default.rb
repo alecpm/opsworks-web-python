@@ -151,7 +151,6 @@ if node['pretend_ubuntu_version'] || (platform?('ubuntu') && node['platform_vers
     node.normal['varnish']['conf_source'] = 'varnish.service.erb'
     node.normal['varnish']['default'] = '/etc/systemd/system/varnish.service'
     node.normal['varnish']['reload_cmd'] = '/usr/share/varnish/varnishreload'
-    node.normal['varnish']['path_to_vcl'] = "#{node['varnish']['dir']}/#{node['varnish']['vcl_conf']}"
     node.normal['varnish']['instance_name'] = "#{node['hostname']}"
     node.normal['varnish']['secondary_listen_address'] = nil
     node.normal['varnish']['secondary_listen_port'] = nil

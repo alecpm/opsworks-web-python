@@ -5,7 +5,7 @@
 RELOAD_VCL=1
 
 # Main configuration file. You probably want to change it.
-VARNISH_VCL_CONF=<%= @config.path_to_vcl %>
+VARNISH_VCL_CONF=<%= @config.dir %>/<%= @config.vcl_conf %>
 
 # Default address and port to bind to. Blank address means all IPv4
 # and IPv6 interfaces, otherwise specify a host name, an IPv4 dotted
@@ -24,11 +24,11 @@ VARNISH_ADMIN_LISTEN_ADDRESS=<%= @config.admin_listen_address %>
 VARNISH_ADMIN_LISTEN_PORT=<%= @config.admin_listen_port %>
 
 # Shared secret file for admin interface
-VARNISH_SECRET_FILE=<%= @config.path_to_secret %>
+VARNISH_SECRET_FILE=<%= @config.secret_file %>
 
 <%-
   if @config.storage == 'file' && @config.storage_file
-    storage = [@config.storage, (@config.storage_file % @config.name), @config.storage_size].compact.join(",")
+    storage = [@config.storage, @config.storage_file, @config.storage_size].compact.join(",")
   else
     storage = [@config.storage, @config.storage_size].compact.join(",")
   end
