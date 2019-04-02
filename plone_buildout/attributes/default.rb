@@ -147,6 +147,9 @@ node.normal['varnish']['vcl_cookbook'] = 'plone_buildout'
 node.normal["varnish"]["vcl_source"] = 'default.vcl.erb'
 if node['pretend_ubuntu_version'] || (platform?('ubuntu') && node['platform_version'].to_f >= 16.04)
     node.normal["varnish"]["vcl_source"] = 'default.vcl4.erb'
+    node.normal['varnish']['conf_cookbook'] = 'plone_buildout'
+    node.normal['varnish']['conf_source'] = 'varnish.service.erb'
+    node.normal['varnish']['default'] = '/etc/systemd/system/varnish.service'
 else
     node.normal["varnish"]["vcl_source"] = 'default.vcl.erb'
 end
