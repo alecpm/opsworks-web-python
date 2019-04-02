@@ -23,17 +23,23 @@ end
 
 node.normal['varnish']['storage_file'] = ::File.join(ephemeral, 'varnish/varnish_storage.bin')
 
-execute 'systemctl-daemon-reload' do
-  command '/bin/systemctl --system daemon-reload'
-  action :nothing
-end
-
-service 'varnish' do
-  supports restart: true, reload: true
-  action :nothing
-end
-
 if node['pretend_ubuntu_version'] || (platform?('ubuntu') && node['platform_version'].to_f >= 16.04)
+  execute 'systemctl-daemon-reload' do
+    command '/bin/systemctl --system daemon-reload'
+    action :nothing
+  end
+
+  service 'varnish' do
+    supports restart: true, reload: true
+    action :nothing
+  end
+
+  template '/etc/varnish/varnish.params' do
+    source 'varnish.params.erb'
+    action :create
+    variables config: node['varnish']
+  end
+
   template node['varnish']['default'] do
     source node['varnish']['conf_source']
     cookbook node['varnish']['conf_cookbook']
