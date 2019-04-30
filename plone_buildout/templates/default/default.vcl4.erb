@@ -58,6 +58,13 @@ sub vcl_recv {
 sub vcl_backend_response {
   set beresp.grace = <%= node['varnish_plone']['grace'] %>s;
 
+  if (bereq.method != 'GET' && bereq.method != 'HEAD') {
+    set beresp.ttl = 0s;
+    set beresp.uncacheable = true;
+    set beresp.http.X-Varnish-Action = "FETCH (pass - request method not cacheable)";
+    call rewrite_s_maxage;
+    return(deliver);
+  }
   if (beresp.http.Set-Cookie) {
       set beresp.ttl = 0s;
       set beresp.uncacheable = true;
