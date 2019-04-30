@@ -58,14 +58,16 @@ sub vcl_recv {
 sub vcl_backend_response {
   set beresp.grace = <%= node['varnish_plone']['grace'] %>s;
 
-  if (bereq.method != 'GET' && bereq.method != 'HEAD') {
-    set beresp.ttl = 0s;
-    set beresp.uncacheable = true;
-    set beresp.http.X-Varnish-Action = "FETCH (pass - request method not cacheable)";
-    call rewrite_s_maxage;
-    return(deliver);
+  if (bereq.method != "GET" && bereq.method != "HEAD") {
+      set beresp.grace = 0s;
+      set beresp.ttl = 0s;
+      set beresp.uncacheable = true;
+      set beresp.http.X-Varnish-Action = "FETCH (pass - request method not cacheable)";
+      call rewrite_s_maxage;
+      return(deliver);
   }
   if (beresp.http.Set-Cookie) {
+      set beresp.grace = 0s;
       set beresp.ttl = 0s;
       set beresp.uncacheable = true;
       set beresp.http.X-Varnish-Action = "FETCH (pass - response sets cookie)";
@@ -73,6 +75,7 @@ sub vcl_backend_response {
       return(deliver);
   }
   if (!beresp.http.Cache-Control ~ "s-maxage=[1-9]" && beresp.http.Cache-Control ~ "(private|no-cache|no-store)") {
+      set beresp.grace = 0s;
       set beresp.ttl = 0s;
       set beresp.uncacheable = true;
       set beresp.http.X-Varnish-Action = "FETCH (pass - response sets private/no-cache/no-store token)";
@@ -84,6 +87,7 @@ sub vcl_backend_response {
       set beresp.http.X-Varnish-Action = "FETCH (override - backend not setting cache control)";
   }
   if (!bereq.http.X-Anonymous && !beresp.http.Cache-Control) {
+      set beresp.grace = 0s;
       set beresp.ttl = 0s;
       set beresp.uncacheable = true;
       set beresp.http.X-Varnish-Action = "FETCH (pass - not cacheable)";
@@ -99,33 +103,33 @@ sub vcl_backend_response {
 }
 
 sub vcl_hit {
-	set req.http.x-cache = "hit";
+    set req.http.x-cache = "hit";
 }
 
 sub vcl_miss {
-	set req.http.x-cache = "miss";
+    set req.http.x-cache = "miss";
 }
 
 sub vcl_pass {
-	set req.http.x-cache = "pass";
+    set req.http.x-cache = "pass";
 }
 
 sub vcl_pipe {
-	set req.http.x-cache = "pipe uncacheable";
+    set req.http.x-cache = "pipe uncacheable";
 }
 
 sub vcl_synth {
-	set resp.http.x-cache = "synth synth";
+    set resp.http.x-cache = "synth synth";
 }
 
 sub vcl_deliver {
   call rewrite_age;
-	if (obj.uncacheable) {
-		set req.http.x-cache = req.http.x-cache + " uncacheable" ;
-	} else {
-		set req.http.x-cache = req.http.x-cache + " cached" ;
-	}
-	set resp.http.x-cache = req.http.x-cache;
+    if (obj.uncacheable) {
+        set req.http.x-cache = req.http.x-cache + " uncacheable" ;
+    } else {
+        set req.http.x-cache = req.http.x-cache + " cached" ;
+    }
+    set resp.http.x-cache = req.http.x-cache;
 }
 
 # Sanitize compression handling
