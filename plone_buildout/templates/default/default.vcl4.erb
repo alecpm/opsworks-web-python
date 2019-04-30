@@ -32,7 +32,8 @@ sub vcl_recv {
            return(hash);
        }
        # Handle special requests
-       if (req.method != "PUT" &&
+       if (req.method != "POST" &&
+           req.method != "PUT" &&
            req.method != "TRACE" &&
            req.method != "OPTIONS" &&
            req.method != "DELETE") {
