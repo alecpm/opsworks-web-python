@@ -32,7 +32,8 @@ sub vcl_recv {
            return(hash);
        }
        # Handle special requests
-       if (req.method != "PUT" &&
+       if (req.method != "POST" &&
+           req.method != "PUT" &&
            req.method != "TRACE" &&
            req.method != "OPTIONS" &&
            req.method != "DELETE") {
@@ -61,6 +62,7 @@ sub vcl_backend_response {
   if (bereq.method != "GET" && bereq.method != "HEAD") {
       set beresp.grace = 0s;
       set beresp.ttl = 0s;
+      unset beresp.http.ETag;
       set beresp.uncacheable = true;
       set beresp.http.X-Varnish-Action = "FETCH (pass - request method not cacheable)";
       call rewrite_s_maxage;
@@ -69,6 +71,7 @@ sub vcl_backend_response {
   if (beresp.http.Set-Cookie) {
       set beresp.grace = 0s;
       set beresp.ttl = 0s;
+      unset beresp.http.ETag;
       set beresp.uncacheable = true;
       set beresp.http.X-Varnish-Action = "FETCH (pass - response sets cookie)";
       call rewrite_s_maxage;
