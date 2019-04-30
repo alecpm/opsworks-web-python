@@ -140,12 +140,20 @@ default['nginx_plone']['client_max_body_size'] = '128m'
 # Varnish config options
 default['varnish_plone']['grace'] = 60
 default['varnish_plone']['default_ttl'] = 300
+default['varnish_plone']['tmpfs_var'] = true
 default['varnish']['use_default_repo'] = false
 default['varnish']['log_daemon'] = false
 node.normal['varnish']['vcl_cookbook'] = 'plone_buildout'
 node.normal["varnish"]["vcl_source"] = 'default.vcl.erb'
 if node['pretend_ubuntu_version'] || (platform?('ubuntu') && node['platform_version'].to_f >= 16.04)
     node.normal["varnish"]["vcl_source"] = 'default.vcl4.erb'
+    node.normal['varnish']['conf_cookbook'] = 'plone_buildout'
+    node.normal['varnish']['conf_source'] = 'varnish.service.erb'
+    node.normal['varnish']['default'] = '/etc/systemd/system/varnish.service'
+    node.normal['varnish']['reload_cmd'] = '/usr/share/varnish/varnishreload'
+    node.normal['varnish']['instance_name'] = "#{node['hostname']}"
+    node.normal['varnish']['secondary_listen_address'] = nil
+    node.normal['varnish']['secondary_listen_port'] = nil
 else
     node.normal["varnish"]["vcl_source"] = 'default.vcl.erb'
 end
