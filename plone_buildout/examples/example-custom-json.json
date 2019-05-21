@@ -1,26 +1,25 @@
 {
-"plone_instances" : {
-  "app_name" : "***** YOUR APP NAME *****", "celery_enabled" : false, "broker_layer" : "redis",
-  "nfs_blobs" : true, "gluster_blobs" : false, "solr_enabled" : false, celery_enabled: false,
-  "enable_relstorage" : false
+  "plone_instances" : {
+    "app_name" : "plone_instances", "celery_enabled" : false, "broker_layer" : "redis",
+    "nfs_blobs" : true, "gluster_blobs" : false, "solr_enabled" : false,
+    "enable_relstorage" : false
   },
-"deploy" : {
-  "***** YOUR APP NAME *****" : {
-    "buildout_extends": ["cfg/sources.cfg"],
-    "environment": {"DEPLOYMENT" : "STAGING"},
-    "buildout_cache_archives" : [{"url" : "https://my-bucket.s3.amazonaws.com/my-eggs-archive.tgz", "path" : "shared"}]
+  "deploy" : {
+    "plone_instances" : {
+      "buildout_extends": ["cfg/sources.cfg"],
+      "environment": {"DEPLOYMENT" : "STAGING"}
     },
-  "zeoserver" : {
-    "buildout_extends": ["cfg/sources.cfg"],
-    "environment": {"DEPLOYMENT" : "STAGING"},
-    "buildout_cache_archives" : [{"url" : "https://my-bucket.s3.amazonaws.com/my-eggs-archive.tgz", "path" : "shared"}]
+    "zeoserver" : {
+      "buildout_extends": ["cfg/sources.cfg"],
+      "environment": {"DEPLOYMENT" : "STAGING"}
     },
-  "solr" : {
-    "environment": {"DEPLOYMENT" : "STAGING"},
-    "buildout_extends" : []
-    }
-  },
-"ebs_snapshots" : {
-  "aws_key" : "***** AWS KEY FOR SNAPSHOTTING (IAM USER) *****",
-  "aws_secret" : "***** AWS SECRET FOR SNAPSHOTTING (IAM USER) *****"}
+    "solr" : {
+      "environment": {"DEPLOYMENT" : "STAGING"},
+      "buildout_extends" : []
+      }
+    },
+  "ebs_snapshots" : {
+    "aws_key" : "***** AWS KEY FOR SNAPSHOTTING (IAM USER) *****",
+    "aws_secret" : "***** AWS SECRET FOR SNAPSHOTTING (IAM USER) *****"
+  }
 }
