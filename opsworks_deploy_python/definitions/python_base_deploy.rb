@@ -239,17 +239,38 @@ define :python_base_deploy do
     python_pip name do
       version ver if ver && ver.length > 0
       virtualenv venv_path
-      user deploy[:user]
-      group deploy[:group]
+      user owner
+      group group
       action :install
     end
   end
 
   requirements_location = ::File.join(deploy[:deploy_to], 'current', 'requirements.txt')
   execute "Install Requirements" do
-    user deploy[:user]
-    group deploy[:group]
-    command "#{pip_location} install -r #{requirements_location}"
+    user owner
+    group group
+    environment ({"HOME" => "/home/#{user}"})
+    cwd ::File.join(deploy[:deploy_to], 'current')
+    command "#{::File.join(venv_path, 'bin', 'pip')} install -r #{requirements_location}"
     only_if "test -e #{requirements_location}"
+    ignore_failure true
   end
+
+  release_path = ::File.join(deploy[:deploy_to], 'current')
+  buildout_cmd = ::File.join(release_path, "bin", "buildout")
+  venv_bin = ::File.join(deploy[:deploy_to], 'shared', 'env', 'bin')
+  directory ::File.join(release_path, "bin") do
+    owner owner
+    group group
+    only_if "test -e #{release_path} && test -e #{::File.join(venv_bin, 'buildout')}"
+  end
+  link buildout_cmd do
+    link_type :symbolic
+    to ::File.join(venv_bin, 'buildout')
+    owner owner
+    group group
+    not_if "test -e #{buildout_cmd}"
+    only_if "test -e #{release_path} && test -e #{::File.join(venv_bin, 'buildout')}"
+  end
+
 end

@@ -55,9 +55,23 @@ define :buildout_configure do
   if deploy[:deploy_to] && (node[:deploy][application]["initially_deployed"] || ::File.exist?(deploy[:deploy_to]))
     release_path = ::File.join(deploy[:deploy_to], 'current')
     bootstrap_file = ::File.join(release_path, 'bootstrap.py')
+    buildout_cmd = ::File.join(release_path, "bin", "buildout")
+    venv_bin = ::File.join(deploy[:deploy_to], 'shared', 'env', 'bin')
+    directory ::File.join(release_path, "bin") do
+      owner owner
+      group group
+      only_if "test -e #{release_path} && test -e #{::File.join(venv_bin, 'buildout')}"
+    end
+    link buildout_cmd do
+      link_type :symbolic
+      to ::File.join(venv_bin, 'buildout')
+      owner owner
+      group group
+      not_if "test -e #{buildout_cmd}"
+      only_if "test -e #{release_path} && test -e #{::File.join(venv_bin, 'buildout')}"
+    end
     config_file = Helpers.buildout_setting(deploy,'config', node)
     bootstrap_cmd = "#{::File.join(deploy[:deploy_to], 'shared', 'env', 'bin', 'python')} #{bootstrap_file} -c #{config_file}"
-    buildout_cmd = ::File.join(release_path, "bin", "buildout")
     build_cmd = "#{buildout_cmd} -c #{config_file} #{Helpers.buildout_setting(deploy, 'flags', node)}"
     buildout_version = Helpers.buildout_setting(deploy,'buildout_version', node)
     if !(buildout_version.nil? || buildout_version.empty?)
