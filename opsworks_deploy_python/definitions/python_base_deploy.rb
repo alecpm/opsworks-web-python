@@ -136,7 +136,6 @@ define :python_base_setup do
       action :install
     end
   end
-
 end
 
 define :python_base_deploy do
@@ -244,5 +243,13 @@ define :python_base_deploy do
       group deploy[:group]
       action :install
     end
+  end
+
+  requirements_location = ::File.join(deploy[:deploy_to], 'current', 'requirements.txt')
+  execute "Install Requirements" do
+    user deploy[:user]
+    group deploy[:group]
+    command "#{pip_location} install -r #{requirements_location}"
+    only_if "test -e #{requirements_location}"
   end
 end

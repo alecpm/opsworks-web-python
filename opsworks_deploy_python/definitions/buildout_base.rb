@@ -54,8 +54,9 @@ define :buildout_configure do
   # resources have been collected, but not created
   if deploy[:deploy_to] && (node[:deploy][application]["initially_deployed"] || ::File.exist?(deploy[:deploy_to]))
     release_path = ::File.join(deploy[:deploy_to], 'current')
+    bootstrap_file = ::File.join(release_path, 'bootstrap.py')
     config_file = Helpers.buildout_setting(deploy,'config', node)
-    bootstrap_cmd = "#{::File.join(deploy[:deploy_to], 'shared', 'env', 'bin', 'python')} #{::File.join('.', 'bootstrap.py')} -c #{config_file}"
+    bootstrap_cmd = "#{::File.join(deploy[:deploy_to], 'shared', 'env', 'bin', 'python')} #{bootstrap_file} -c #{config_file}"
     buildout_cmd = ::File.join(release_path, "bin", "buildout")
     build_cmd = "#{buildout_cmd} -c #{config_file} #{Helpers.buildout_setting(deploy, 'flags', node)}"
     buildout_version = Helpers.buildout_setting(deploy,'buildout_version', node)
@@ -103,6 +104,7 @@ define :buildout_configure do
         group deploy[:group]
         cwd release_path
         environment env
+        only_if "test -e #{bootstrap_file}"
         not_if "test -x #{::File.join(release_path, 'bin', 'buildout')}"
         action :nothing
       end
