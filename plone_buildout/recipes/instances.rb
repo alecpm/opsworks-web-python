@@ -136,7 +136,7 @@ if instance_data["solr_enabled"] && node[:opsworks]
     storage_config << "\n" << "[solr-host]" << "\n" << "host = #{instance_data["solr_host"]}" << "\n"
   elsif  node[:opsworks] && node[:opsworks][:layers] && node[:opsworks][:layers][solr_layer] &&  node[:opsworks][:layers][solr_layer][:instances]
     instance_name, solr_instance = node[:opsworks][:layers][solr_layer][:instances].detect {
-      |name, instance| instance[:status] == "online"  || instance[:public_dns_name] == node[:opsworks][:instance][:public_dns_name]
+      |name, instance| (instance[:status] == "online"  || instance[:public_dns_name] == node[:opsworks][:instance][:public_dns_name] || instance[:private_dns_name] == node[:opsworks][:instance][:private_dns_name])
     }
     if solr_instance
       storage_config << "\n" << "[solr-host]" << "\n" << "host = #{solr_instance[:public_dns_name] || solr_instance[:private_dns_name]}" << "\n"
