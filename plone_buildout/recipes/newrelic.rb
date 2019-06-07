@@ -16,6 +16,7 @@ if node['newrelic']['infrastructure']
     14 => 'trusty',
     16 => 'xenial'
   }
+
   apt_repository 'newrelic-infra' do
     uri node['newrelic']['repository']['infrastructure']['uri']
     distribution ubuntu_names[node['platform_version'].to_i]
@@ -23,6 +24,12 @@ if node['newrelic']['infrastructure']
     key node['newrelic']['repository']['infrastructure']['key']
     arch 'amd64'
   end
+
+  execute "apt-get-update" do
+    command "apt-get update"
+    ignore_failure true
+  end
+
   package 'newrelic-infra' do
     action :install
   end
