@@ -22,6 +22,7 @@ if node['newrelic']['infrastructure']
   if node.pretend_ubuntu_version
     distro_name = 'bionic'
   end
+
   apt_repository 'newrelic-infra' do
     uri node['newrelic']['repository']['infrastructure']['uri']
     distribution distro_name
@@ -29,6 +30,12 @@ if node['newrelic']['infrastructure']
     key node['newrelic']['repository']['infrastructure']['key']
     arch 'amd64'
   end
+
+  execute "apt-get-update" do
+    command "apt-get update"
+    ignore_failure true
+  end
+
   package 'newrelic-infra' do
     action :install
   end
