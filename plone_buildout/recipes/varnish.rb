@@ -20,5 +20,6 @@ end
 
 node.normal["varnish"]["vcl_cookbook"] = "plone_buildout"
 node.normal['varnish']['storage_file'] = ::File.join(ephemeral, 'varnish/varnish_storage.bin')
+node.normal['varnish']['instance'] = node[:opsworks][:instance][:hostname]
 
 include_recipe "varnish"
