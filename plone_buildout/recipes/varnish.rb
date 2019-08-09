@@ -1,10 +1,15 @@
 include_recipe 'plone_buildout::patches'
-# The varnish dir should not generate i/o so we mount it as tmpfs
 directory '/var/lib/varnish' do
   recursive true
   action :create
 end
 
+directory '/etc/varnish' do
+  recursive true
+  action :create
+end
+
+# The varnish dir should not generate i/o so we mount it as tmpfs
 if node['varnish_plone']['tmpfs_var']
   mount '/var/lib/varnish' do
     fstype 'tmpfs'
