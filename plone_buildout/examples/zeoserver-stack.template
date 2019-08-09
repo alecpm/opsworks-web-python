@@ -48,6 +48,7 @@
                 "EnableAutoHealing": false,
                 "AutoAssignElasticIps": false,
                 "AutoAssignPublicIps": true,
+                "InstallUpdatesOnBoot": false,
                 "Packages": [
                     "xsltproc", "zip", "wv", "poppler-utils", "libffi-dev"
                 ],
@@ -74,6 +75,7 @@
                 "AutoAssignElasticIps": false,
                 "AutoAssignPublicIps": true,
                 "Packages": [],
+                "InstallUpdatesOnBoot": false,
                 "CustomRecipes": {
                     "Undeploy": ["plone_buildout::zeoserver-undeploy"],
                     "Setup": ["plone_buildout::zeoserver-setup"],
@@ -103,6 +105,7 @@
                 "EnableAutoHealing": false,
                 "Shortname": "shared_blobs",
                 "AutoAssignElasticIps": false,
+                "InstallUpdatesOnBoot": false,
                 "Packages": []
             }
         },
@@ -124,6 +127,7 @@
                 },
                 "AutoAssignPublicIps": true,
                 "EnableAutoHealing": false,
+                "InstallUpdatesOnBoot": false,
                 "Shortname": "ebs_snapshots",
                 "AutoAssignElasticIps": false
             }
@@ -156,6 +160,7 @@
                 "AutoAssignPublicIps": true,
                 "AutoAssignElasticIps": true,
                 "EnableAutoHealing": false,
+                "InstallUpdatesOnBoot": false,
                 "Attributes": {
                     "HaproxyHealthCheckUrl": "/misc_/CMFPlone/plone_icon",
                     "HaproxyHealthCheckMethod": "HEAD",
