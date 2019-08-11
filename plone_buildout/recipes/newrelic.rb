@@ -1,3 +1,5 @@
+# Force tarball based on install for certbot, since it's not available via apt on 14.04
+node.normal['certbot']['install_method'] = 'certbot-auto'
 node.normal['newrelic']['server_monitoring']['license'] = node['newrelic']['license']
 node.normal['newrelic']['application_monitoring']['license'] = node['newrelic']['license']
 #node.normal['newrelic_meetme_plugin']['license'] = node['newrelic']['license']
