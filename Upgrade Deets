@@ -2,6 +2,8 @@ Updates for 18.04
 
 openjdk-8-jre-headless instead of openjdk-7-jre-headless
 add libffi-dev to plone_instances
+replace liblcms1-dev with liblcms2-dev
+replace recipe redis::default with plone_buildout::redis in Redis layer
 
 Disable OS updates on boot for all layers:
 

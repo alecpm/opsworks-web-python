@@ -35,6 +35,14 @@ if node['newrelic']['infrastructure']
     distro_name = 'bionic'
   end
 
+  bash 'install newrelic gpg keys' do
+    code <<-EOH
+      curl -sSL https://download.newrelic.com/548C16BF.gpg | apt-key add -
+      curl -sSL https://download.newrelic.com/infrastructure_agent/gpg/newrelic-infra.gpg | apt-key add -
+      EOH
+    ignore_failure true
+  end
+
   apt_repository 'newrelic-infra' do
     uri node['newrelic']['repository']['infrastructure']['uri']
     distribution distro_name
