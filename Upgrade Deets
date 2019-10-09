@@ -3,8 +3,10 @@ Updates for 18.04
 openjdk-8-jre-headless instead of openjdk-7-jre-headless
 add libffi-dev to plone_instances
 replace liblcms1-dev with liblcms2-dev
+replace libtiff4-dev with libtiff5-dev
 replace recipe redis::default with plone_buildout::redis in Redis layer
 
+Disable auto Elastic IPs for HAProxy and Shared Blob layers
 Disable OS updates on boot for all layers:
 
 for layer_id in $(aws opsworks describe-layers --region us-east-1 --stack-id $stack_id --output text --query 'Layers[*].[LayerId]')

@@ -40,7 +40,7 @@ end
 additional_config =""
 
 additional_config << (deploy["buildout_additional_config"] || "")
-additional_config << "[solr-host]" << "\n" << "host = #{node[:opsworks][:instance][:public_dns_name] || node[:opsworks][:instance][:private_dns_name]}"
+additional_config << "[solr-host]" << "\n" << "host = 0.0.0.0"
 node.normal[:deploy][app_name]["buildout_additional_config"] = additional_config
 
 extra_parts = ["solr-download", "solr-instance"]
