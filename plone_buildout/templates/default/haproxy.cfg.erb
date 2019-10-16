@@ -54,7 +54,7 @@ backend plone_instances
   option forceclose
   option httpchk <%= node[:haproxy][:health_check_method] %> <%= node[:haproxy][:health_check_url] %>
   <% node[:opsworks][:layers]["plone_instances"][:instances].each do |name, backend| -%>
-    <% 1.upto((backend[:backends].to_i*node["plone_instances"]["per_cpu"].to_f/8.0).ceil) do |n| %>
+    <% 1.upto((node[:cpu][:total].to_i*node["plone_instances"]["per_cpu"].to_f).ceil) do |n| %>
     server <%= "#{name}-#{n}"%> <%= backend['private_dns_name'] %>:<%=8080 + n%> <% if node["plone_instances"]["sticky_sessions"]%>cookie p<%=n%><%end%> check inter <%= node[:haproxy][:check_interval] %> fastinter <%= node[:haproxy][:check_interval]/10 %> downinter <%= node[:haproxy][:check_interval]/2 %> maxconn <%=node["plone_instances"]["zserver_threads"] || 2 %> rise <%= node[:haproxy][:rise] %> fall <%= node[:haproxy][:fall] %>
     <% end %>
   <% end -%>
