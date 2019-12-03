@@ -46,6 +46,7 @@
                 "Type": "custom",
                 "Shortname": "plone_instances",
                 "EnableAutoHealing": false,
+                "InstallUpdatesOnBoot": false,
                 "AutoAssignElasticIps": false,
                 "AutoAssignPublicIps": true,
                 "Packages": [
@@ -78,6 +79,7 @@
                 },
                 "AutoAssignPublicIps": true,
                 "EnableAutoHealing": false,
+                "InstallUpdatesOnBoot": false,
                 "Shortname": "shared_blobs",
                 "AutoAssignElasticIps": false,
                 "Packages": []
@@ -101,6 +103,7 @@
                 },
                 "AutoAssignPublicIps": true,
                 "EnableAutoHealing": false,
+                "InstallUpdatesOnBoot": false,
                 "Shortname": "db_packing",
                 "AutoAssignElasticIps": false
             }
@@ -123,6 +126,7 @@
                 },
                 "AutoAssignPublicIps": true,
                 "EnableAutoHealing": false,
+                "InstallUpdatesOnBoot": false,
                 "Shortname": "ebs_snapshots",
                 "AutoAssignElasticIps": false
             }
@@ -155,6 +159,7 @@
                 "AutoAssignPublicIps": true,
                 "AutoAssignElasticIps": true,
                 "EnableAutoHealing": false,
+                "InstallUpdatesOnBoot": false,
                 "Attributes": {
                     "HaproxyHealthCheckUrl": "/misc_/CMFPlone/plone_icon",
                     "HaproxyHealthCheckMethod": "HEAD",
@@ -176,6 +181,7 @@
                 "Name": "Memcached",
                 "AutoAssignPublicIps": true,
                 "EnableAutoHealing": false,
+                "InstallUpdatesOnBoot": false,
                 "Shortname": "memcached",
                 "AutoAssignElasticIps": false
             }
