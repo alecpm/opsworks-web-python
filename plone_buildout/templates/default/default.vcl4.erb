@@ -29,7 +29,10 @@ sub vcl_recv {
            if (!client.ip ~ purge) {
                return (synth(405, "Not allowed."));
            }
-           return(hash);
+           if (req.url ~ ".*/VirtualHostBase/https?/([^:]+):(443|80)/.*") {
+                set req.http.host = regsub(req.url, ".*/VirtualHostBase/https?/([^:]+):(443|80)/.*", "\1");
+           }
+           return(purge);
        }
        # Handle special requests
        if (req.method != "POST" &&
@@ -122,7 +125,7 @@ sub vcl_pipe {
 }
 
 sub vcl_synth {
-    set resp.http.x-cache = "synth synth";
+    set resp.http.x-cache = "synth " + resp.status + ": " + resp.reason;
 }
 
 sub vcl_deliver {
