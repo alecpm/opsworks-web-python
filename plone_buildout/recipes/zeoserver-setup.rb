@@ -1,3 +1,15 @@
+if node['system'] && node['system']['timezone']
+  file '/etc/timezone' do
+    content node['system']['timezone']
+    mode '0644'
+    owner 'root'
+    group 'root'
+  end
+  execute 'update_timezone' do
+    command 'dpkg-reconfigure --frontend noninteractive tzdata'
+  end
+end
+
 include_recipe "plone_buildout::zeoserver"
 app_name = node["plone_zeoserver"]["app_name"]
 return if app_name.nil? || app_name.empty?

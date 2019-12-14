@@ -1,3 +1,15 @@
+if node['system'] && node['system']['timezone']
+  file '/etc/timezone' do
+    content node['system']['timezone']
+    mode '0644'
+    owner 'root'
+    group 'root'
+  end
+  execute 'update_timezone' do
+    command 'dpkg-reconfigure --frontend noninteractive tzdata'
+  end
+end
+
 if node['tmpdir']['tmpfs']
   mount '/tmp' do
     device 'tmpfs'

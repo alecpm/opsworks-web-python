@@ -1,3 +1,15 @@
+if node['system'] && node['system']['timezone']
+  file '/etc/timezone' do
+    content node['system']['timezone']
+    mode '0644'
+    owner 'root'
+    group 'root'
+  end
+  execute 'update_timezone' do
+    command 'dpkg-reconfigure --frontend noninteractive tzdata'
+  end
+end
+
 # Define the rsyslog service, for restarting as needed. It's
 # ever-present on ubuntu
 service node['rsyslog']['service_name'] do
