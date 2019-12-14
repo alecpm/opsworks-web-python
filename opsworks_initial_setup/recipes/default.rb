@@ -22,3 +22,15 @@ include_recipe 'opsworks_initial_setup::package_ntpd'
 include_recipe 'opsworks_initial_setup::package_vim'
 include_recipe 'opsworks_initial_setup::package_sqlite'
 include_recipe 'opsworks_initial_setup::package_screen'
+
+if node['system'] && node['system']['timezone']
+  file '/etc/timezone' do
+    content node['system']['timezone']
+    mode '0644'
+    owner 'root'
+    group 'root'
+  end
+  execute 'update_timezone' do
+    command 'dpkg-reconfigure --frontend noninteractive tzdata'
+  end
+end
