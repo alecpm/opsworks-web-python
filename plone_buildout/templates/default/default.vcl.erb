@@ -121,6 +121,11 @@ sub vcl_fetch {
         set beresp.http.X-Varnish-Action = "FETCH (pass - response sets private/no-cache/no-store token)";
         return(hit_for_pass);
     }
+    if (req.url ~ "/(login|require_login|logout)$") {
+        set beresp.ttl = 0s;
+        set beresp.http.X-Varnish-Action = "FETCH (pass - login scripts are not cacheable)";
+        return(hit_for_pass);
+    }
     if (req.http.X-Anonymous && !beresp.http.Cache-Control) {
         set beresp.ttl = <%= node['varnish_plone']['default_ttl'] %>s;
         set beresp.http.X-Varnish-Action = "FETCH (override - backend not setting cache control)";
