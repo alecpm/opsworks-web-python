@@ -48,7 +48,8 @@ define :python_base_setup do
   virtualenv_ver_map = {
     "2.4" => "1.7.2",
     "2.5" => "1.9.1",
-    "2.6" => "1.11.4"
+    "2.6" => "1.11.4",
+    "2.7" => "16.7.10"
   }
   if !pip_location && use_custom_py
     # We need to install an older python
@@ -75,7 +76,7 @@ define :python_base_setup do
     execute "/usr/bin/#{py_command} /tmp/get-pip.py"
     pip_location = find_executable "pip#{py_version}"
   end
-  if !virtualenv_location && use_custom_py
+  if !virtualenv_location
     venv = "virtualenv"
     venv_ver = virtualenv_ver_map[py_version]
     venv << "==#{venv_ver}" if venv_ver
