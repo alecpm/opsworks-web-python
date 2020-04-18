@@ -33,7 +33,6 @@ define :python_base_setup do
   # We need to establish a value for the original pip/venv location as
   # a baseline so we don't find the older ones later, we assume ubuntu
   # here, because we are lazy and this is for OpsWorks
-  node.normal['python']['virtualenv_version'] = '16.7.10'
   node.normal['python']['pip_location'] = "/usr/local/bin/pip"
   node.normal['python']['virtualenv_location'] = "/usr/local/bin/virtualenv"
   # We also need to override the prior override
