@@ -78,7 +78,8 @@ define :python_base_setup do
   end
 
   venv_ver = virtualenv_ver_map[py_version || '2.7']
-  python_pip virtualenv do
+  python_pip "Install virtualenv" do
+    package_name 'virtualenv'
     version venv_ver
     action :install
   end
