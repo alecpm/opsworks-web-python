@@ -76,13 +76,13 @@ define :python_base_setup do
     execute "/usr/bin/#{py_command} /tmp/get-pip.py"
     pip_location = find_executable "pip#{py_version}"
   end
-  if !virtualenv_location
-    venv = "virtualenv"
-    venv_ver = virtualenv_ver_map[py_version]
-    venv << "==#{venv_ver}" if venv_ver
-    execute "#{pip_location} install #{venv}"
-    virtualenv_location = find_executable "virtualenv-#{py_version}"
+
+  venv_ver = virtualenv_ver_map[py_version || '2.7']
+  python_pip virtualenv do
+    version venv_ver
+    action :install
   end
+  virtualenv_location = find_executable "virtualenv-#{py_version}"
 
   if use_custom_py
     # only set the python binary for this chef run, once the venv is
@@ -92,7 +92,7 @@ define :python_base_setup do
     node.override['python']['virtualenv_location'] = virtualenv_location
   else
     python_pip "setuptools" do
-      version 3.3
+      version "26.1.1"
       action :upgrade
     end
   end
