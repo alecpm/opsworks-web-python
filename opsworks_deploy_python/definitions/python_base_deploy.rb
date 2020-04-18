@@ -33,6 +33,7 @@ define :python_base_setup do
   # We need to establish a value for the original pip/venv location as
   # a baseline so we don't find the older ones later, we assume ubuntu
   # here, because we are lazy and this is for OpsWorks
+  node.normal['python']['virtualenv_version'] = '16.7.10'
   node.normal['python']['pip_location'] = "/usr/local/bin/pip"
   node.normal['python']['virtualenv_location'] = "/usr/local/bin/virtualenv"
   # We also need to override the prior override
@@ -48,8 +49,7 @@ define :python_base_setup do
   virtualenv_ver_map = {
     "2.4" => "1.7.2",
     "2.5" => "1.9.1",
-    "2.6" => "1.11.4",
-    "2.7" => "16.7.10"
+    "2.6" => "1.11.4"
   }
   if !pip_location && use_custom_py
     # We need to install an older python
@@ -77,13 +77,15 @@ define :python_base_setup do
     pip_location = find_executable "pip#{py_version}"
   end
 
-  venv_ver = virtualenv_ver_map[py_version || '2.7']
-  python_pip "Install virtualenv" do
-    package_name 'virtualenv'
-    version venv_ver
-    action :install
+  venv_ver = virtualenv_ver_map[py_version]
+  if use_custom_py
+    python_pip "Install virtualenv" do
+      package_name 'virtualenv'
+      version venv_ver
+      action :upgrade
+    end
+    virtualenv_location = find_executable "virtualenv-#{py_version}"
   end
-  virtualenv_location = find_executable "virtualenv-#{py_version}"
 
   if use_custom_py
     # only set the python binary for this chef run, once the venv is
