@@ -48,8 +48,7 @@ define :python_base_setup do
   virtualenv_ver_map = {
     "2.4" => "1.7.2",
     "2.5" => "1.9.1",
-    "2.6" => "1.11.4",
-    "2.7" => "16.7.10"
+    "2.6" => "1.11.4"
   }
   if !pip_location && use_custom_py
     # We need to install an older python
@@ -76,11 +75,14 @@ define :python_base_setup do
     execute "/usr/bin/#{py_command} /tmp/get-pip.py"
     pip_location = find_executable "pip#{py_version}"
   end
-  if !virtualenv_location
-    venv = "virtualenv"
-    venv_ver = virtualenv_ver_map[py_version]
-    venv << "==#{venv_ver}" if venv_ver
-    execute "#{pip_location} install #{venv}"
+
+  venv_ver = virtualenv_ver_map[py_version]
+  if use_custom_py
+    python_pip "Install virtualenv" do
+      package_name 'virtualenv'
+      version venv_ver
+      action :upgrade
+    end
     virtualenv_location = find_executable "virtualenv-#{py_version}"
   end
 
@@ -92,7 +94,7 @@ define :python_base_setup do
     node.override['python']['virtualenv_location'] = virtualenv_location
   else
     python_pip "setuptools" do
-      version 3.3
+      version "26.1.1"
       action :upgrade
     end
   end

@@ -26,3 +26,4 @@ node.default["deploy_python"]["venv_options"] = '--no-site-packages'
 
 node.default["apt"]["unattended_upgrades"]["enable"] = true
 node.default["apt"]["unattended_upgrades"]["mail"] = nil
+node.default["python"]["virtualenv_version"] = '16.7.10'
