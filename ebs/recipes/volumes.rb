@@ -17,7 +17,7 @@ node[:ebs][:devices].each do |device, options|
   ebs_volume device do
     mount_point options["mount_point"]
     volume_id options["volume_id"]
-    #device device
+    device device
     fstype options["fstype"] || "xfs"
   end
 end
