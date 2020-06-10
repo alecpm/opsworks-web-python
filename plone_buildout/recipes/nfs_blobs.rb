@@ -26,6 +26,13 @@ end
 include_recipe "nfs"
 include_recipe "nfs::server"
 
+template "/etc/default/nfs-common" do
+  source "nfs-common.erb"
+  owner "root"
+  group "root"
+  mode 0644
+end
+
 export_base = node["plone_blobs"]["nfs_export_dir"]
 blob_path = ::File.join(export_base, 'blobstorage')
 tmp_path = ::File.join(export_base, 'tmp')
