@@ -22,7 +22,7 @@ if node.recipe?('plone_buildout::instances-setup')
   end
 
   # All supervisor client logs, may be redundant with client rsyslog logs
-  instances = (node[:opsworks][:instance][:backends].to_i * node["plone_instances"]["per_cpu"].to_f/8).ceil if (!node[:opsworks][:instance][:backends].nil? && !node[:opsworks][:instance][:backends].zero?)
+  instances = (node[:opsworks][:instance][:backends].to_i * node["plone_instances"]["per_cpu"].to_f/2.0).ceil if (!node[:opsworks][:instance][:backends].nil? && !node[:opsworks][:instance][:backends].zero?)
   instances = (node[:cpu][:total].to_i * node["plone_instances"]["per_cpu"].to_f).ceil if (node[:opsworks][:instance][:backends].nil? || node[:opsworks][:instance][:backends].zero?)
   instances = 1 if instances < 1 || !instances
   1.upto(instances) do |n|

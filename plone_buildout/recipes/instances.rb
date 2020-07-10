@@ -11,7 +11,8 @@ py_version = deploy["python_major_version"]
 old_custom_py = py_version && py_version == "2.4"
 
 instance_data = node["plone_instances"]
-instances = (node[:cpu][:total].to_i * instance_data["per_cpu"].to_f).ceil
+instances = (node[:opsworks][:instance][:backends].to_i * instance_data["per_cpu"].to_f/2.0).ceil if (!node[:opsworks][:instance][:backends].nil? && !node[:opsworks][:instance][:backends].zero?)
+instances = (node[:cpu][:total].to_i * instance_data["per_cpu"].to_f).ceil if (node[:opsworks][:instance][:backends].nil? || node[:opsworks][:instance][:backends].zero?)
 instances = 1 if instances < 1 || !instances
 Chef::Log.info("Calculated instance count #{instances}.  Based on Backends: #{node[:opsworks][:instance][:backends]} CPUs: #{node[:cpu][:total]} and per_cpu config: #{instance_data["per_cpu"]}")
 extra_parts = Array.new
