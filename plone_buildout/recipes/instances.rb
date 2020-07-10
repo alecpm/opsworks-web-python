@@ -55,7 +55,7 @@ if instance_data["enable_relstorage"]
   # Setup DB driver
   case db["type"] && db["type"].downcase
   when 'postgres', 'postgresql', nil
-    driver = 'psycopg2'
+    driver = 'psycopg2-binary'
   when 'mysql'
     driver = 'MySQL-python'
   when 'oracle'
