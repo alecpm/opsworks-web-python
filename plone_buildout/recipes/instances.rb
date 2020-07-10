@@ -85,6 +85,9 @@ if instance_data["enable_relstorage"]
       }
       cache_servers = cache_listing.join(" ")
     end
+    if cache_servers.nil? || cache_servers.empty?
+      cache_servers = '127.0.0.1:11211'
+    end
     if cache_servers
       # Would be nice to order these based on the instance AZ, so that
       # the closer one is preferred, or perhaps so that only the
