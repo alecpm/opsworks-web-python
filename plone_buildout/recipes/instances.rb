@@ -242,6 +242,8 @@ if instance_data["enable_celery"]
     }
     if broker_instance
       host = broker_instance[:private_dns_name] || broker_instance[:public_dns_name]
+    else
+      host = '127.0.0.1'
     end
   end
   if host
