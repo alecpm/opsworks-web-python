@@ -91,7 +91,8 @@ if instance_data["enable_relstorage"]
       # Would be nice to order these based on the instance AZ, so that
       # the closer one is preferred, or perhaps so that only the
       # co-zoned cache is specified
-      storage_config << "\n" << '[memcached]' << "\n" << "servers = #{cache_servers}" << "\n"
+      storage_config << "\n" << "poll-interval = #{storage['cache_poll_interval']}"
+      storage_config << "\n\n" << '[memcached]' << "\n" << "servers = #{cache_servers}" << "\n"
     end
   end
   # Packing to be enabled on only one instance
