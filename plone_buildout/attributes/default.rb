@@ -133,7 +133,8 @@ default['nginx_plone']['additional_ssl_config'] = nil
 default['nginx_plone']['default_config'] = nil
 default['nginx_plone']['default_ssl_config'] = nil
 default['nginx_plone']['proxy_port'] = 6081
-default['nginx_plone']['log_retention_days'] = 14
+default['nginx_plone']['log_rotation_freq'] = 'daily'
+default['nginx_plone']['log_retention_count'] = 14
 default['nginx_plone']['force_reload'] = false
 default['nginx_plone']['client_max_body_size'] = '128m'
 
