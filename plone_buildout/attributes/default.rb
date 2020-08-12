@@ -138,6 +138,7 @@ default['nginx_plone']['log_rotation_freq'] = 'daily'
 default['nginx_plone']['log_retention_count'] = 14
 default['nginx_plone']['force_reload'] = false
 default['nginx_plone']['client_max_body_size'] = '128m'
+default['nginx_plone']['hsts_header'] = ''
 
 # Varnish config options
 default['varnish_plone']['grace'] = 60
