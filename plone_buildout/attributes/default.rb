@@ -139,6 +139,8 @@ default['nginx_plone']['log_retention_count'] = 14
 default['nginx_plone']['force_reload'] = false
 default['nginx_plone']['client_max_body_size'] = '128m'
 default['nginx_plone']['hsts_header'] = ''
+default['nginx_plone']['csp_header'] = ''
+default['nginx_plone']['additional_location_block_config'] = ''
 
 # Varnish config options
 default['varnish_plone']['grace'] = 60

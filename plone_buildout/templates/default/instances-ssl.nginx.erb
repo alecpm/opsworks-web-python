@@ -65,9 +65,12 @@ server {
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header Accept-Encoding '';
+        add_header X-Content-Type-Options "nosniff";
         add_header X-XSS-Protection "1; mode=block";
         add_header Strict-Transport-Security "<%= node['nginx_plone']['hsts_header'] %>";
+        add_header Content-Security-Policy "<%= node['nginx_plone']['csp_header'] %>";
         <% if node['nginx_plone']['enable_ssi'] %>ssi on;<% end %>
+        <%= node['nginx_plone']['additional_location_block_config'] %>"
     }
 
 }
