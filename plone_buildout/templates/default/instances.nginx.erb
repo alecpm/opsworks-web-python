@@ -85,7 +85,7 @@ server {
         add_header Strict-Transport-Security $hsts_header;
         add_header Content-Security-Policy "<%= node['nginx_plone']['csp_header'] %>";
         <% if node['nginx_plone']['enable_ssi'] %>ssi on;<% end %>
-        <%= node['nginx_plone']['additional_location_block_config'] %>"
+        <%= node['nginx_plone']['additional_location_block_config'] %>
     }
 }
 
@@ -142,7 +142,7 @@ server {
         add_header Strict-Transport-Security $hsts_header;
         add_header Content-Security-Policy "<%= node['nginx_plone']['csp_header'] %>";
         <% if node['nginx_plone']['enable_ssi'] %>ssi on;<% end %>
-        <%= node['nginx_plone']['additional_location_block_config'] %>"
+        <%= node['nginx_plone']['additional_location_block_config'] %>
     }
 }
 <% end %>
