@@ -20,6 +20,14 @@ template "#{node[:nginx][:dir]}/sites-available/instances" do
   notifies :restart, "service[nginx]", :delayed
 end
 
+template "#{node[:nginx][:dir]}/conf.d/server_header.conf" do
+  source "server_header.erb"
+  owner "root"
+  group "root"
+  mode 0644
+  notifies :restart, "service[nginx]", :delayed
+end
+
 link "#{node[:nginx][:dir]}/sites-enabled/default" do
   action :delete
 end

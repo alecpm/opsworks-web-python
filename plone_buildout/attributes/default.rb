@@ -141,6 +141,10 @@ default['nginx_plone']['client_max_body_size'] = '128m'
 default['nginx_plone']['hsts_header'] = ''
 default['nginx_plone']['csp_header'] = ''
 default['nginx_plone']['additional_location_block_config'] = ''
+default['nginx_plone']['disable_server_tokens'] = true
+default['nginx_plone']['extra_headers'] = {
+    'Server' => 'nginx',
+}
 
 # Varnish config options
 default['varnish_plone']['grace'] = 60
