@@ -73,6 +73,7 @@ default["plone_instances"]["relstorage"]["pack_days"] = 7
 default["plone_instances"]["relstorage"]["two_stage_pack"] = false
 default["plone_instances"]["relstorage"]["pack_gc"] = true
 default["plone_instances"]["relstorage"]["truncate_refs"] = false
+default["plone_instances"]["relstorage"]["read_replicas"] = []
 
 # Zeo stuff
 default["plone_instances"]["zeo_layer"] = "zeoserver"

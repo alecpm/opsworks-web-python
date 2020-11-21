@@ -71,6 +71,18 @@ if instance_data["enable_relstorage"]
     additional_config << "\n" << "    #{driver}"
   end
 
+  if storage['read_replicas'] && storage['read_replicas'].length
+    storage_config < '\n' << 'ro-replica-conf = ${buildout:directory}/read-replicas.conf'
+    replicas_conf = '\n'.join(storage['read_replicas'])
+    replicas_conf << "\n#{db['host']}:#{db['port']}"
+    file ::File.join(deploy[:deploy_to], 'read-replicas.conf') do
+      content replicas_conf
+      mode '440'
+      owner deploy[:user]
+      group deploy[:group]
+    end
+  end
+
   # Memcached cache config
   if storage["enable_cache"]
     cache_servers = nil
