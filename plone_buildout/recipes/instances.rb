@@ -71,7 +71,7 @@ if instance_data["enable_relstorage"]
     additional_config << "\n" << "    #{driver}"
   end
   if storage['read_replicas'] && storage['read_replicas'].length
-    storage_config << "\n" << 'ro-replica-conf = ${buildout:directory}/var/read-replicas.conf'
+    storage_config << "\n" << "ro-replica-conf = ${buildout:directory}/var/read-replicas.conf"
     replicas_conf = storage['read_replicas'].join("\n")
     replicas_conf << "\n#{db['host']}:#{db['port']}"
     file ::File.join(deploy[:deploy_to], 'shared', 'var', 'read-replicas.conf') do
