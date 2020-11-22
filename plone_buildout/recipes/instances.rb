@@ -73,7 +73,9 @@ if instance_data["enable_relstorage"]
   if storage['read_replicas'] && storage['read_replicas'].length
     storage_config << "\n" << "ro-replica-conf = ${buildout:directory}/var/read-replicas.conf"
     replicas_conf = storage['read_replicas'].join("\n")
-    replicas_conf << "\n#{db['host']}:#{db['port']}"
+    if storage['include_rw_in_ro']
+      replicas_conf << "\n#{db['host']}:#{db['port']}"
+    end
     file ::File.join(deploy[:deploy_to], 'shared', 'var', 'read-replicas.conf') do
       content replicas_conf
       mode '440'
