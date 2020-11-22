@@ -73,7 +73,7 @@ if instance_data["enable_relstorage"]
 
   if storage['read_replicas'] && storage['read_replicas'].length
     storage_config < '\n' << 'ro-replica-conf = ${buildout:directory}/read-replicas.conf'
-    replicas_conf = '\n'.join(storage['read_replicas'])
+    replicas_conf = storage['read_replicas'].join('\n')
     replicas_conf << "\n#{db['host']}:#{db['port']}"
     file ::File.join(deploy[:deploy_to], 'read-replicas.conf') do
       content replicas_conf
