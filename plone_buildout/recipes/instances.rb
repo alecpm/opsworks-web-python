@@ -70,7 +70,7 @@ if instance_data["enable_relstorage"]
   if driver
     additional_config << "\n" << "    #{driver}"
   end
-  if storage['read_replicas'] && storage['read_replicas'].length
+  if storage['read_replicas'] && !storage['read_replicas'].empty?
     storage_config << "\n" << "ro-replica-conf = ${buildout:directory}/var/read-replicas.conf"
     replicas_conf = storage['read_replicas'].join("\n")
     if storage['include_rw_in_ro']
