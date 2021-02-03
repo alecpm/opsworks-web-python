@@ -65,6 +65,7 @@ default["plone_instances"]["relstorage"]["db"] = {
     "password" => nil
 }
 default["plone_instances"]["relstorage"]["enable_cache"] = true
+default["plone_instances"]["relstorage"]["cache_poll_interval"] = 60 # Only enabled if caching is turned on and cached are available
 default["plone_instances"]["relstorage"]["config"] = 'cfg/relstorage.cfg'
 default["plone_instances"]["relstorage"]["cache_servers"] = nil # host:port strings will be automatically set
 default["plone_instances"]["relstorage"]["enable_pack"] = false # set to true on one instance deployment
@@ -72,6 +73,8 @@ default["plone_instances"]["relstorage"]["pack_days"] = 7
 default["plone_instances"]["relstorage"]["two_stage_pack"] = false
 default["plone_instances"]["relstorage"]["pack_gc"] = true
 default["plone_instances"]["relstorage"]["truncate_refs"] = false
+default["plone_instances"]["relstorage"]["read_replicas"] = []
+default["plone_instances"]["relstorage"]["include_rw_in_ro"] = false
 
 # Zeo stuff
 default["plone_instances"]["zeo_layer"] = "zeoserver"
@@ -133,9 +136,17 @@ default['nginx_plone']['additional_ssl_config'] = nil
 default['nginx_plone']['default_config'] = nil
 default['nginx_plone']['default_ssl_config'] = nil
 default['nginx_plone']['proxy_port'] = 6081
-default['nginx_plone']['log_retention_days'] = 14
+default['nginx_plone']['log_rotation_freq'] = 'daily'
+default['nginx_plone']['log_retention_count'] = 14
 default['nginx_plone']['force_reload'] = false
 default['nginx_plone']['client_max_body_size'] = '128m'
+default['nginx_plone']['hsts_header'] = ''
+default['nginx_plone']['csp_header'] = ''
+default['nginx_plone']['additional_location_block_config'] = ''
+default['nginx_plone']['disable_server_tokens'] = true
+default['nginx_plone']['extra_headers'] = {
+    'Server' => 'nginx',
+}
 
 # Varnish config options
 default['varnish_plone']['grace'] = 60

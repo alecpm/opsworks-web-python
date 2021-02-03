@@ -20,6 +20,14 @@ template "#{node[:nginx][:dir]}/sites-available/instances" do
   notifies :restart, "service[nginx]", :delayed
 end
 
+template "#{node[:nginx][:dir]}/conf.d/server_header.conf" do
+  source "server_header.erb"
+  owner "root"
+  group "root"
+  mode 0644
+  notifies :restart, "service[nginx]", :delayed
+end
+
 link "#{node[:nginx][:dir]}/sites-enabled/default" do
   action :delete
 end
@@ -31,16 +39,11 @@ link "#{node[:nginx][:dir]}/sites-enabled/instances" do
   mode 0644
 end
 
-replace_or_add "Nginx logrotate 2 weeks" do
-  path "/etc/logrotate.d/nginx"
-  pattern "(?<![A-Za-z])rotate"
-  line "        rotate #{node['nginx_plone']['log_retention_days']}"
-end
-
-replace_or_add "Nginx logrotate daily" do
-  path "/etc/logrotate.d/nginx"
-  pattern "weekly"
-  line "        daily"
+template "/etc/logrotate.d/nginx" do
+  source "nginx_rotate.erb"
+  owner "root"
+  group "root"
+  mode 0644
 end
 
 if node['nginx_plone']['force_reload']

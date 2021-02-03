@@ -11,8 +11,7 @@ py_version = deploy["python_major_version"]
 old_custom_py = py_version && py_version == "2.4"
 
 instance_data = node["plone_instances"]
-# Backend factor is 1/8 of standard CPU it appears
-instances = (node[:opsworks][:instance][:backends].to_i * instance_data["per_cpu"].to_f/8).ceil if (!node[:opsworks][:instance][:backends].nil? && !node[:opsworks][:instance][:backends].zero?)
+instances = (node[:opsworks][:instance][:backends].to_i * instance_data["per_cpu"].to_f/2.0).ceil if (!node[:opsworks][:instance][:backends].nil? && !node[:opsworks][:instance][:backends].zero?)
 instances = (node[:cpu][:total].to_i * instance_data["per_cpu"].to_f).ceil if (node[:opsworks][:instance][:backends].nil? || node[:opsworks][:instance][:backends].zero?)
 instances = 1 if instances < 1 || !instances
 Chef::Log.info("Calculated instance count #{instances}.  Based on Backends: #{node[:opsworks][:instance][:backends]} CPUs: #{node[:cpu][:total]} and per_cpu config: #{instance_data["per_cpu"]}")
@@ -71,6 +70,19 @@ if instance_data["enable_relstorage"]
   if driver
     additional_config << "\n" << "    #{driver}"
   end
+  if storage['read_replicas'] && !storage['read_replicas'].empty?
+    storage_config << "\n" << "ro-replica-conf = ${buildout:directory}/var/read-replicas.conf"
+    replicas_conf = storage['read_replicas'].join("\n")
+    if storage['include_rw_in_ro']
+      replicas_conf << "\n#{db['host']}:#{db['port']}"
+    end
+    file ::File.join(deploy[:deploy_to], 'shared', 'var', 'read-replicas.conf') do
+      content replicas_conf
+      mode '440'
+      owner deploy[:user]
+      group deploy[:group]
+    end
+  end
 
   # Memcached cache config
   if storage["enable_cache"]
@@ -85,11 +97,15 @@ if instance_data["enable_relstorage"]
       }
       cache_servers = cache_listing.join(" ")
     end
+    if cache_servers.nil? || cache_servers.empty?
+      cache_servers = '127.0.0.1:11211'
+    end
     if cache_servers
       # Would be nice to order these based on the instance AZ, so that
       # the closer one is preferred, or perhaps so that only the
       # co-zoned cache is specified
-      storage_config << "\n" << '[memcached]' << "\n" << "servers = #{cache_servers}" << "\n"
+      storage_config << "\n" << "poll-interval = #{storage['cache_poll_interval']}"
+      storage_config << "\n\n" << '[memcached]' << "\n" << "servers = #{cache_servers}" << "\n"
     end
   end
   # Packing to be enabled on only one instance
@@ -242,6 +258,8 @@ if instance_data["enable_celery"]
     }
     if broker_instance
       host = broker_instance[:private_dns_name] || broker_instance[:public_dns_name]
+    else
+      host = '127.0.0.1'
     end
   end
   if host
