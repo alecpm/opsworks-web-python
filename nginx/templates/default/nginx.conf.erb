@@ -6,10 +6,10 @@ pid        <%= node[:nginx][:pid_file] %>;
 
 events {
   worker_connections  <%= node[:nginx][:worker_connections] %>;
-  <%= node[:nginx][:additional_event_config] %>;
+  <%= node[:nginx][:additional_event_config] %>
 }
 
-<%= node[:nginx][:additional_server_config] %>;
+<%= node[:nginx][:additional_server_config] %>
 
 http {
   include       <%= node[:nginx][:dir] %>/mime.types;
