@@ -52,7 +52,7 @@ define :blob_mounts do
   end
   if !host && layer && node[:opsworks] && node[:opsworks][:layers] && node[:opsworks][:layers][layer] && node[:opsworks][:layers][layer][:instances]
     node[:opsworks][:layers][layer][:instances].each {
-      |name, instance| storage_instances.push(instance) if instance[:status] == "online"
+      |name, instance| storage_instances.push(instance) if (instance[:status] == "online" || instance[:private_dns_name] == node[:opsworks][:instance][:private_dns_name])
     }
     if !storage_instances.empty?
       host = storage_instances[0][:private_ip]
