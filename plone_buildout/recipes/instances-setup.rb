@@ -15,7 +15,7 @@ return if app_name.nil? || app_name.empty?
 node.default[:deploy][app_name] = {} if node[:deploy][app_name].nil?
 deploy = node[:deploy][app_name]
 
-os_packages = ['libjpeg-dev', 'libpng-dev', 'libxml2-dev', 'libxslt-dev']
+os_packages = ['libjpeg-dev', 'libpng-dev', 'libxml2-dev', 'libxslt-dev', 'npm']
 if instance_data["enable_relstorage"]
   storage = instance_data["relstorage"]
   db = storage["db"]
@@ -35,6 +35,10 @@ end
 
 node.normal[:deploy][app_name]["os_packages"] = os_packages.concat(deploy["os_packages"] || [])
 Chef::Log.debug("Merged os_packages for plone instances: #{deploy["os_packages"]}")
+
+execute "npm install -g npm@#{deploy['npm_version'] || '6.4.1'}" do
+  user root
+end
 
 buildout_setup do
   deploy_data deploy
