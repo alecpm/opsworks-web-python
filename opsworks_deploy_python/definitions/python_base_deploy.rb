@@ -70,7 +70,7 @@ define :python_base_setup do
       action :install
       ignore_failure true  # This one doesn't always exist
     end
-    download = open("https://bootstrap.pypa.io/#{py_version}/get-pip.py")
+    download = open("https://bootstrap.pypa.io/pip/#{py_version}/get-pip.py")
     IO.copy_stream(download, '/tmp/get-pip.py')
     execute "/usr/bin/#{py_command} /tmp/get-pip.py"
     pip_location = find_executable "pip#{py_version}"
