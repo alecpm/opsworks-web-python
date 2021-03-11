@@ -37,7 +37,7 @@ node.normal[:deploy][app_name]["os_packages"] = os_packages.concat(deploy["os_pa
 Chef::Log.debug("Merged os_packages for plone instances: #{deploy["os_packages"]}")
 
 execute "npm install -g npm@6.4.1" do
-  user root
+  user "root"
 end
 
 buildout_setup do
