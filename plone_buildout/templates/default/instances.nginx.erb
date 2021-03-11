@@ -18,6 +18,10 @@ map $http_x_forwarded_proto $final_port {
     https 443;
     http 80;
 }
+map $final_port $hsts_header {
+    default "";
+    443 "<%= node['nginx_plone']['hsts_header'] %>";
+}
 
 <%= node['nginx_plone']['additional_servers'] %>
 
@@ -73,9 +77,15 @@ server {
         proxy_buffer_size  256k;
         proxy_buffers      16   256k;
         proxy_set_header Host $http_host;
+        proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header Accept-Encoding '';
+        add_header X-Content-Type-Options "nosniff";
+        add_header X-XSS-Protection "1; mode=block";
+        add_header Strict-Transport-Security $hsts_header;
+        add_header Content-Security-Policy "<%= node['nginx_plone']['csp_header'] %>";
         <% if node['nginx_plone']['enable_ssi'] %>ssi on;<% end %>
+        <%= node['nginx_plone']['additional_location_block_config'] %>
     }
 }
 
@@ -124,9 +134,15 @@ server {
         proxy_buffer_size  256k;
         proxy_buffers      16   256k;
         proxy_set_header Host $http_host;
+        proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header Accept-Encoding '';
+        add_header X-Content-Type-Options "nosniff";
+        add_header X-XSS-Protection "1; mode=block";
+        add_header Strict-Transport-Security $hsts_header;
+        add_header Content-Security-Policy "<%= node['nginx_plone']['csp_header'] %>";
         <% if node['nginx_plone']['enable_ssi'] %>ssi on;<% end %>
+        <%= node['nginx_plone']['additional_location_block_config'] %>
     }
 }
 <% end %>

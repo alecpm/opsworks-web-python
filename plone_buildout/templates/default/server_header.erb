@@ -1,0 +1,7 @@
+    <% node["nginx_plone"]["extra_headers"].each do |name, value| %>
+    add_header <%= name %> <%= value %> always;
+    <% end %>
+
+    <% if node['nginx_plone']['disable_server_tokens'] %>
+    server_tokens off;
+    <% end %>
