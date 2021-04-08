@@ -269,6 +269,7 @@ if instance_data["enable_celery"]
     # For BBB with existing deployments
     storage_config << "\n" << '[celery]' << "\n" << 'broker-host = ${celery-broker:host}'
     storage_config << "\n" << 'broker-port = ${celery-broker:port}' << "\n"
+    storage_config << "\n" << "zeo-client-client = zeoclient-celery" if instance_data["persistent_cache"]
     celery_cmd = 'worker'
     celery_cmd += ' ' + instance_data['celery_args'] if instance_data['celery_args']
     beat_cmd = 'beat'
