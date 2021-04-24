@@ -134,6 +134,7 @@ default[:nginx][:additional_event_config] = "use epoll;"
 default[:nginx][:additional_server_config] = nil
 
 default['nginx_plone']['enable_ssi'] = false
+default['nginx_plone']['enable_http2'] = false
 default['nginx_plone']['additional_servers'] = nil
 default['nginx_plone']['additional_config'] = nil
 default['nginx_plone']['additional_ssl_config'] = nil
