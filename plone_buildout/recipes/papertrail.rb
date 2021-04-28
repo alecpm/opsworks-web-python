@@ -33,12 +33,12 @@ if node.recipe?('plone_buildout::instances-setup')
 end   
 
 # Solr logs, may be too much data since it includes queries
-if node['plone_solr']['enable_papertrail'] && node.recipe?('plone_buildout::solr-setup')
-  app_name = node['plone_solr']['app_name']
-  solr_log = ::File.join(node[:deploy][app_name][:deploy_to], 
-                         'current', 'log', 'solr.log')
-  watch_files[solr_log] = 'solr'
-end
+# if node['plone_solr']['enable_papertrail'] && node.recipe?('plone_buildout::solr-setup')
+#   app_name = node['plone_solr']['app_name']
+#   solr_log = ::File.join(node[:deploy][app_name][:deploy_to], 
+#                          'current', 'log', 'solr.log')
+#   watch_files[solr_log] = 'solr'
+# end
 
 if node.recipe?('plone_buildout::nginx')
   watch_files['/var/log/nginx/error.log'] = 'nginx'

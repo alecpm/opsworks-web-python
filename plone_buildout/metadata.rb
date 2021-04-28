@@ -19,8 +19,6 @@ depends "haproxy"
 depends "line"
 depends "glusterfs"
 depends "newrelic"
-depends "papertrail"
-depends "traceview"
 depends "certbot"
 depends "system"
 

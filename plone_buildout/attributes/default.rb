@@ -107,17 +107,17 @@ default['newrelic']["application_monitoring"]["transaction_tracer"]["slow_sql"] 
 default['newrelic']["application_monitoring"]["transaction_tracer"]["record_sql"] = 'raw'
 
 # Tracelytics
-default["plone_instances"]["traceview_tracing"] = false
-default["plone_instances"]["traceview_sample_rate"] = 0.1
+# default["plone_instances"]["traceview_tracing"] = false
+# default["plone_instances"]["traceview_sample_rate"] = 0.1
 # number of clients to run tracing on, 0 for all
-default["plone_instances"]["tracing_clients"] = 1
+# default["plone_instances"]["tracing_clients"] = 1
 # Papertrail
-default["plone_instances"]["syslog_facility"] = nil
-default["plone_instances"]["syslog_level"] = 'INFO'
+# default["plone_instances"]["syslog_level"] = 'INFO'
+# default["plone_instances"]["syslog_facility"] = nil
 
 # Solr Instance
 default["plone_solr"]["app_name"] = "solr"
-default["plone_solr"]["enable_papertrail"] = false
+# default["plone_solr"]["enable_papertrail"] = false
 default["plone_solr"]["data_dir"] = ::File.join(ephemeral, 'shared', 'solr')
 
 # EBS Snapshot automation
