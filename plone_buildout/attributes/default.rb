@@ -102,8 +102,8 @@ default["plone_instances"]["newrelic_tracing"] = false
 default["new_relic"]["servers"] = true
 default["new_relic"]["infrastructure"] = false
 default['newrelic']["application_monitoring"]["app_name"] = node['plone_instances']['app_name']
-default['newrelic']["application_monitoring"]["browser_monitoring"]["auto_instrument"] = true
-default['newrelic']["application_monitoring"]["transaction_tracer"]["slow_sql"] = false
+default['newrelic']["application_monitoring"]["browser_monitoring"]["auto_instrument"] = false
+default['newrelic']["application_monitoring"]["transaction_tracer"]["slow_sql"] = true
 default['newrelic']["application_monitoring"]["transaction_tracer"]["record_sql"] = 'raw'
 
 # Tracelytics
@@ -198,11 +198,6 @@ node.default[:haproxy][:rise] = 1
 node.default[:haproxy][:fall] = 5
 
 include_attribute "newrelic"
-node.default[:newrelic][:varnish][:version] = 'v0.0.5'
-node.default[:newrelic][:varnish][:install_path] = "/opt/newrelic"
-node.default[:newrelic][:varnish][:plugin_path] = "#{node[:newrelic][:varnish][:install_path]}/newrelic_varnish_plugin"
-node.default[:newrelic][:varnish][:download_url] = "https://github.com/varnish/newrelic_varnish_plugin/archive/#{node[:newrelic][:varnish][:version]}.tar.gz"
-node.default[:newrelic][:varnish][:user] = "root"
 
 node.default[:newrelic]['python_agent']['python_version'] = '2.100.0.84'
 node.default[:newrelic]['repository']['infrastructure']['key'] = 'https://download.newrelic.com/infrastructure_agent/gpg/newrelic-infra.gpg'
@@ -213,9 +208,6 @@ node.default["apt"]["unattended_upgrades"]["package_blacklist"] = ["newrelic-sys
 
 # Version update
 node.default[:s3fs_fuse][:version] = '1.74'
-
-# Ubuntu install seems to put the bluepill binary in another location
-node.default["bluepill"]["bin"] = "/usr/local/bin/bluepill"
 
 # Certbot domains
 node.default['certbot_domains'] = []
