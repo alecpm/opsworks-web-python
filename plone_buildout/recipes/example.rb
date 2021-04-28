@@ -124,7 +124,6 @@ include_recipe "plone_buildout::varnish"
 
 include_recipe "plone_buildout::zeoserver-setup"
 include_recipe "plone_buildout::instances-setup"
-include_recipe "bluepill"
 include_recipe "s3fs-fuse"
 
 # # Deploy
