@@ -112,8 +112,8 @@ default['newrelic']["application_monitoring"]["transaction_tracer"]["record_sql"
 # number of clients to run tracing on, 0 for all
 # default["plone_instances"]["tracing_clients"] = 1
 # Papertrail
-# default["plone_instances"]["syslog_level"] = 'INFO'
-# default["plone_instances"]["syslog_facility"] = nil
+default["plone_instances"]["syslog_level"] = 'INFO'
+default["plone_instances"]["syslog_facility"] = nil
 
 # Solr Instance
 default["plone_solr"]["app_name"] = "solr"
