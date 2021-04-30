@@ -74,17 +74,17 @@ node.normal[:nginx][:worker_processes] = 1
 
 node.normal['plone_instances']['newrelic_tracing'] = false
 node.normal['plone_instances']['newrelic_tracing_clients'] = 0
-node.normal['plone_instances']['traceview_tracing'] = false
+# node.normal['plone_instances']['traceview_tracing'] = false
 
 # New Relic settings
 node.normal['newrelic']['license'] = 'YOUR LICENSE HERE'
 
 # Papertrail settings
-node.normal['papertrail']['remote_host'] = 'logs.papertrailapp.com'
-node.normal['papertrail']['remote_port'] = 12345 # Your papertrail port
+# node.normal['papertrail']['remote_host'] = 'logs.papertrailapp.com'
+# node.normal['papertrail']['remote_port'] = 12345 # Your papertrail port
 
 # Traceview settings
-node.normal['traceview']['access_key'] = 'YOUR LICENSE HERE'
+# node.normal['traceview']['access_key'] = 'YOUR LICENSE HERE'
 
 # Egg cache
 node.normal['plone_instances']["buildout_cache_archives"] = [{"url" => "https://eggs-bucket.s3.amazonaws.com/kcrw-plone-eggs.tgz", "path" => "shared"}]
@@ -124,7 +124,6 @@ include_recipe "plone_buildout::varnish"
 
 include_recipe "plone_buildout::zeoserver-setup"
 include_recipe "plone_buildout::instances-setup"
-include_recipe "bluepill"
 include_recipe "s3fs-fuse"
 
 # # Deploy

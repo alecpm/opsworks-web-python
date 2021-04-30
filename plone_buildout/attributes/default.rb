@@ -102,22 +102,22 @@ default["plone_instances"]["newrelic_tracing"] = false
 default["new_relic"]["servers"] = true
 default["new_relic"]["infrastructure"] = false
 default['newrelic']["application_monitoring"]["app_name"] = node['plone_instances']['app_name']
-default['newrelic']["application_monitoring"]["browser_monitoring"]["auto_instrument"] = true
-default['newrelic']["application_monitoring"]["transaction_tracer"]["slow_sql"] = false
+default['newrelic']["application_monitoring"]["browser_monitoring"]["auto_instrument"] = false
+default['newrelic']["application_monitoring"]["transaction_tracer"]["slow_sql"] = true
 default['newrelic']["application_monitoring"]["transaction_tracer"]["record_sql"] = 'raw'
 
 # Tracelytics
-default["plone_instances"]["traceview_tracing"] = false
-default["plone_instances"]["traceview_sample_rate"] = 0.1
+# default["plone_instances"]["traceview_tracing"] = false
+# default["plone_instances"]["traceview_sample_rate"] = 0.1
 # number of clients to run tracing on, 0 for all
-default["plone_instances"]["tracing_clients"] = 1
+# default["plone_instances"]["tracing_clients"] = 1
 # Papertrail
-default["plone_instances"]["syslog_facility"] = nil
 default["plone_instances"]["syslog_level"] = 'INFO'
+default["plone_instances"]["syslog_facility"] = nil
 
 # Solr Instance
 default["plone_solr"]["app_name"] = "solr"
-default["plone_solr"]["enable_papertrail"] = false
+# default["plone_solr"]["enable_papertrail"] = false
 default["plone_solr"]["data_dir"] = ::File.join(ephemeral, 'shared', 'solr')
 
 # EBS Snapshot automation
@@ -134,6 +134,7 @@ default[:nginx][:additional_event_config] = "use epoll;"
 default[:nginx][:additional_server_config] = nil
 
 default['nginx_plone']['enable_ssi'] = false
+default['nginx_plone']['enable_http2'] = false
 default['nginx_plone']['additional_servers'] = nil
 default['nginx_plone']['additional_config'] = nil
 default['nginx_plone']['additional_ssl_config'] = nil
@@ -203,11 +204,6 @@ node.default[:haproxy][:rise] = 1
 node.default[:haproxy][:fall] = 5
 
 include_attribute "newrelic"
-node.default[:newrelic][:varnish][:version] = 'v0.0.5'
-node.default[:newrelic][:varnish][:install_path] = "/opt/newrelic"
-node.default[:newrelic][:varnish][:plugin_path] = "#{node[:newrelic][:varnish][:install_path]}/newrelic_varnish_plugin"
-node.default[:newrelic][:varnish][:download_url] = "https://github.com/varnish/newrelic_varnish_plugin/archive/#{node[:newrelic][:varnish][:version]}.tar.gz"
-node.default[:newrelic][:varnish][:user] = "root"
 
 node.default[:newrelic]['python_agent']['python_version'] = '2.100.0.84'
 node.default[:newrelic]['repository']['infrastructure']['key'] = 'https://download.newrelic.com/infrastructure_agent/gpg/newrelic-infra.gpg'
@@ -218,9 +214,6 @@ node.default["apt"]["unattended_upgrades"]["package_blacklist"] = ["newrelic-sys
 
 # Version update
 node.default[:s3fs_fuse][:version] = '1.74'
-
-# Ubuntu install seems to put the bluepill binary in another location
-node.default["bluepill"]["bin"] = "/usr/local/bin/bluepill"
 
 # Certbot domains
 node.default['certbot_domains'] = []

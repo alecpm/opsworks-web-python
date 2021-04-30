@@ -182,19 +182,19 @@ end
 
 trace_config = ''
 
-if instance_data['traceview_tracing']
-  include_recipe "traceview::apt"
-  include_recipe "traceview::default"
-  additional_config << "\n" << "find-links += http://pypi.tracelytics.com/oboe"
-  trace_config << "\n    collective.traceview" << "\n    oboe"
-  environment.update({
-                       'TRACEVIEW_IGNORE_EXTENSIONS' => 'js;css;png;jpeg;jpg;gif;pjpeg;x-png;pdf',
-                       'TRACEVIEW_IGNORE_FOUR_OH_FOUR' => '1',
-                       'TRACEVIEW_PLONE_TRACING' => '1',
-                       'TRACEVIEW_SAMPLE_RATE' => instance_data["traceview_sample_rate"].to_s,
-                       'TRACEVIEW_TRACING_MODE' => 'always'
-                     })
-end
+# if instance_data['traceview_tracing']
+#   include_recipe "traceview::apt"
+#   include_recipe "traceview::default"
+#   additional_config << "\n" << "find-links += http://pypi.tracelytics.com/oboe"
+#   trace_config << "\n    collective.traceview" << "\n    oboe"
+#   environment.update({
+#                        'TRACEVIEW_IGNORE_EXTENSIONS' => 'js;css;png;jpeg;jpg;gif;pjpeg;x-png;pdf',
+#                        'TRACEVIEW_IGNORE_FOUR_OH_FOUR' => '1',
+#                        'TRACEVIEW_PLONE_TRACING' => '1',
+#                        'TRACEVIEW_SAMPLE_RATE' => instance_data["traceview_sample_rate"].to_s,
+#                        'TRACEVIEW_TRACING_MODE' => 'always'
+#                      })
+# end
 
 if instance_data['newrelic_tracing']
   trace_config << "\n    collective.newrelic" << "\n"
