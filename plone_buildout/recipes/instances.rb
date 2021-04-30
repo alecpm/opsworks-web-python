@@ -132,7 +132,7 @@ else
     address = instance_data["zeo"]["address"]
   elsif node[:opsworks] && node[:opsworks][:layers] && node[:opsworks][:layers][zeo_layer] && node[:opsworks][:layers][zeo_layer][:instances]
     instance_name, zeo_instance = node[:opsworks][:layers][zeo_layer][:instances].detect {
-      |name, instance| instance[:status] == "online"  || instance[:private_dns_name] == node[:opsworks][:instance][:private_dns_name]
+      |name, instance| instance[:status] == "online" || instance[:private_dns_name] == node[:opsworks][:instance][:private_dns_name]
     }
     address = "#{zeo_instance[:private_dns_name] || zeo_instance[:public_dns_name]}:8001" if zeo_instance
   end
@@ -152,7 +152,7 @@ if instance_data["solr_enabled"] && node[:opsworks]
     storage_config << "\n" << "[solr-host]" << "\n" << "host = #{instance_data["solr_host"]}" << "\n"
   elsif  node[:opsworks] && node[:opsworks][:layers] && node[:opsworks][:layers][solr_layer] &&  node[:opsworks][:layers][solr_layer][:instances]
     instance_name, solr_instance = node[:opsworks][:layers][solr_layer][:instances].detect {
-      |name, instance| instance[:status] == "online"  || instance[:private_dns_name] == node[:opsworks][:instance][:private_dns_name]
+      |name, instance| instance[:status] == "online" || instance[:private_dns_name] == node[:opsworks][:instance][:private_dns_name]
     }
     if solr_instance
       storage_config << "\n" << "[solr-host]" << "\n" << "host = #{solr_instance[:private_dns_name] || solr_instance[:public_dns_name]}" << "\n"
@@ -182,19 +182,19 @@ end
 
 trace_config = ''
 
-if instance_data['traceview_tracing']
-  include_recipe "traceview::apt"
-  include_recipe "traceview::default"
-  additional_config << "\n" << "find-links += http://pypi.tracelytics.com/oboe"
-  trace_config << "\n    collective.traceview" << "\n    oboe"
-  environment.update({
-                       'TRACEVIEW_IGNORE_EXTENSIONS' => 'js;css;png;jpeg;jpg;gif;pjpeg;x-png;pdf',
-                       'TRACEVIEW_IGNORE_FOUR_OH_FOUR' => '1',
-                       'TRACEVIEW_PLONE_TRACING' => '1',
-                       'TRACEVIEW_SAMPLE_RATE' => instance_data["traceview_sample_rate"].to_s,
-                       'TRACEVIEW_TRACING_MODE' => 'always'
-                     })
-end
+# if instance_data['traceview_tracing']
+#   include_recipe "traceview::apt"
+#   include_recipe "traceview::default"
+#   additional_config << "\n" << "find-links += http://pypi.tracelytics.com/oboe"
+#   trace_config << "\n    collective.traceview" << "\n    oboe"
+#   environment.update({
+#                        'TRACEVIEW_IGNORE_EXTENSIONS' => 'js;css;png;jpeg;jpg;gif;pjpeg;x-png;pdf',
+#                        'TRACEVIEW_IGNORE_FOUR_OH_FOUR' => '1',
+#                        'TRACEVIEW_PLONE_TRACING' => '1',
+#                        'TRACEVIEW_SAMPLE_RATE' => instance_data["traceview_sample_rate"].to_s,
+#                        'TRACEVIEW_TRACING_MODE' => 'always'
+#                      })
+# end
 
 if instance_data['newrelic_tracing']
   trace_config << "\n    collective.newrelic" << "\n"
@@ -254,7 +254,7 @@ if instance_data["enable_celery"]
   host = instance_data["broker"]["host"] if instance_data["broker"]["host"]
   if (host.nil? || host.empty?) && node[:opsworks] && node[:opsworks][:layers] && node[:opsworks][:layers][broker_layer] &&  node[:opsworks][:layers][broker_layer][:instances]
     instance_name, broker_instance = node[:opsworks][:layers][broker_layer][:instances].detect {
-      |name, instance| instance[:status] == "online"  || instance[:private_dns_name] == node[:opsworks][:instance][:private_dns_name]
+      |name, instance| instance[:status] == "online" || instance[:private_dns_name] == node[:opsworks][:instance][:private_dns_name]
     }
     if broker_instance
       host = broker_instance[:private_dns_name] || broker_instance[:public_dns_name]

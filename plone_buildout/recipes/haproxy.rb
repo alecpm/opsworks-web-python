@@ -1,12 +1,10 @@
 include_recipe 'plone_buildout::patches'
 # Define the rsyslog service, for restarting as needed. It's
 # ever-present on ubuntu
-service node['rsyslog']['service_name'] do
+service 'rsyslog' do
   supports :restart => true, :reload => true, :status => true
   action   :nothing
 end
-
-include_recipe "rsyslog::default"
 
 template '/etc/rsyslog.d/haproxy-log.conf' do
   source 'haproxy-log.conf.erb'
