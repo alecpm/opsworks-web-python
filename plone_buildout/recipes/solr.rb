@@ -18,6 +18,16 @@ if deploy && !(deploy[:scm].nil? || deploy[:scm].empty?)
     recursive true
   end
   if !(node["plone_solr"]["data_dir"].nil? || node["plone_solr"]["data_dir"].empty?) && node["plone_solr"]["data_dir"] != ::File.join(deploy[:deploy_to], "shared", "var")
+
+    # Create data dir if it doesn't exist
+    directory node["plone_solr"]["data_dir"]
+      action :create
+      owner deploy[:user]
+      group deploy[:group]
+      mode 0750
+      recursive true
+    end
+
     # Modify create_dirs attribute to remove var
     node.normal[:deploy][app_name]["create_dirs_before_symlink"] = node[:deploy][app_name]["create_dirs_before_symlink"].select {|e| e != 'var'}
     # Delete the directory if it was already created
