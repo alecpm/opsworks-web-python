@@ -20,7 +20,7 @@ if deploy && !(deploy[:scm].nil? || deploy[:scm].empty?)
   if !(node["plone_solr"]["data_dir"].nil? || node["plone_solr"]["data_dir"].empty?) && node["plone_solr"]["data_dir"] != ::File.join(deploy[:deploy_to], "shared", "var")
 
     # Create data dir if it doesn't exist
-    directory node["plone_solr"]["data_dir"]
+    directory node["plone_solr"]["data_dir"] do
       action :create
       owner deploy[:user]
       group deploy[:group]
