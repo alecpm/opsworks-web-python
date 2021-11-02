@@ -46,8 +46,8 @@ backend plone_instances
   balance <%= node[:haproxy][:balance] %>
 <% if node["plone_instances"]["sticky_sessions"] -%>
   <% if node['pretend_ubuntu_version'] || node['platform_version'].to_f >= 16.04 -%>
-  stick-table type string len 32 size 10m expire 3d
-  stick on cookie(__ac)
+  stick-table type string len <%= node["plone_instances"]["sticky_cookie_size"] %> size 40m expire 3d
+  stick on cookie(<%= node["plone_instances"]["sticky_cookie"] %>)
   <% else %>
   appsession __ac len 32 timeout 1d
   <% end -%>

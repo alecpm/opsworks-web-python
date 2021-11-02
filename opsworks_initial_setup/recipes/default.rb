@@ -4,9 +4,9 @@ if node[:ec2] && (node[:ec2][:instance_type] == 't1.micro' ||
   include_recipe 'opsworks_initial_setup::swap'
 end
 if node['nginx_plone']['enable_http2']
-  node[:sysctl]['net.core.default_qdisc'] = 'fq'
-  node[:sysctl]['net.ipv4.tcp_congestion_control'] = 'bbr'
-  node[:sysctl]['net.ipv4.tcp_notsent_lowat'] = '16384'
+  node.normal[:opsworks_initial_setup][:sysctl]['net.core.default_qdisc'] = 'fq'
+  node.normal[:opsworks_initial_setup][:sysctl]['net.ipv4.tcp_congestion_control'] = 'bbr'
+  node.normal[:opsworks_initial_setup][:sysctl]['net.ipv4.tcp_notsent_lowat'] = '16384'
 end
 include_recipe 'opsworks_initial_setup::sysctl'
 include_recipe 'opsworks_initial_setup::limits'

@@ -51,4 +51,4 @@ end
 watch_files.update(node['papertrail']['watch_files'] || {})
 node.normal['papertrail']['watch_files'] = watch_files
 
-include_recipe 'papertrail'
+# include_recipe 'papertrail'
