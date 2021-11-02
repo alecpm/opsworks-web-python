@@ -159,6 +159,7 @@ default['nginx_plone']['extra_headers'] = {
 default['varnish_plone']['grace'] = 60
 default['varnish_plone']['default_ttl'] = 300
 default['varnish_plone']['tmpfs_var'] = true
+default['varnish_plone']['pass_cookies_regex'] = 'beaker\.session|authomatic|_saml2_session|_saml2_attributes|plone.app.drafts.\w+'
 default['varnish']['use_default_repo'] = false
 default['varnish']['log_daemon'] = false
 node.normal['varnish']['vcl_cookbook'] = 'plone_buildout'
