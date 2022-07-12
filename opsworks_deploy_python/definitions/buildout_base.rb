@@ -103,7 +103,8 @@ define :buildout_configure do
         group deploy[:group]
         cwd release_path
         environment env
-        not_if "test -x #{::File.join(release_path, 'bin', 'buildout')}"
+        only_if "test -x bootstrap.py"
+        not_if "test -x bin/buildout"
         action :nothing
       end
 
