@@ -103,7 +103,7 @@ define :buildout_configure do
         group deploy[:group]
         cwd release_path
         environment env
-        only_if "test -x bootstrap.py"
+        only_if "test -e bootstrap.py"
         not_if "test -x bin/buildout"
         action :nothing
       end
