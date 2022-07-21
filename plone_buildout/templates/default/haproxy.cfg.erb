@@ -67,7 +67,7 @@ backend plone_instances
   <% end -%>
   <% node[:opsworks][:layers]["plone_instances"][:instances].each do |name, backend| -%>
     <% 1.upto((backend[:backends].to_i*node["plone_instances"]["per_cpu"].to_f/2.0).ceil) do |n| %>
-    server <%= "#{name}-#{n}"%> <%= backend['private_dns_name'] %>:<%=8080 + n + node[:haproxy][:tcp_check] ? node[:haproxy][:tcp_check_port_offset] : 0 %> <% if node["plone_instances"]["sticky_sessions"]%>cookie s-<%=name%><%end%> check inter <%= node[:haproxy][:check_interval] %> fastinter <%= node[:haproxy][:check_interval]/10 %> downinter <%= node[:haproxy][:check_interval]/2 %> maxconn <%=node["plone_instances"]["zserver_threads"] || 2 %> rise <%= node[:haproxy][:rise] %> fall <%= node[:haproxy][:fall] %> slowstart node[:haproxy][:slowstart]
+    server <%= "#{name}-#{n}"%> <%= backend['private_dns_name'] %>:<%=8080 + n + (node[:haproxy][:tcp_check] ? node[:haproxy][:tcp_check_port_offset] : 0) %> <% if node["plone_instances"]["sticky_sessions"]%>cookie s-<%=name%><%end%> check inter <%= node[:haproxy][:check_interval] %> fastinter <%= node[:haproxy][:check_interval]/10 %> downinter <%= node[:haproxy][:check_interval]/2 %> maxconn <%=node["plone_instances"]["zserver_threads"] || 2 %> rise <%= node[:haproxy][:rise] %> fall <%= node[:haproxy][:fall] %> slowstart node[:haproxy][:slowstart]
     <% end %>
   <% end -%>
 <% end -%>
