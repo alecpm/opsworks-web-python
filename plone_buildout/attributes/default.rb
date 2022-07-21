@@ -205,6 +205,11 @@ node.default[:haproxy][:server_timeout] = '900s'
 node.default[:haproxy][:sticky_sessions] = false
 node.default[:haproxy][:rise] = 1
 node.default[:haproxy][:fall] = 5
+node.default[:haproxy][:slowstart] = 5s
+node.default[:haproxy][:tcp_check] = false
+node.default[:haproxy][:tcp_check_port_offset] = 80
+node.default[:haproxy][:tcp_check_send] = 'health_check\r\n'
+node.default[:haproxy][:tcp_check_expect] = 'OK'
 
 include_attribute "newrelic"
 
