@@ -67,7 +67,7 @@ default["plone_instances"]["relstorage"]["db"] = {
     "password" => nil
 }
 default["plone_instances"]["relstorage"]["enable_cache"] = true
-default["plone_instances"]["relstorage"]["cache_poll_interval"] = 60 # Only enabled if caching is turned on and cached are available
+default["plone_instances"]["relstorage"]["cache_poll_interval"] = 0 # Only enabled if caching is turned on and cached are available, but defaults to off
 default["plone_instances"]["relstorage"]["config"] = 'cfg/relstorage.cfg'
 default["plone_instances"]["relstorage"]["cache_servers"] = nil # host:port strings will be automatically set
 default["plone_instances"]["relstorage"]["enable_pack"] = false # set to true on one instance deployment
