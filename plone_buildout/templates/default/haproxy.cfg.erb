@@ -51,10 +51,9 @@ backend plone_instances
   <% else %>
   appsession __ac len 32 timeout 1d
   <% end -%>
-  cookie sid insert nocache indirect httponly secure
-  option persist
+  no option persist
+  option redispatch
 <%end -%>
-  no option redispatch
   option forwardfor
   option forceclose
   <% if node[:haproxy][:tcp_check] %>
@@ -69,7 +68,7 @@ backend plone_instances
     <% 1.upto((backend[:backends].to_i*node["plone_instances"]["per_cpu"].to_f/2.0).ceil) do |n| %>
     <% @listen_port = 8080 + n %>
     <% @check_port = @listen_port + node[:haproxy][:tcp_check_port_offset] %>
-    server <%= "#{name}-#{n}"%> <%= backend['private_dns_name'] %>:<%=@listen_port %> <% if node["plone_instances"]["sticky_sessions"]%>cookie s-<%=name%><%end%> check<% if node[:haproxy][:tcp_check] %> port <%=@check_port %><%end%> inter <%= node[:haproxy][:check_interval] %> fastinter <%= node[:haproxy][:check_interval]/10 %> downinter <%= node[:haproxy][:check_interval]/2 %> maxconn <%=node["plone_instances"]["zserver_threads"] || 2 %> rise <%= node[:haproxy][:rise] %> fall <%= node[:haproxy][:fall] %> slowstart <%= node[:haproxy][:slowstart] %>
+    server <%= "#{name}-#{n}"%> <%= backend['private_dns_name'] %>:<%=@listen_port %> check<% if node[:haproxy][:tcp_check] %> port <%=@check_port %><%end%> inter <%= node[:haproxy][:check_interval] %> fastinter <%= node[:haproxy][:check_interval]/10 %> downinter <%= node[:haproxy][:check_interval]/2 %> maxconn <%=node["plone_instances"]["zserver_threads"] || 2 %> rise <%= node[:haproxy][:rise] %> fall <%= node[:haproxy][:fall] %> slowstart <%= node[:haproxy][:slowstart] %>
     <% end %>
   <% end -%>
 <% end -%>
