@@ -71,7 +71,7 @@ sub vcl_backend_response {
       call rewrite_s_maxage;
       return(deliver);
   }
-  if (bereq.url ~ "/(login|require_login|logout)$") {
+  if (bereq.url ~ "/(login|login_form|require_login|logout|logged_out|reset-password)(?!\w+)") {
       set beresp.grace = 0s;
       set beresp.ttl = 0s;
       unset beresp.http.ETag;
