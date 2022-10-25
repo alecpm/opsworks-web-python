@@ -105,13 +105,14 @@ define :buildout_configure do
         variables.update deploy # include any custom stuff in the deploy properties
         variables.update :extends => Helpers.buildout_setting(deploy, 'extends', node), :debug => Helpers.buildout_setting(deploy, 'debug', node), :supervisor_part => Helpers.buildout_setting(deploy, 'supervisor_part', node), :inherit_parts => Helpers.buildout_setting(deploy, 'inherit_parts', node), :parts_to_include => Helpers.buildout_setting(deploy, 'parts_to_include', node), :additional_config => Helpers.buildout_setting(deploy, 'additional_config', node)
 
-        notifies :run, "execute[#{bootstrap_cmd}]", :immediately
+        notifies :run, 'execute[bootstrap_buildout]', :immediately
       end
 
       # We define our commands for bootstrap and buildout, but don't run
       # them until we have a cfg change.
       # Bootstrap
-      execute bootstrap_cmd do
+      execute bootstrap_buildout do
+        command "#{bootstrap_cmd}"
         user deploy[:user]
         group deploy[:group]
         cwd release_path
@@ -119,11 +120,12 @@ define :buildout_configure do
         only_if "test -e bootstrap.py"
         not_if "test -x #{buildout_cmd}"
         action :nothing
-        notifies :run, "execute[#{build_cmd}]", :immediately
+        notifies :run, 'execute[run_buildout]', :immediately
       end
 
       # Buildout run
-      execute build_cmd do
+      execute run_buildout do
+        command "#{build_cmd}"
         user deploy[:user]
         group deploy[:group]
         cwd release_path
