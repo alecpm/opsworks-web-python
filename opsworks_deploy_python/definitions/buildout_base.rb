@@ -111,7 +111,7 @@ define :buildout_configure do
       # We define our commands for bootstrap and buildout, but don't run
       # them until we have a cfg change.
       # Bootstrap
-      execute bootstrap_buildout do
+      execute "bootstrap_buildout" do
         command "#{bootstrap_cmd}"
         user deploy[:user]
         group deploy[:group]
@@ -124,7 +124,7 @@ define :buildout_configure do
       end
 
       # Buildout run
-      execute run_buildout do
+      execute "run_buildout" do
         command "#{build_cmd}"
         user deploy[:user]
         group deploy[:group]
