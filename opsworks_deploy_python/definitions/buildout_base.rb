@@ -101,8 +101,8 @@ define :buildout_configure do
       group deploy[:group]
       cwd release_path
       environment env
-      only_if "test -e bootstrap.py"
-      creates "#{buildout_cmd}"
+      only_if "test -e #{::File.join(release_path, 'bootstrap.py')}"
+      creates buildout_cmd
       notifies :run, 'execute[run_buildout]', :immediately
     end
 
