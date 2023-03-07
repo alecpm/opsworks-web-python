@@ -98,7 +98,7 @@ define :buildout_configure do
     execute "bootstrap_buildout" do
       command "#{bootstrap_cmd}"
       user deploy[:user]
-      group deploy[:group]s
+      group deploy[:group]
       cwd release_path
       environment env
       only_if "test -e bootstrap.py"
