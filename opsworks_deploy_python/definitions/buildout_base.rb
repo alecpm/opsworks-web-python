@@ -106,29 +106,32 @@ define :buildout_configure do
         variables.update deploy # include any custom stuff in the deploy properties
         variables.update :extends => Helpers.buildout_setting(deploy, 'extends', node), :debug => Helpers.buildout_setting(deploy, 'debug', node), :supervisor_part => Helpers.buildout_setting(deploy, 'supervisor_part', node), :inherit_parts => Helpers.buildout_setting(deploy, 'inherit_parts', node), :parts_to_include => Helpers.buildout_setting(deploy, 'parts_to_include', node), :additional_config => Helpers.buildout_setting(deploy, 'additional_config', node)
 
-        notifies :run, "execute[#{bootstrap_cmd}]", :immediately
-        notifies :run, "execute[#{build_cmd}]", :immediately
+        notifies :run, 'execute[bootstrap_buildout]', :immediately
+        notifies :run, 'execute[run_buildout]', :immediately
       end
 
       # We define our commands for bootstrap and buildout, but don't run
       # them until we have a cfg change.
       # Bootstrap
-      execute bootstrap_cmd do
+      execute "bootstrap_buildout" do
+        command "#{bootstrap_cmd}"
         user deploy[:user]
         group deploy[:group]
         cwd release_path
         environment env
-        only_if "test -e #{bootstrap_file}"
-        not_if "test -x #{::File.join(release_path, 'bin', 'buildout')}"
-        action :nothing
+        only_if "test -e #{::File.join(release_path, 'bootstrap.py')}"
+        creates buildout_cmd
+        notifies :run, 'execute[run_buildout]', :immediately
       end
 
       # Buildout run
-      execute build_cmd do
+      execute "run_buildout" do
+        command "#{build_cmd}"
         user deploy[:user]
         group deploy[:group]
         cwd release_path
         environment env
+        only_if "test -x #{buildout_cmd}"
         action force_build ? :run : :nothing
       end
     end
@@ -149,7 +152,7 @@ define :buildout_configure do
       s = service "supervisor" do
         provider Chef::Provider::Service::Upstart
         action :enable
-        subscribes :restart, "execute[#{build_cmd}]", :delayed
+        subscribes :restart, "execute[run_buildout]", :delayed
         subscribes :restart, "template[/etc/init/supervisor.conf]", :delayed
       end
       services.push(s)
@@ -205,8 +208,8 @@ define :buildout_configure do
                 end
               end
             end
-            subscribes :enable, "execute[#{build_cmd}]", :delayed
-            subscribes :restart, "execute[#{build_cmd}]", :delayed
+            subscribes :enable, "execute[run_buildout]", :delayed
+            subscribes :restart, "execute[run_buildout]", :delayed
           end
           services.push(s)
         when 'upstart'
@@ -252,8 +255,8 @@ define :buildout_configure do
                 end
               end
             end
-            subscribes :enable, "execute[#{build_cmd}]", :delayed
-            subscribes :restart, "execute[#{build_cmd}]", :delayed
+            subscribes :enable, "execute[run_buildout]", :delayed
+            subscribes :restart, "execute[run_buildout]", :delayed
             subscribes :enable, "template[#{service_conf}]", :delayed
             subscribes :restart, "template[#{service_conf}]", :delayed
           end
